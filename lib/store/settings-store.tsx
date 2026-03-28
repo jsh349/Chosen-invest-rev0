@@ -11,6 +11,7 @@ import {
 
 import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
 import { readJSON, writeJSON } from '@/lib/utils/local-storage'
+import type { GenderOption } from '@/lib/types/rank'
 
 const LS_KEY = STORAGE_KEYS.settings
 
@@ -21,6 +22,7 @@ export type AppSettings = {
   showCents:        boolean
   defaultLanding:   'dashboard' | 'portfolio' | 'goals' | 'transactions'
   birthYear?:       number
+  gender?:          GenderOption
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {

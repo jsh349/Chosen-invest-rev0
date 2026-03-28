@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react'
 import { Download, Upload, History } from 'lucide-react'
 import { useSettings, DEFAULT_SETTINGS, type CurrencyCode, type AppSettings } from '@/lib/store/settings-store'
+import type { GenderOption } from '@/lib/types/rank'
 import { useAudit } from '@/lib/store/audit-store'
 import { ALL_STORAGE_KEYS } from '@/lib/constants/storage-keys'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
@@ -163,6 +164,21 @@ export default function SettingsPage() {
             }}
             className={SELECT_CLASS}
           />
+        </Row>
+        <Row label="Gender" hint="Used for age + gender wealth ranking (optional)">
+          <select
+            value={settings.gender ?? ''}
+            onChange={(e) => {
+              const val = e.target.value
+              update({ gender: val === '' ? undefined : val as GenderOption })
+            }}
+            className={SELECT_CLASS}
+          >
+            <option value="">— Not set —</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="undisclosed">Prefer not to say</option>
+          </select>
         </Row>
       </div>
 

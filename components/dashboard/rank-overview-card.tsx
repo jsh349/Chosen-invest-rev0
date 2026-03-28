@@ -4,6 +4,7 @@ import type { RankResult } from '@/lib/types/rank'
 interface RankOverviewCardProps {
   rank: RankResult
   ageRank: RankResult
+  ageGenderRank: RankResult
   totalValue: number
 }
 
@@ -46,9 +47,34 @@ function topPctColor(topPct: number): string {
   return 'text-amber-400'
 }
 
-export function RankOverviewCard({ rank, ageRank, totalValue }: RankOverviewCardProps) {
+function SubRankRow({ result }: { result: RankResult }) {
+  const hasPct = result.percentile != null
+  const topPct = hasPct ? 100 - result.percentile! : null
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-base font-semibold text-white">{result.label}</p>
+        {topPct != null ? (
+          <span className={cn('text-lg font-bold', topPctColor(topPct))}>
+            Top {topPct}%
+          </span>
+        ) : (
+          <span className="text-sm text-gray-600">—</span>
+        )}
+      </div>
+      {hasPct ? (
+        <PercentileBar percentile={result.percentile!} />
+      ) : (
+        <div className="h-2 w-full rounded-full bg-surface-muted" />
+      )}
+      <p className="text-xs leading-relaxed text-gray-400">{result.message}</p>
+    </div>
+  )
+}
+
+export function RankOverviewCard({ rank, ageRank, ageGenderRank, totalValue }: RankOverviewCardProps) {
   const overallTop = rank.percentile != null ? 100 - rank.percentile : null
-  const ageTop = ageRank.percentile != null ? 100 - ageRank.percentile : null
 
   return (
     <div className="rounded-xl border border-surface-border bg-surface-card p-6 space-y-6">
@@ -78,25 +104,14 @@ export function RankOverviewCard({ rank, ageRank, totalValue }: RankOverviewCard
       {/* Divider */}
       <div className="border-t border-surface-border" />
 
-      {/* Age-Based Rank — compact secondary section */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <p className="text-base font-semibold text-white">{ageRank.label}</p>
-          {ageTop != null ? (
-            <span className={cn('text-lg font-bold', topPctColor(ageTop))}>
-              Top {ageTop}%
-            </span>
-          ) : (
-            <span className="text-sm text-gray-600">—</span>
-          )}
-        </div>
-        {ageRank.percentile != null ? (
-          <PercentileBar percentile={ageRank.percentile} />
-        ) : (
-          <div className="h-2 w-full rounded-full bg-surface-muted" />
-        )}
-        <p className="text-xs leading-relaxed text-gray-400">{ageRank.message}</p>
-      </div>
+      {/* Age-Based Rank */}
+      <SubRankRow result={ageRank} />
+
+      {/* Divider */}
+      <div className="border-t border-surface-border" />
+
+      {/* Age + Gender Rank */}
+      <SubRankRow result={ageGenderRank} />
     </div>
   )
 }

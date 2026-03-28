@@ -84,6 +84,77 @@ export function computeAgeBasedRank(totalAssetValue: number, age?: number): Rank
   }
 }
 
+/** Compute Age + Gender rank. Returns informational state if age or gender is missing/unsupported. */
+export function computeAgeGenderRank(
+  totalAssetValue: number,
+  age?: number,
+  gender?: GenderOption,
+): RankResult {
+  // Missing fields
+  if (age == null && (gender == null || gender === 'undisclosed')) {
+    return {
+      type: 'age_gender',
+      label: 'Age + Gender Rank',
+      percentile: null,
+      message: 'Set your birth year and gender in Settings to see this ranking.',
+      missingField: 'age and gender',
+    }
+  }
+  if (age == null) {
+    return {
+      type: 'age_gender',
+      label: 'Age + Gender Rank',
+      percentile: null,
+      message: 'Set your birth year in Settings to see this ranking.',
+      missingField: 'age',
+    }
+  }
+  if (gender == null || gender === 'undisclosed' || gender === 'other') {
+    return {
+      type: 'age_gender',
+      label: 'Age + Gender Rank',
+      percentile: null,
+      message: 'Set your gender in Settings to see this ranking. This is optional.',
+      missingField: 'gender',
+    }
+  }
+
+  // Filter by age + gender
+  const buckets = AGE_GENDER_BUCKETS.filter(
+    (b) =>
+      b.ageRange &&
+      age >= b.ageRange[0] &&
+      age <= b.ageRange[1] &&
+      b.gender === gender
+  )
+
+  if (buckets.length === 0) {
+    return {
+      type: 'age_gender',
+      label: 'Age + Gender Rank',
+      percentile: null,
+      message: `No benchmark data for ${gender}, age ${age}. More buckets coming soon.`,
+    }
+  }
+
+  const percentile = findPercentile(buckets, totalAssetValue)
+  const topPct = 100 - percentile
+  const ageRange = buckets[0].ageRange!
+  const genderLabel = gender === 'male' ? 'men' : 'women'
+
+  let message: string
+  if (percentile >= 75) message = `Top ${topPct}% among ${genderLabel} ages ${ageRange[0]}–${ageRange[1]}. Outstanding.`
+  else if (percentile >= 50) message = `Top ${topPct}% among ${genderLabel} in the ${ageRange[0]}–${ageRange[1]} group.`
+  else message = `Top ${topPct}% among ${genderLabel} ages ${ageRange[0]}–${ageRange[1]}. Building steadily.`
+
+  return {
+    type: 'age_gender',
+    label: 'Age + Gender Rank',
+    percentile,
+    message,
+  }
+}
+
 export function computeRanks(input: RankInput): RankResult[] {
   const { totalAssetValue, age, gender, annualReturnPct } = input
   const results: RankResult[] = []

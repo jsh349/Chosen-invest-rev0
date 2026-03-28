@@ -4,7 +4,7 @@ export type RankType =
   | 'age_gender'
   | 'investment_return'
 
-export type GenderOption = 'male' | 'female' | 'other'
+export type GenderOption = 'male' | 'female' | 'other' | 'undisclosed'
 
 export type BenchmarkBucket = {
   minValue: number
