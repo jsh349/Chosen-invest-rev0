@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { blankFormEntry, formEntryToAsset } from '@/features/portfolio/helpers'
 import type { AssetFormEntry } from '@/features/portfolio/types'
 import type { Asset } from '@/lib/types/asset'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { useAssets } from '@/lib/store/assets-store'
 import { formatCurrency } from '@/lib/utils/currency'
 import { ROUTES } from '@/lib/constants/routes'
@@ -38,9 +39,7 @@ export default function PortfolioInputPage() {
 
   if (!isLoaded || entries === null) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
-      </div>
+      <LoadingSpinner />
     )
   }
 

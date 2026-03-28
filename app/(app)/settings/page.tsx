@@ -5,6 +5,7 @@ import { Download, Upload, History } from 'lucide-react'
 import { useSettings, DEFAULT_SETTINGS, type CurrencyCode, type AppSettings } from '@/lib/store/settings-store'
 import { useAudit } from '@/lib/store/audit-store'
 import { ALL_STORAGE_KEYS } from '@/lib/constants/storage-keys'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 
 const SELECT_CLASS = 'w-full rounded-lg border border-surface-border bg-surface-muted px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none'
 
@@ -73,9 +74,7 @@ export default function SettingsPage() {
 
   if (!isLoaded) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
-      </div>
+      <LoadingSpinner />
     )
   }
 

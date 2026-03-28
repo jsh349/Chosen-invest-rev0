@@ -8,6 +8,7 @@ import { getGoalStatus, GOAL_STATUS_STYLES } from '@/lib/utils/goal-status'
 import { formatCurrency } from '@/lib/utils/currency'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils/cn'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { ROUTES } from '@/lib/constants/routes'
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
@@ -25,9 +26,7 @@ export default function GoalDetailPage({ params }: { params: Promise<{ id: strin
 
   if (!isLoaded) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
-      </div>
+      <LoadingSpinner />
     )
   }
 

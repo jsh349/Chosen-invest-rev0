@@ -7,6 +7,7 @@ import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { CategorySelect } from '@/components/portfolio/category-select'
 import { useAssets } from '@/lib/store/assets-store'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { CATEGORY_MAP } from '@/lib/constants/asset-categories'
 import { formatCurrency } from '@/lib/utils/currency'
 import { ROUTES } from '@/lib/constants/routes'
@@ -22,9 +23,7 @@ export default function PortfolioListPage() {
 
   if (!isLoaded) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
-      </div>
+      <LoadingSpinner />
     )
   }
 

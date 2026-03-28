@@ -25,6 +25,7 @@ import { ROUTES } from '@/lib/constants/routes'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
 import { computeCashFlow } from '@/lib/utils/transaction-summary'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 
 const CARD_KEYS = Object.keys(CARD_LABELS) as DashboardCardKey[]
 
@@ -55,9 +56,7 @@ export default function DashboardPage() {
 
   if (!isLoaded || !prefsLoaded) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
-      </div>
+      <LoadingSpinner />
     )
   }
 

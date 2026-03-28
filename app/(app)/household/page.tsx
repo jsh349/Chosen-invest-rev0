@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils/cn'
 import { ROUTES } from '@/lib/constants/routes'
 import type { MemberRole } from '@/lib/types/household'
 import { isRequired, isBasicEmail } from '@/lib/utils/validation'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 
 const ROLES: { value: MemberRole; label: string; description: string }[] = [
   { value: 'admin',   label: 'Admin',   description: 'Full access'    },
@@ -40,9 +41,7 @@ export default function HouseholdPage() {
 
   if (!membersLoaded || !goalsLoaded || !notesLoaded) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
-      </div>
+      <LoadingSpinner />
     )
   }
 

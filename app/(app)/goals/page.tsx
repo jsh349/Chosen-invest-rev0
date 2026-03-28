@@ -9,6 +9,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
 import { isRequired, parsePositive, parseNonNegative, isDateFormat } from '@/lib/utils/validation'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import type { Goal, GoalType } from '@/lib/types/goal'
 import { getGoalStatus, GOAL_STATUS_STYLES } from '@/lib/utils/goal-status'
 import { ROUTES } from '@/lib/constants/routes'
@@ -153,9 +154,7 @@ export default function GoalsPage() {
 
   if (!isLoaded) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
-      </div>
+      <LoadingSpinner />
     )
   }
 

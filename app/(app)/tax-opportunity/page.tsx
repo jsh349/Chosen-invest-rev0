@@ -6,6 +6,7 @@ import { useAssets } from '@/lib/store/assets-store'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { ROUTES } from '@/lib/constants/routes'
 import type { Asset } from '@/lib/types/asset'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 
 const TAXABLE_CATEGORIES = new Set(['stock', 'etf', 'crypto'])
 
@@ -70,9 +71,7 @@ export default function TaxOpportunityPage() {
 
   if (!isLoaded) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
-      </div>
+      <LoadingSpinner />
     )
   }
 

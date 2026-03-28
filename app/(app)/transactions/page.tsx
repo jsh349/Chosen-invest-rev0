@@ -5,6 +5,7 @@ import { Trash2, ArrowLeftRight } from 'lucide-react'
 import { useTransactions } from '@/lib/store/transactions-store'
 import { isRequired, parsePositive, isDateFormat } from '@/lib/utils/validation'
 import { computeCashFlow } from '@/lib/utils/transaction-summary'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
@@ -48,9 +49,7 @@ export default function TransactionsPage() {
 
   if (!isLoaded) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
-      </div>
+      <LoadingSpinner />
     )
   }
 
