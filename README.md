@@ -18,7 +18,7 @@ AI-guided asset operating dashboard. Enter your portfolio manually, get instant 
 | Charts | Recharts |
 | Market Data | Finnhub API |
 
----
+----
 
 ## Getting Started
 
