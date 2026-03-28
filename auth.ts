@@ -25,7 +25,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                          nextUrl.pathname.startsWith('/market') ||
                          nextUrl.pathname.startsWith('/analysis') ||
                          nextUrl.pathname.startsWith('/ai') ||
-                         nextUrl.pathname.startsWith('/settings')
+                         nextUrl.pathname.startsWith('/settings') ||
+                         nextUrl.pathname.startsWith('/goals') ||
+                         nextUrl.pathname.startsWith('/transactions') ||
+                         nextUrl.pathname.startsWith('/household') ||
+                         nextUrl.pathname.startsWith('/tax-opportunity')
       if (isAppRoute && !isLoggedIn) return false
       return true
     },

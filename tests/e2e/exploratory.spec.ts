@@ -55,135 +55,24 @@ test.describe('Login Page — Exploratory', () => {
   })
 })
 
-// ── Exploratory: Goals page interaction ──────────────────────
+// ── Exploratory: Auth-gated app pages redirect to login ──────
 
-test.describe('Goals Page — Exploratory', () => {
-  test('has a form or add button visible', async ({ page }) => {
-    await page.goto('/goals')
-    await page.waitForLoadState('networkidle')
-    const addBtn = page.locator('button:has-text("Add"), button:has-text("Create"), button:has-text("New"), button:has-text("Save")')
-    const form = page.locator('form')
-    const hasBtn = await addBtn.first().isVisible().catch(() => false)
-    const hasForm = await form.first().isVisible().catch(() => false)
-    expect(hasBtn || hasForm).toBeTruthy()
-  })
+test.describe('App pages require auth', () => {
+  const appRoutes = ['/goals', '/transactions', '/household', '/tax-opportunity']
 
-  test('can type into text inputs without error', async ({ page }) => {
-    const errors: string[] = []
-    page.on('pageerror', (err) => errors.push(err.message))
-    await page.goto('/goals')
-    await page.waitForLoadState('networkidle')
-    const textInputs = await page.locator('input[type="text"], input:not([type])').all()
-    for (const input of textInputs.slice(0, 3)) {
-      if (await input.isVisible()) {
-        await input.fill('Test input')
-      }
-    }
-    const numInputs = await page.locator('input[type="number"]').all()
-    for (const input of numInputs.slice(0, 2)) {
-      if (await input.isVisible()) {
-        await input.fill('10000')
-      }
-    }
-    expect(errors).toEqual([])
-  })
-})
-
-// ── Exploratory: Transactions page ───────────────────────────
-
-test.describe('Transactions Page — Exploratory', () => {
-  test('has a form or add button', async ({ page }) => {
-    await page.goto('/transactions')
-    await page.waitForLoadState('networkidle')
-    const addBtn = page.locator('button:has-text("Add"), button:has-text("Create"), button:has-text("New"), button:has-text("Save")')
-    const form = page.locator('form')
-    const hasBtn = await addBtn.first().isVisible().catch(() => false)
-    const hasForm = await form.first().isVisible().catch(() => false)
-    expect(hasBtn || hasForm).toBeTruthy()
-  })
-
-  test('can interact with inputs without JS errors', async ({ page }) => {
-    const errors: string[] = []
-    page.on('pageerror', (err) => errors.push(err.message))
-    await page.goto('/transactions')
-    await page.waitForLoadState('networkidle')
-    const inputs = await page.locator('input[type="text"], input[type="number"], input:not([type])').all()
-    for (const input of inputs.slice(0, 3)) {
-      if (await input.isVisible()) {
-        await input.fill('100')
-      }
-    }
-    expect(errors).toEqual([])
-  })
-})
-
-// ── Exploratory: Household page ──────────────────────────────
-
-test.describe('Household Page — Exploratory', () => {
-  test('has a form or add button', async ({ page }) => {
-    await page.goto('/household')
-    await page.waitForLoadState('networkidle')
-    const addBtn = page.locator('button:has-text("Add"), button:has-text("Create"), button:has-text("New"), button:has-text("Save")')
-    const form = page.locator('form')
-    const hasBtn = await addBtn.first().isVisible().catch(() => false)
-    const hasForm = await form.first().isVisible().catch(() => false)
-    expect(hasBtn || hasForm).toBeTruthy()
-  })
-
-  test('can type in email field without error', async ({ page }) => {
-    const errors: string[] = []
-    page.on('pageerror', (err) => errors.push(err.message))
-    await page.goto('/household')
-    await page.waitForLoadState('networkidle')
-    const emailInput = page.locator('input[type="email"]')
-    if (await emailInput.first().isVisible().catch(() => false)) {
-      await emailInput.first().fill('test@example.com')
-    }
-    expect(errors).toEqual([])
-  })
-})
-
-// ── Exploratory: Tax opportunity page ────────────────────────
-
-test.describe('Tax Opportunity Page — Exploratory', () => {
-  test('renders content (not blank)', async ({ page }) => {
-    const res = await page.goto('/tax-opportunity')
-    expect(res?.status()).toBe(200)
-    await page.waitForLoadState('networkidle')
-    const heading = page.locator('h1, h2, h3').first()
-    await expect(heading).toBeVisible({ timeout: 5000 })
-  })
-
-  test('no JS errors on load', async ({ page }) => {
-    const errors: string[] = []
-    page.on('pageerror', (err) => errors.push(err.message))
-    await page.goto('/tax-opportunity')
-    await page.waitForLoadState('networkidle')
-    expect(errors).toEqual([])
-  })
-})
-
-// ── Exploratory: Auth boundary — unprotected pages should NOT have app nav ──
-
-test.describe('Auth boundary consistency', () => {
-  const openRoutes = ['/goals', '/transactions', '/household', '/tax-opportunity']
-
-  for (const route of openRoutes) {
-    test(`${route} should have AppShell nav OR show content without it`, async ({ page }) => {
+  for (const route of appRoutes) {
+    test(`${route} redirects to /login without auth`, async ({ page }) => {
       await page.goto(route)
-      await page.waitForLoadState('networkidle')
-      // These are (app) routes that somehow bypass auth.
-      // Check if they render the full app shell or something else.
-      const bodyText = await page.locator('body').innerText()
-      expect(bodyText.length).toBeGreaterThan(20)
+      await page.waitForURL(/\/login/)
+      expect(page.url()).toContain('/login')
     })
   }
 })
 
-// ── Exploratory: Console errors across all accessible pages ──
+// ── Exploratory: Console errors across accessible pages ──────
 
 test.describe('Console warnings and errors', () => {
-  const routes = ['/', '/login', '/goals', '/transactions', '/household', '/tax-opportunity']
+  const routes = ['/', '/login']
 
   for (const route of routes) {
     test(`no console errors on ${route}`, async ({ page }) => {
@@ -195,14 +84,12 @@ test.describe('Console warnings and errors', () => {
       })
       await page.goto(route)
       await page.waitForLoadState('networkidle')
-      // Filter out known benign errors (like favicon 404)
       const realErrors = consoleErrors.filter(
         (e) => !e.includes('favicon') && !e.includes('404')
       )
       if (realErrors.length > 0) {
         console.log(`Console errors on ${route}:`, realErrors)
       }
-      // We log them but don't fail — this is informational
     })
   }
 })
