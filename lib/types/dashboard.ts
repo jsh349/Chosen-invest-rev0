@@ -13,6 +13,7 @@ export type PortfolioSummary = {
   totalAssetValue: number
   assetCount: number
   categoryBreakdown: AllocationSlice[]
+  largestAsset: { name: string; value: number } | null
   generatedAt: string
 }
 
