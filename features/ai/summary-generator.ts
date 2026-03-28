@@ -1,5 +1,4 @@
-import type { PortfolioSummary } from '@/lib/types/dashboard'
-import type { AIAnalysisResult } from '@/lib/types/dashboard'
+import type { PortfolioSummary, AIAnalysisResult, SuggestedAction } from '@/lib/types/dashboard'
 
 export type AISummaryContext = {
   hasGoals: boolean
@@ -17,6 +16,7 @@ export function generateAISummary(
 
   const lines: string[] = []
   const keyPoints: string[] = []
+  const actions: SuggestedAction[] = []
 
   // Opening — no assets
   if (assetCount === 0) {
@@ -25,6 +25,7 @@ export function generateAISummary(
       userId,
       summaryText: lines.join(' '),
       keyPoints: ['Start by adding your assets in the Portfolio section'],
+      suggestedActions: [{ label: 'Add your first asset', href: '/portfolio/input' }],
       inputSnapshot: { totalValue: 0, assetCount: 0, topCategory: '' },
       generatedAt: new Date().toISOString(),
     }
@@ -36,6 +37,7 @@ export function generateAISummary(
       userId,
       summaryText: `Your portfolio is entirely in cash. While this provides safety, consider diversifying into investments, retirement, or other asset classes to build long-term growth.`,
       keyPoints: ['100% cash — consider broader asset planning', 'No growth or income assets detected'],
+      suggestedActions: [{ label: 'Edit your assets', href: '/portfolio/input' }],
       inputSnapshot: { totalValue: totalAssetValue, assetCount, topCategory: topCategory.label },
       generatedAt: new Date().toISOString(),
     }
@@ -104,10 +106,25 @@ export function generateAISummary(
   // Closing
   lines.push('Review your allocation regularly as your goals and circumstances evolve.')
 
+  // Suggested actions — up to 2, highest priority first
+  if (!hasGoals) {
+    actions.push({ label: 'Set your first goal', href: '/goals' })
+  }
+  if (netCashFlow !== null && netCashFlow < 0) {
+    actions.push({ label: 'Review transactions', href: '/transactions' })
+  }
+  if (actions.length < 2 && topPct > 60) {
+    actions.push({ label: 'Review portfolio allocation', href: '/portfolio/list' })
+  }
+  if (actions.length < 2) {
+    actions.push({ label: 'View portfolio details', href: '/portfolio/list' })
+  }
+
   return {
     userId,
     summaryText: lines.join(' '),
     keyPoints,
+    suggestedActions: actions.slice(0, 2),
     inputSnapshot: {
       totalValue: totalAssetValue,
       assetCount,
