@@ -17,6 +17,7 @@ type AssetsContextType = {
   hasCustomAssets: boolean
   setAssets: (assets: Asset[]) => void
   addAsset: (asset: Asset) => void
+  updateAsset: (id: string, patch: Partial<Pick<Asset, 'name' | 'category' | 'value'>>) => void
   removeAsset: (id: string) => void
   clearAssets: () => void
   isLoaded: boolean
@@ -27,6 +28,7 @@ const AssetsContext = createContext<AssetsContextType>({
   hasCustomAssets: false,
   setAssets: () => {},
   addAsset: () => {},
+  updateAsset: () => {},
   removeAsset: () => {},
   clearAssets: () => {},
   isLoaded: false,
@@ -59,6 +61,19 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
+  const updateAsset = useCallback(
+    (id: string, patch: Partial<Pick<Asset, 'name' | 'category' | 'value'>>) => {
+      setAssetsState((prev) => {
+        const updated = prev.map((a) =>
+          a.id === id ? { ...a, ...patch, updatedAt: new Date().toISOString() } : a
+        )
+        window.localStorage.setItem(LS_KEY, JSON.stringify(updated))
+        return updated
+      })
+    },
+    []
+  )
+
   const removeAsset = useCallback((id: string) => {
     setAssetsState((prev) => {
       const updated = prev.filter((a) => a.id !== id)
@@ -79,6 +94,7 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
         hasCustomAssets: assets.length > 0,
         setAssets,
         addAsset,
+        updateAsset,
         removeAsset,
         clearAssets,
         isLoaded,
