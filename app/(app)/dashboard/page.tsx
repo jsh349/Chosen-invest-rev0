@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { PlusCircle } from 'lucide-react'
+import { PlusCircle, BarChart2 } from 'lucide-react'
 import { DashboardOverview } from '@/components/dashboard/dashboard-overview'
 import { AllocationChartCard } from '@/components/dashboard/allocation-chart-card'
 import { AISummaryCard } from '@/components/dashboard/ai-summary-card'
@@ -12,11 +12,28 @@ import { generateHealthCards } from '@/features/dashboard/diagnosis'
 import { generateAISummary } from '@/features/ai/summary-generator'
 import { NetWorthTrendCard } from '@/components/dashboard/net-worth-trend-card'
 import { useAssets } from '@/lib/store/assets-store'
-import { MOCK_ASSETS } from '@/lib/mock/assets'
 import { buildMockTrend } from '@/lib/mock/trend'
 import { ROUTES } from '@/lib/constants/routes'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
+
+function EmptyState() {
+  return (
+    <div className="flex min-h-[60vh] flex-col items-center justify-center text-center px-4">
+      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-surface-border bg-surface-card">
+        <BarChart2 className="h-6 w-6 text-gray-500" />
+      </div>
+      <h2 className="mb-2 text-lg font-semibold text-white">No assets yet</h2>
+      <p className="mb-6 max-w-xs text-sm text-gray-500">
+        Add your assets to see your portfolio summary, allocation breakdown, and health signals.
+      </p>
+      <Link href={ROUTES.portfolioInput} className={buttonVariants({ size: 'lg' })}>
+        <PlusCircle className="h-4 w-4" />
+        Add Your First Asset
+      </Link>
+    </div>
+  )
+}
 
 export default function DashboardPage() {
   const { assets, hasCustomAssets, isLoaded } = useAssets()
@@ -29,10 +46,11 @@ export default function DashboardPage() {
     )
   }
 
-  const activeAssets = hasCustomAssets ? assets : MOCK_ASSETS
-  const isDemoMode = !hasCustomAssets
+  if (!hasCustomAssets) {
+    return <EmptyState />
+  }
 
-  const summary = buildPortfolioSummary('local_user', activeAssets)
+  const summary = buildPortfolioSummary('local_user', assets)
   const healthCards = generateHealthCards(summary)
   const aiAnalysis = generateAISummary(summary)
   const trendData = buildMockTrend(summary.totalAssetValue)
@@ -43,9 +61,7 @@ export default function DashboardPage() {
         <div>
           <h1 className="text-xl font-bold text-white">Dashboard</h1>
           <p className="mt-0.5 text-sm text-gray-500">
-            {isDemoMode
-              ? 'Demo data — add your own assets to see your real picture'
-              : 'Your portfolio overview and financial health signals'}
+            Your portfolio overview and financial health signals
           </p>
         </div>
         <Link
@@ -53,23 +69,9 @@ export default function DashboardPage() {
           className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-2')}
         >
           <PlusCircle className="h-4 w-4" />
-          {hasCustomAssets ? 'Edit Assets' : 'Add Assets'}
+          Edit Assets
         </Link>
       </div>
-
-      {isDemoMode && (
-        <div className="flex items-center justify-between rounded-lg border border-amber-900/50 bg-amber-950/30 px-4 py-3">
-          <p className="text-sm text-amber-400">
-            Showing demo data. Add your own assets to see your real dashboard.
-          </p>
-          <Link
-            href={ROUTES.portfolioInput}
-            className={buttonVariants({ size: 'sm' })}
-          >
-            Get Started
-          </Link>
-        </div>
-      )}
 
       <DashboardOverview summary={summary} />
 
@@ -81,7 +83,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <NetWorthTrendCard data={trendData} isMock={isDemoMode} />
+      <NetWorthTrendCard data={trendData} isMock />
 
       <div>
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">
