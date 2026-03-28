@@ -1,9 +1,11 @@
 'use client'
 
+import Link from 'next/link'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
 import { useGoals } from '@/lib/store/goals-store'
 import { getGoalStatus, GOAL_STATUS_STYLES } from '@/lib/utils/goal-status'
+import { ROUTES } from '@/lib/constants/routes'
 import { cn } from '@/lib/utils/cn'
 import type { Goal } from '@/lib/types/goal'
 
@@ -25,8 +27,11 @@ export function GoalsSummaryCard() {
         <CardHeader>
           <CardTitle>Goals</CardTitle>
         </CardHeader>
-        <CardContent>
-          <p className="text-sm text-gray-500">No goals set yet.</p>
+        <CardContent className="space-y-2">
+          <p className="text-sm text-gray-500">No goals set yet. Define a financial goal to start tracking progress.</p>
+          <Link href={ROUTES.goals} className="inline-block text-xs text-brand-400 hover:text-brand-300 transition-colors">
+            Add your first goal →
+          </Link>
         </CardContent>
       </Card>
     )

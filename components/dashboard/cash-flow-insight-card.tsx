@@ -1,8 +1,10 @@
 'use client'
 
+import Link from 'next/link'
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { useTransactions } from '@/lib/store/transactions-store'
+import { ROUTES } from '@/lib/constants/routes'
 import { cn } from '@/lib/utils/cn'
 
 function formatUSD(value: number) {
@@ -84,6 +86,11 @@ export function CashFlowInsightCard() {
           <span className="text-sm font-medium">{insight.headline}</span>
         </div>
         <p className="text-xs text-gray-500">{insight.supporting}</p>
+        {transactions.length === 0 && (
+          <Link href={ROUTES.transactions} className="inline-block text-xs text-brand-400 hover:text-brand-300 transition-colors">
+            Record a transaction →
+          </Link>
+        )}
       </CardContent>
     </Card>
   )

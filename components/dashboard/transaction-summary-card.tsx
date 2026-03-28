@@ -1,7 +1,9 @@
 'use client'
 
+import Link from 'next/link'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { useTransactions } from '@/lib/store/transactions-store'
+import { ROUTES } from '@/lib/constants/routes'
 import { cn } from '@/lib/utils/cn'
 import type { TransactionCategory } from '@/lib/types/transaction'
 
@@ -29,8 +31,11 @@ export function TransactionSummaryCard() {
         <CardHeader>
           <CardTitle>This Month</CardTitle>
         </CardHeader>
-        <CardContent>
-          <p className="text-sm text-gray-500">No transactions recorded this month.</p>
+        <CardContent className="space-y-2">
+          <p className="text-sm text-gray-500">No transactions recorded this month. Track your income and expenses to see a monthly summary.</p>
+          <Link href={ROUTES.transactions} className="inline-block text-xs text-brand-400 hover:text-brand-300 transition-colors">
+            Record a transaction →
+          </Link>
         </CardContent>
       </Card>
     )

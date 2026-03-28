@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Users, Trash2, Target, StickyNote } from 'lucide-react'
 import { useHousehold } from '@/lib/store/household-store'
 import { useGoals } from '@/lib/store/goals-store'
@@ -10,6 +11,7 @@ import { getGoalStatus, GOAL_STATUS_STYLES } from '@/lib/utils/goal-status'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
+import { ROUTES } from '@/lib/constants/routes'
 import type { MemberRole } from '@/lib/types/household'
 
 const ROLES: { value: MemberRole; label: string; description: string }[] = [
@@ -219,7 +221,10 @@ export default function HouseholdPage() {
 
           {/* Note list */}
           {notes.length === 0 ? (
-            <p className="text-sm text-gray-500 text-center py-4">No review notes yet.</p>
+            <div className="py-6 text-center">
+              <p className="text-sm text-gray-500">No review notes yet.</p>
+              <p className="mt-1 text-xs text-gray-600">Add a note above to track items for household review.</p>
+            </div>
           ) : (
             <div className="space-y-2">
               {notes.map((note) => (
@@ -254,11 +259,14 @@ export default function HouseholdPage() {
         </CardHeader>
         <CardContent className="p-0">
           {sharedGoals.length === 0 ? (
-            <div className="px-4 py-8 text-center">
+            <div className="px-4 py-8 text-center space-y-2">
               <p className="text-sm text-gray-500">No shared goals yet.</p>
-              <p className="mt-1 text-xs text-gray-600">
+              <p className="text-xs text-gray-600">
                 Enable "Share with household" when adding or editing a goal.
               </p>
+              <Link href={ROUTES.goals} className="inline-block text-xs text-brand-400 hover:text-brand-300 transition-colors">
+                Go to Goals →
+              </Link>
             </div>
           ) : (
             <div className="divide-y divide-surface-border">
