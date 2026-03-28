@@ -13,6 +13,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
 import { ROUTES } from '@/lib/constants/routes'
 import type { MemberRole } from '@/lib/types/household'
+import { isRequired, isBasicEmail } from '@/lib/utils/validation'
 
 const ROLES: { value: MemberRole; label: string; description: string }[] = [
   { value: 'admin',   label: 'Admin',   description: 'Full access'    },
@@ -54,8 +55,8 @@ export default function HouseholdPage() {
 
   function handleNoteSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!noteForm.title.trim()) { setNoteError('Title is required.'); return }
-    if (!noteForm.message.trim()) { setNoteError('Message is required.'); return }
+    if (!isRequired(noteForm.title)) { setNoteError('Title is required.'); return }
+    if (!isRequired(noteForm.message)) { setNoteError('Message is required.'); return }
     addNote({
       id:        crypto.randomUUID(),
       title:     noteForm.title.trim(),
@@ -68,8 +69,8 @@ export default function HouseholdPage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.name.trim()) { setError('Name is required.'); return }
-    if (!form.email.trim() || !form.email.includes('@')) { setError('A valid email is required.'); return }
+    if (!isRequired(form.name)) { setError('Name is required.'); return }
+    if (!isBasicEmail(form.email)) { setError('A valid email is required.'); return }
     addMember({
       id:        crypto.randomUUID(),
       name:      form.name.trim(),

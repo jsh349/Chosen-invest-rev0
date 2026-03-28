@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Trash2, ArrowLeftRight } from 'lucide-react'
 import { useTransactions } from '@/lib/store/transactions-store'
+import { isRequired, parsePositive, isDateFormat } from '@/lib/utils/validation'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
@@ -59,11 +60,11 @@ export default function TransactionsPage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.date) { setError('Date is required.'); return }
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(form.date)) { setError('Use YYYY-MM-DD format.'); return }
-    if (!form.description.trim()) { setError('Description is required.'); return }
-    const raw = parseFloat(form.amount)
-    if (isNaN(raw) || raw <= 0) { setError('Amount must be a positive number.'); return }
+    if (!isRequired(form.date)) { setError('Date is required.'); return }
+    if (!isDateFormat(form.date)) { setError('Use YYYY-MM-DD format.'); return }
+    if (!isRequired(form.description)) { setError('Description is required.'); return }
+    const raw = parsePositive(form.amount)
+    if (raw === null) { setError('Amount must be a positive number.'); return }
 
     const amount = form.type === 'expense' ? -raw : raw
     addTransaction({

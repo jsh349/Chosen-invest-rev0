@@ -8,6 +8,7 @@ import { formatCurrency } from '@/lib/utils/currency'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
+import { isRequired, parsePositive, parseNonNegative, isDateFormat } from '@/lib/utils/validation'
 import type { Goal, GoalType } from '@/lib/types/goal'
 import { getGoalStatus, GOAL_STATUS_STYLES } from '@/lib/utils/goal-status'
 import { ROUTES } from '@/lib/constants/routes'
@@ -136,10 +137,9 @@ function FormFields({
 }
 
 function parseForm(form: FormState): { targetAmount: number; currentAmount: number } | null {
-  const targetAmount = parseFloat(form.targetAmount)
-  const currentAmount = form.currentAmount === '' ? 0 : parseFloat(form.currentAmount)
-  if (isNaN(targetAmount) || targetAmount <= 0) return null
-  if (isNaN(currentAmount) || currentAmount < 0) return null
+  const targetAmount = parsePositive(form.targetAmount)
+  const currentAmount = parseNonNegative(form.currentAmount)
+  if (targetAmount === null || currentAmount === null) return null
   return { targetAmount, currentAmount }
 }
 
@@ -166,8 +166,8 @@ export default function GoalsPage() {
 
   function handleAddSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!addForm.name.trim()) { setAddError('Goal name is required.'); return }
-    if (addForm.targetDate && !/^\d{4}-\d{2}-\d{2}$/.test(addForm.targetDate)) { setAddError('Use YYYY-MM-DD date format.'); return }
+    if (!isRequired(addForm.name)) { setAddError('Goal name is required.'); return }
+    if (addForm.targetDate && !isDateFormat(addForm.targetDate)) { setAddError('Use YYYY-MM-DD date format.'); return }
     const amounts = parseForm(addForm)
     if (!amounts) { setAddError('Target amount must be a positive number and saved amount must be 0 or more.'); return }
     const now = new Date().toISOString()
@@ -202,8 +202,8 @@ export default function GoalsPage() {
   }
 
   function handleEditSave(id: string) {
-    if (!editForm.name.trim()) { setEditError('Goal name is required.'); return }
-    if (editForm.targetDate && !/^\d{4}-\d{2}-\d{2}$/.test(editForm.targetDate)) { setEditError('Use YYYY-MM-DD date format.'); return }
+    if (!isRequired(editForm.name)) { setEditError('Goal name is required.'); return }
+    if (editForm.targetDate && !isDateFormat(editForm.targetDate)) { setEditError('Use YYYY-MM-DD date format.'); return }
     const amounts = parseForm(editForm)
     if (!amounts) { setEditError('Target amount must be a positive number and saved amount must be 0 or more.'); return }
     updateGoal(id, {
