@@ -27,6 +27,7 @@ const EMPTY_FORM = {
   targetAmount:  '',
   currentAmount: '',
   targetDate:    '',
+  shared:        false,
 }
 
 type FormState = typeof EMPTY_FORM
@@ -43,15 +44,18 @@ function goalToForm(goal: Goal): FormState {
     targetAmount:  String(goal.targetAmount),
     currentAmount: String(goal.currentAmount),
     targetDate:    goal.targetDate ?? '',
+    shared:        goal.shared ?? false,
   }
 }
 
 function FormFields({
   form,
   onChange,
+  onSharedChange,
 }: {
   form: FormState
   onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
+  onSharedChange: (checked: boolean) => void
 }) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -116,6 +120,17 @@ function FormFields({
           className="w-full rounded-lg border border-surface-border bg-surface-muted px-3 py-2 text-sm text-white placeholder-gray-600 focus:border-brand-500 focus:outline-none"
         />
       </div>
+      <div className="sm:col-span-2">
+        <label className="flex items-center gap-2 cursor-pointer w-fit">
+          <input
+            type="checkbox"
+            checked={form.shared}
+            onChange={(e) => onSharedChange(e.target.checked)}
+            className="h-4 w-4 rounded border-surface-border accent-brand-500"
+          />
+          <span className="text-sm text-gray-400">Share with household</span>
+        </label>
+      </div>
     </div>
   )
 }
@@ -162,6 +177,7 @@ export default function GoalsPage() {
       targetAmount:  amounts.targetAmount,
       currentAmount: amounts.currentAmount,
       targetDate:    addForm.targetDate || undefined,
+      shared:        addForm.shared,
       createdAt:     now,
       updatedAt:     now,
     })
@@ -194,6 +210,7 @@ export default function GoalsPage() {
       targetAmount:  amounts.targetAmount,
       currentAmount: amounts.currentAmount,
       targetDate:    editForm.targetDate || undefined,
+      shared:        editForm.shared,
     })
     setEditingId(null)
   }
@@ -212,7 +229,7 @@ export default function GoalsPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleAddSubmit} className="space-y-4">
-            <FormFields form={addForm} onChange={handleAddChange} />
+            <FormFields form={addForm} onChange={handleAddChange} onSharedChange={(checked) => setAddForm((p) => ({ ...p, shared: checked }))} />
             {addError && <p className="text-xs text-red-400">{addError}</p>}
             <button type="submit" className={cn(buttonVariants({ size: 'sm' }), 'w-full sm:w-auto')}>
               Add Goal
@@ -242,7 +259,7 @@ export default function GoalsPage() {
                 <CardContent className="pt-4">
                   {isEditing ? (
                     <div className="space-y-4">
-                      <FormFields form={editForm} onChange={handleEditChange} />
+                      <FormFields form={editForm} onChange={handleEditChange} onSharedChange={(checked) => setEditForm((p) => ({ ...p, shared: checked }))} />
                       {editError && <p className="text-xs text-red-400">{editError}</p>}
                       <div className="flex gap-2">
                         <button

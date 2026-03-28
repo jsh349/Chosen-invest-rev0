@@ -13,6 +13,7 @@ export type Goal = {
   targetAmount: number
   currentAmount: number
   targetDate?: string   // ISO date string YYYY-MM-DD
+  shared?: boolean
   createdAt: string
   updatedAt: string
 }

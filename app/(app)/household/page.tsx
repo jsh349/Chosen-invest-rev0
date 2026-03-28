@@ -1,17 +1,20 @@
 'use client'
 
 import { useState } from 'react'
-import { Users, Trash2 } from 'lucide-react'
+import { Users, Trash2, Target } from 'lucide-react'
 import { useHousehold } from '@/lib/store/household-store'
+import { useGoals } from '@/lib/store/goals-store'
+import { formatCurrency } from '@/lib/utils/currency'
+import { getGoalStatus, GOAL_STATUS_STYLES } from '@/lib/utils/goal-status'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
 import type { MemberRole } from '@/lib/types/household'
 
 const ROLES: { value: MemberRole; label: string; description: string }[] = [
-  { value: 'admin',   label: 'Admin',   description: 'Full access'     },
-  { value: 'partner', label: 'Partner', description: 'Can add & edit'  },
-  { value: 'viewer',  label: 'Viewer',  description: 'Read only'       },
+  { value: 'admin',   label: 'Admin',   description: 'Full access'    },
+  { value: 'partner', label: 'Partner', description: 'Can add & edit' },
+  { value: 'viewer',  label: 'Viewer',  description: 'Read only'      },
 ]
 
 const ROLE_COLORS: Record<MemberRole, string> = {
@@ -23,17 +26,20 @@ const ROLE_COLORS: Record<MemberRole, string> = {
 const EMPTY_FORM = { name: '', email: '', role: 'viewer' as MemberRole }
 
 export default function HouseholdPage() {
-  const { members, isLoaded, addMember, removeMember } = useHousehold()
+  const { members, isLoaded: membersLoaded, addMember, removeMember } = useHousehold()
+  const { goals, isLoaded: goalsLoaded } = useGoals()
   const [form, setForm] = useState(EMPTY_FORM)
   const [error, setError] = useState('')
 
-  if (!isLoaded) {
+  if (!membersLoaded || !goalsLoaded) {
     return (
       <div className="flex h-64 items-center justify-center">
         <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
       </div>
     )
   }
+
+  const sharedGoals = goals.filter((g) => g.shared)
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
@@ -117,7 +123,7 @@ export default function HouseholdPage() {
 
       {/* Member list */}
       {members.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-surface-border py-16 text-center">
+        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-surface-border py-10 text-center">
           <Users className="mb-3 h-8 w-8 text-gray-600" />
           <p className="text-sm font-medium text-gray-400">No members yet</p>
           <p className="mt-1 text-xs text-gray-600">Add household members above to get started.</p>
@@ -155,6 +161,56 @@ export default function HouseholdPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Shared goals */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="h-4 w-4 text-gray-400" />
+            Shared Goals
+          </CardTitle>
+          <span className="text-xs text-gray-500">{sharedGoals.length} shared</span>
+        </CardHeader>
+        <CardContent className="p-0">
+          {sharedGoals.length === 0 ? (
+            <div className="px-4 py-8 text-center">
+              <p className="text-sm text-gray-500">No shared goals yet.</p>
+              <p className="mt-1 text-xs text-gray-600">
+                Enable "Share with household" when adding or editing a goal.
+              </p>
+            </div>
+          ) : (
+            <div className="divide-y divide-surface-border">
+              {sharedGoals.map((goal) => {
+                const pct = goal.targetAmount > 0
+                  ? Math.min(100, (goal.currentAmount / goal.targetAmount) * 100)
+                  : 0
+                const status = getGoalStatus(goal.currentAmount, goal.targetAmount)
+                return (
+                  <div key={goal.id} className="px-4 py-3 space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-medium text-white truncate">{goal.name}</span>
+                      <span className={cn('shrink-0 rounded-full px-2 py-0.5 text-xs font-medium', GOAL_STATUS_STYLES[status])}>
+                        {status}
+                      </span>
+                    </div>
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-muted">
+                      <div
+                        className="h-full rounded-full bg-brand-500 transition-all duration-300"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>{formatCurrency(goal.currentAmount)} saved</span>
+                      <span>{pct.toFixed(0)}% of {formatCurrency(goal.targetAmount)}</span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }
