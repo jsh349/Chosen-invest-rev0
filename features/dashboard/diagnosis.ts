@@ -26,10 +26,12 @@ export function generateHealthCards(summary: PortfolioSummary): FinancialHealthC
   const topPct = topSlice?.percentage ?? 0
   const concentrationScore = topPct > 60 ? 30 : topPct > 40 ? 55 : 80
   const concentrationMessage =
-    topPct > 60
-      ? `${topSlice?.label} is ${topPct.toFixed(0)}% of total. High concentration risk.`
+    !topSlice
+      ? 'Add assets to see concentration analysis.'
+      : topPct > 60
+      ? `${topSlice.label} is ${topPct.toFixed(0)}% of total. High concentration risk.`
       : topPct > 40
-      ? `${topSlice?.label} is ${topPct.toFixed(0)}% of total. Single-asset dominance to watch.`
+      ? `${topSlice.label} is ${topPct.toFixed(0)}% of total. Single-asset dominance to watch.`
       : 'No single category dominates. Concentration looks healthy.'
 
   // Liquidity: cash %
