@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from 'react'
 import type { Asset } from '@/lib/types/asset'
+import { recordAudit } from '@/lib/store/audit-store'
 
 const LS_KEY = 'chosen_assets_v1'
 
@@ -59,15 +60,18 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
       window.localStorage.setItem(LS_KEY, JSON.stringify(updated))
       return updated
     })
+    recordAudit('Asset added', asset.name)
   }, [])
 
   const updateAsset = useCallback(
     (id: string, patch: Partial<Pick<Asset, 'name' | 'category' | 'value'>>) => {
       setAssetsState((prev) => {
+        const target = prev.find((a) => a.id === id)
         const updated = prev.map((a) =>
           a.id === id ? { ...a, ...patch, updatedAt: new Date().toISOString() } : a
         )
         window.localStorage.setItem(LS_KEY, JSON.stringify(updated))
+        if (target) recordAudit('Asset edited', patch.name ?? target.name)
         return updated
       })
     },
@@ -76,6 +80,8 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
 
   const removeAsset = useCallback((id: string) => {
     setAssetsState((prev) => {
+      const target = prev.find((a) => a.id === id)
+      if (target) recordAudit('Asset deleted', target.name)
       const updated = prev.filter((a) => a.id !== id)
       window.localStorage.setItem(LS_KEY, JSON.stringify(updated))
       return updated

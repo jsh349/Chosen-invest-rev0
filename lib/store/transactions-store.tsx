@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from 'react'
 import type { Transaction } from '@/lib/types/transaction'
+import { recordAudit } from '@/lib/store/audit-store'
 
 const LS_KEY = 'chosen_transactions_v1'
 
@@ -46,10 +47,13 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
       window.localStorage.setItem(LS_KEY, JSON.stringify(updated))
       return updated
     })
+    recordAudit('Transaction added', t.description)
   }, [])
 
   const removeTransaction = useCallback((id: string) => {
     setTransactions((prev) => {
+      const target = prev.find((t) => t.id === id)
+      if (target) recordAudit('Transaction deleted', target.description)
       const updated = prev.filter((t) => t.id !== id)
       window.localStorage.setItem(LS_KEY, JSON.stringify(updated))
       return updated

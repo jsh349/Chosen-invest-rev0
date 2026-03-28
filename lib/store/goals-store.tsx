@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from 'react'
 import type { Goal } from '@/lib/types/goal'
+import { recordAudit } from '@/lib/store/audit-store'
 
 const LS_KEY = 'chosen_goals_v1'
 
@@ -57,20 +58,25 @@ export function GoalsProvider({ children }: { children: ReactNode }) {
       window.localStorage.setItem(LS_KEY, JSON.stringify(updated))
       return updated
     })
+    recordAudit('Goal added', goal.name)
   }, [])
 
   const updateGoal = useCallback((id: string, patch: Partial<Omit<Goal, 'id' | 'createdAt'>>) => {
     setGoalsState((prev) => {
+      const target = prev.find((g) => g.id === id)
       const updated = prev.map((g) =>
         g.id === id ? { ...g, ...patch, updatedAt: new Date().toISOString() } : g
       )
       window.localStorage.setItem(LS_KEY, JSON.stringify(updated))
+      if (target) recordAudit('Goal edited', patch.name ?? target.name)
       return updated
     })
   }, [])
 
   const removeGoal = useCallback((id: string) => {
     setGoalsState((prev) => {
+      const target = prev.find((g) => g.id === id)
+      if (target) recordAudit('Goal deleted', target.name)
       const updated = prev.filter((g) => g.id !== id)
       window.localStorage.setItem(LS_KEY, JSON.stringify(updated))
       return updated

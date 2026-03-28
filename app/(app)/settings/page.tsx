@@ -1,8 +1,9 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { Download, Upload } from 'lucide-react'
+import { Download, Upload, History } from 'lucide-react'
 import { useSettings, DEFAULT_SETTINGS, type CurrencyCode, type AppSettings } from '@/lib/store/settings-store'
+import { useAudit } from '@/lib/store/audit-store'
 
 const SELECT_CLASS = 'w-full rounded-lg border border-surface-border bg-surface-muted px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none'
 
@@ -15,6 +16,7 @@ const EXPORT_KEYS = [
   'chosen_household_notes_v1',
   'chosen_settings_v1',
   'chosen_dashboard_prefs_v1',
+  'chosen_audit_v1',
 ] as const
 
 const CURRENCIES: { value: CurrencyCode; label: string }[] = [
@@ -76,6 +78,7 @@ function validateImport(data: unknown): string | null {
 
 export default function SettingsPage() {
   const { settings, isLoaded, update } = useSettings()
+  const { entries: auditEntries, isLoaded: auditLoaded, refresh: refreshAudit, clear: clearAudit } = useAudit()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [importStatus, setImportStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
 
@@ -207,6 +210,45 @@ export default function SettingsPage() {
           <p className={`mb-4 rounded-lg px-3 py-2 text-xs ${importStatus.type === 'success' ? 'bg-green-950 text-green-400' : 'bg-red-950 text-red-400'}`}>
             {importStatus.message}
           </p>
+        )}
+      </div>
+
+      {/* Recent activity */}
+      <div className="rounded-xl border border-surface-border bg-surface-card px-4">
+        <div className="flex items-center justify-between border-b border-surface-border py-3">
+          <h2 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <History className="h-3.5 w-3.5" />
+            Recent Activity
+          </h2>
+          {auditEntries.length > 0 && (
+            <button
+              onClick={clearAudit}
+              className="text-xs text-gray-600 hover:text-red-400 transition-colors"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+        {!auditLoaded ? null : auditEntries.length === 0 ? (
+          <p className="py-6 text-center text-sm text-gray-500">No activity recorded yet.</p>
+        ) : (
+          <div className="divide-y divide-surface-border max-h-72 overflow-y-auto">
+            {auditEntries.slice(0, 20).map((e) => (
+              <div key={e.id} className="flex items-center justify-between gap-3 py-2.5">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-gray-300">
+                    <span className="font-medium">{e.action}</span>
+                    <span className="text-gray-500"> — {e.detail}</span>
+                  </p>
+                </div>
+                <span className="shrink-0 text-xs text-gray-600 tabular-nums">
+                  {new Date(e.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  {' '}
+                  {new Date(e.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 

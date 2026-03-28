@@ -8,6 +8,7 @@ import { HouseholdProvider } from '@/lib/store/household-store'
 import { HouseholdNotesProvider } from '@/lib/store/household-notes-store'
 import { DashboardPrefsProvider } from '@/lib/store/dashboard-prefs-store'
 import { SettingsProvider } from '@/lib/store/settings-store'
+import { AuditProvider } from '@/lib/store/audit-store'
 import { ROUTES } from '@/lib/constants/routes'
 
 export default async function AppLayout({
@@ -26,7 +27,9 @@ export default async function AppLayout({
             <HouseholdNotesProvider>
               <DashboardPrefsProvider>
                 <SettingsProvider>
-                  <AppShell>{children}</AppShell>
+                  <AuditProvider>
+                    <AppShell>{children}</AppShell>
+                  </AuditProvider>
                 </SettingsProvider>
               </DashboardPrefsProvider>
             </HouseholdNotesProvider>
