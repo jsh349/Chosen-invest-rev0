@@ -1,7 +1,8 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
-import { PlusCircle, BarChart2 } from 'lucide-react'
+import { PlusCircle, BarChart2, SlidersHorizontal } from 'lucide-react'
 import { DashboardOverview } from '@/components/dashboard/dashboard-overview'
 import { AllocationChartCard } from '@/components/dashboard/allocation-chart-card'
 import { AISummaryCard } from '@/components/dashboard/ai-summary-card'
@@ -18,10 +19,13 @@ import { CashFlowInsightCard } from '@/components/dashboard/cash-flow-insight-ca
 import { useAssets } from '@/lib/store/assets-store'
 import { useGoals } from '@/lib/store/goals-store'
 import { useTransactions } from '@/lib/store/transactions-store'
+import { useDashboardPrefs, CARD_LABELS, type DashboardCardKey } from '@/lib/store/dashboard-prefs-store'
 import { buildMockTrend } from '@/lib/mock/trend'
 import { ROUTES } from '@/lib/constants/routes'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
+
+const CARD_KEYS = Object.keys(CARD_LABELS) as DashboardCardKey[]
 
 function EmptyState() {
   return (
@@ -45,8 +49,10 @@ export default function DashboardPage() {
   const { assets, hasCustomAssets, isLoaded } = useAssets()
   const { hasGoals } = useGoals()
   const { transactions } = useTransactions()
+  const { prefs, isLoaded: prefsLoaded, toggle } = useDashboardPrefs()
+  const [showPrefs, setShowPrefs] = useState(false)
 
-  if (!isLoaded) {
+  if (!isLoaded || !prefsLoaded) {
     return (
       <div className="flex h-64 items-center justify-center">
         <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
@@ -60,16 +66,17 @@ export default function DashboardPage() {
 
   const summary = buildPortfolioSummary('local_user', assets)
   const healthCards = generateHealthCards(summary)
-
   const netCashFlow = transactions.length > 0
     ? transactions.reduce((sum, t) => sum + t.amount, 0)
     : null
   const aiAnalysis = generateAISummary(summary, { hasGoals, netCashFlow })
-
   const trendData = buildMockTrend(summary.totalAssetValue)
+
+  const show = (key: DashboardCardKey) => prefs[key]
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-xl font-bold text-white">Dashboard</h1>
@@ -77,22 +84,52 @@ export default function DashboardPage() {
             Your portfolio overview and financial health signals
           </p>
         </div>
-        <Link
-          href={ROUTES.portfolioInput}
-          className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-2')}
-        >
-          <PlusCircle className="h-4 w-4" />
-          Edit Assets
-        </Link>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowPrefs((v) => !v)}
+            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-2')}
+            aria-label="Customize dashboard"
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+            Customize
+          </button>
+          <Link
+            href={ROUTES.portfolioInput}
+            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-2')}
+          >
+            <PlusCircle className="h-4 w-4" />
+            Edit Assets
+          </Link>
+        </div>
       </div>
+
+      {/* Compact preferences panel */}
+      {showPrefs && (
+        <div className="rounded-xl border border-surface-border bg-surface-card px-4 py-3 space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Visible Cards</p>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+            {CARD_KEYS.map((key) => (
+              <label key={key} className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={prefs[key]}
+                  onChange={() => toggle(key)}
+                  className="h-4 w-4 rounded border-surface-border accent-brand-500"
+                />
+                <span className="text-xs text-gray-300">{CARD_LABELS[key]}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
 
       <DashboardOverview summary={summary} />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <AllocationChartCard slices={summary.categoryBreakdown} />
+        {show('allocation') && <AllocationChartCard slices={summary.categoryBreakdown} />}
         <div className="flex flex-col gap-6">
-          <PortfolioStatusCard summary={summary} />
-          <AISummaryCard analysis={aiAnalysis} />
+          {show('portfolioStatus') && <PortfolioStatusCard summary={summary} />}
+          {show('advisor') && <AISummaryCard analysis={aiAnalysis} />}
         </div>
       </div>
 
@@ -105,13 +142,10 @@ export default function DashboardPage() {
         <HealthCardsGrid cards={healthCards} />
       </div>
 
-      <GoalsSummaryCard />
-
-      <TransactionSummaryCard />
-
-      <CashFlowInsightCard />
-
-      <TaxOpportunityCard assets={assets} />
+      {show('goals') && <GoalsSummaryCard />}
+      {show('transactions') && <TransactionSummaryCard />}
+      {show('cashFlowInsight') && <CashFlowInsightCard />}
+      {show('taxOpportunity') && <TaxOpportunityCard assets={assets} />}
     </div>
   )
 }

@@ -6,6 +6,7 @@ import { GoalsProvider } from '@/lib/store/goals-store'
 import { TransactionsProvider } from '@/lib/store/transactions-store'
 import { HouseholdProvider } from '@/lib/store/household-store'
 import { HouseholdNotesProvider } from '@/lib/store/household-notes-store'
+import { DashboardPrefsProvider } from '@/lib/store/dashboard-prefs-store'
 import { ROUTES } from '@/lib/constants/routes'
 
 export default async function AppLayout({
@@ -22,7 +23,9 @@ export default async function AppLayout({
         <TransactionsProvider>
           <HouseholdProvider>
             <HouseholdNotesProvider>
-              <AppShell>{children}</AppShell>
+              <DashboardPrefsProvider>
+                <AppShell>{children}</AppShell>
+              </DashboardPrefsProvider>
             </HouseholdNotesProvider>
           </HouseholdProvider>
         </TransactionsProvider>
