@@ -18,6 +18,7 @@ type GoalsContextType = {
   isLoaded: boolean
   setGoals: (goals: Goal[]) => void
   addGoal: (goal: Goal) => void
+  updateGoal: (id: string, patch: Partial<Omit<Goal, 'id' | 'createdAt'>>) => void
   removeGoal: (id: string) => void
 }
 
@@ -27,6 +28,7 @@ const GoalsContext = createContext<GoalsContextType>({
   isLoaded: false,
   setGoals: () => {},
   addGoal: () => {},
+  updateGoal: () => {},
   removeGoal: () => {},
 })
 
@@ -57,6 +59,16 @@ export function GoalsProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
+  const updateGoal = useCallback((id: string, patch: Partial<Omit<Goal, 'id' | 'createdAt'>>) => {
+    setGoalsState((prev) => {
+      const updated = prev.map((g) =>
+        g.id === id ? { ...g, ...patch, updatedAt: new Date().toISOString() } : g
+      )
+      window.localStorage.setItem(LS_KEY, JSON.stringify(updated))
+      return updated
+    })
+  }, [])
+
   const removeGoal = useCallback((id: string) => {
     setGoalsState((prev) => {
       const updated = prev.filter((g) => g.id !== id)
@@ -67,7 +79,7 @@ export function GoalsProvider({ children }: { children: ReactNode }) {
 
   return (
     <GoalsContext.Provider
-      value={{ goals, hasGoals: goals.length > 0, isLoaded, setGoals, addGoal, removeGoal }}
+      value={{ goals, hasGoals: goals.length > 0, isLoaded, setGoals, addGoal, updateGoal, removeGoal }}
     >
       {children}
     </GoalsContext.Provider>
