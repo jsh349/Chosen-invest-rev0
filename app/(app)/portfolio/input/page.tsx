@@ -65,6 +65,7 @@ export default function PortfolioInputPage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!entries) return
     const validEntries = entries.filter(
       (en) => en.name.trim() && parseFloat(en.value) > 0
     )
