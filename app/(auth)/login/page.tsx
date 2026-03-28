@@ -11,13 +11,12 @@ export default function LoginPage() {
 
   async function handleGoogleSignIn() {
     setLoading(true)
-    await signIn('google', { callbackUrl: ROUTES.dashboard })
+    await signIn('google', { callbackUrl: ROUTES.portfolioInput })
     setLoading(false)
   }
 
   return (
     <div className="w-full max-w-sm space-y-6">
-      {/* Header */}
       <div className="text-center">
         <h1 className="text-2xl font-bold text-white">Sign in</h1>
         <p className="mt-2 text-sm text-gray-400">
@@ -25,7 +24,6 @@ export default function LoginPage() {
         </p>
       </div>
 
-      {/* Card */}
       <div className="rounded-2xl border border-surface-border bg-surface-card p-8 space-y-4">
         <Button
           size="lg"
