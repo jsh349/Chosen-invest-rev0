@@ -21,6 +21,17 @@ export function generateAISummary(summary: PortfolioSummary): AIAnalysisResult {
     }
   }
 
+  // Only-cash portfolio
+  if (categoryBreakdown.length === 1 && topCategory?.category === 'cash') {
+    return {
+      userId,
+      summaryText: `Your portfolio is entirely in cash. While this provides safety, consider diversifying into investments, retirement, or other asset classes to build long-term growth.`,
+      keyPoints: ['100% cash — consider broader asset planning', 'No growth or income assets detected'],
+      inputSnapshot: { totalValue: totalAssetValue, assetCount, topCategory: topCategory.label },
+      generatedAt: new Date().toISOString(),
+    }
+  }
+
   // Main overview
   lines.push(
     `Your portfolio holds ${assetCount} asset${assetCount > 1 ? 's' : ''} with a total value of $${(totalAssetValue / 1000).toFixed(0)}K.`
