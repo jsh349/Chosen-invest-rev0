@@ -35,8 +35,10 @@ const AssetsContext = createContext<AssetsContextType>({
 export function AssetsProvider({ children }: { children: ReactNode }) {
   const [assets, setAssetsState] = useState<Asset[]>([])
   const [isLoaded, setIsLoaded] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     try {
       const stored = localStorage.getItem(LS_KEY)
       if (stored) setAssetsState(JSON.parse(stored))
@@ -47,14 +49,18 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const setAssets = useCallback((newAssets: Asset[]) => {
-    localStorage.setItem(LS_KEY, JSON.stringify(newAssets))
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(LS_KEY, JSON.stringify(newAssets))
+    }
     setAssetsState(newAssets)
   }, [])
 
   const addAsset = useCallback((asset: Asset) => {
     setAssetsState((prev) => {
       const updated = [...prev, asset]
-      localStorage.setItem(LS_KEY, JSON.stringify(updated))
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(LS_KEY, JSON.stringify(updated))
+      }
       return updated
     })
   }, [])
@@ -62,15 +68,37 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
   const removeAsset = useCallback((id: string) => {
     setAssetsState((prev) => {
       const updated = prev.filter((a) => a.id !== id)
-      localStorage.setItem(LS_KEY, JSON.stringify(updated))
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(LS_KEY, JSON.stringify(updated))
+      }
       return updated
     })
   }, [])
 
   const clearAssets = useCallback(() => {
-    localStorage.removeItem(LS_KEY)
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(LS_KEY)
+    }
     setAssetsState([])
   }, [])
+
+  if (!mounted) {
+    return (
+      <AssetsContext.Provider
+        value={{
+          assets: [],
+          hasCustomAssets: false,
+          setAssets,
+          addAsset,
+          removeAsset,
+          clearAssets,
+          isLoaded: false,
+        }}
+      >
+        {children}
+      </AssetsContext.Provider>
+    )
+  }
 
   return (
     <AssetsContext.Provider
