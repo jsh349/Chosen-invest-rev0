@@ -26,19 +26,31 @@ export type RankInput = {
   annualReturnPct?: number
 }
 
+/** Compute only the Overall Wealth rank from total asset value. */
+export function computeOverallWealthRank(totalAssetValue: number): RankResult {
+  const percentile = findPercentile(OVERALL_WEALTH_BUCKETS, totalAssetValue)
+  const topPct = 100 - percentile
+
+  let message: string
+  if (percentile >= 90) message = `Top ${topPct}% nationally. Exceptional wealth position.`
+  else if (percentile >= 70) message = `Top ${topPct}%. Above-average wealth accumulation.`
+  else if (percentile >= 50) message = `Top ${topPct}%. Solid financial foundation building.`
+  else message = `Top ${topPct}%. Growing steadily — keep building.`
+
+  return {
+    type: 'overall_wealth',
+    label: 'Overall Wealth Rank',
+    percentile,
+    message,
+  }
+}
+
 export function computeRanks(input: RankInput): RankResult[] {
   const { totalAssetValue, age, gender, annualReturnPct } = input
   const results: RankResult[] = []
 
   // 1. Overall Wealth
-  results.push({
-    type: 'overall_wealth',
-    label: 'Overall Wealth Rank',
-    percentile: findPercentile(OVERALL_WEALTH_BUCKETS, totalAssetValue),
-    message: formatWealthMessage(
-      findPercentile(OVERALL_WEALTH_BUCKETS, totalAssetValue)
-    ),
-  })
+  results.push(computeOverallWealthRank(totalAssetValue))
 
   // 2. Age-Based
   if (age != null) {
@@ -130,11 +142,4 @@ export function computeRanks(input: RankInput): RankResult[] {
   }
 
   return results
-}
-
-function formatWealthMessage(percentile: number): string {
-  if (percentile >= 90) return `Top ${100 - percentile}% nationally. Exceptional position.`
-  if (percentile >= 70) return `Top ${100 - percentile}%. Above-average wealth accumulation.`
-  if (percentile >= 50) return `Top ${100 - percentile}%. Solid financial foundation.`
-  return `Building momentum. You're at the ${percentile}th percentile.`
 }

@@ -2,7 +2,14 @@ import { cn } from '@/lib/utils/cn'
 import type { RankResult } from '@/lib/types/rank'
 
 interface RankOverviewCardProps {
-  ranks: RankResult[]
+  rank: RankResult
+  totalValue: number
+}
+
+function formatCurrency(value: number): string {
+  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`
+  if (value >= 1_000) return `$${(value / 1_000).toFixed(0)}K`
+  return `$${value.toFixed(0)}`
 }
 
 function PercentileBar({ percentile }: { percentile: number }) {
@@ -16,56 +23,53 @@ function PercentileBar({ percentile }: { percentile: number }) {
           ? 'bg-amber-400'
           : 'bg-gray-500'
   return (
-    <div className="h-1.5 w-full rounded-full bg-surface-muted">
+    <div className="relative h-2 w-full rounded-full bg-surface-muted">
       <div
-        className={cn('h-1.5 rounded-full transition-all', color)}
+        className={cn('h-2 rounded-full transition-all', color)}
         style={{ width }}
       />
-    </div>
-  )
-}
-
-function RankItem({ rank }: { rank: RankResult }) {
-  const hasPct = rank.percentile != null
-
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-white">{rank.label}</p>
-        {hasPct ? (
-          <span className="text-xs font-semibold text-brand-400">
-            {rank.percentile}th
-          </span>
-        ) : (
-          <span className="text-xs text-gray-600">—</span>
-        )}
+      {/* Marker labels */}
+      <div className="mt-1 flex justify-between text-[10px] text-gray-600">
+        <span>0%</span>
+        <span>50%</span>
+        <span>100%</span>
       </div>
-      {hasPct ? (
-        <PercentileBar percentile={rank.percentile!} />
-      ) : (
-        <div className="h-1.5 w-full rounded-full bg-surface-muted" />
-      )}
-      <p className="text-xs text-gray-400">{rank.message}</p>
     </div>
   )
 }
 
-export function RankOverviewCard({ ranks }: RankOverviewCardProps) {
+export function RankOverviewCard({ rank, totalValue }: RankOverviewCardProps) {
+  const topPct = rank.percentile != null ? 100 - rank.percentile : null
+
   return (
-    <div className="rounded-xl border border-surface-border bg-surface-card p-5 space-y-1">
-      <div className="mb-4">
+    <div className="rounded-xl border border-surface-border bg-surface-card p-5 space-y-4">
+      {/* Header */}
+      <div>
         <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
-          Wealth Rank
+          Overall Wealth Rank
         </h3>
         <p className="mt-0.5 text-xs text-gray-600">
-          How you compare — based on local benchmark data
+          Based on local benchmark data
         </p>
       </div>
-      <div className="space-y-4">
-        {ranks.map((r) => (
-          <RankItem key={r.type} rank={r} />
-        ))}
+
+      {/* Main stat */}
+      <div className="flex items-baseline gap-3">
+        <span className="text-3xl font-bold text-white">
+          {topPct != null ? `Top ${topPct}%` : '—'}
+        </span>
+        <span className="text-sm text-gray-500">
+          {formatCurrency(totalValue)} total assets
+        </span>
       </div>
+
+      {/* Percentile bar */}
+      {rank.percentile != null && (
+        <PercentileBar percentile={rank.percentile} />
+      )}
+
+      {/* Message */}
+      <p className="text-xs leading-relaxed text-gray-400">{rank.message}</p>
     </div>
   )
 }

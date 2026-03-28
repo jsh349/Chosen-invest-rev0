@@ -17,7 +17,7 @@ import { TransactionSummaryCard } from '@/components/dashboard/transaction-summa
 import { TaxOpportunityCard } from '@/components/dashboard/tax-opportunity-card'
 import { CashFlowInsightCard } from '@/components/dashboard/cash-flow-insight-card'
 import { RankOverviewCard } from '@/components/dashboard/rank-overview-card'
-import { computeRanks } from '@/features/dashboard/rank'
+import { computeOverallWealthRank } from '@/features/dashboard/rank'
 import { useAssets } from '@/lib/store/assets-store'
 import { useGoals } from '@/lib/store/goals-store'
 import { useTransactions } from '@/lib/store/transactions-store'
@@ -70,7 +70,7 @@ export default function DashboardPage() {
   const healthCards = generateHealthCards(summary)
   const aiAnalysis = generateAISummary(advisorCtx)
   const trendData = buildMockTrend(summary.totalAssetValue)
-  const ranks = computeRanks({ totalAssetValue: summary.totalAssetValue })
+  const overallRank = computeOverallWealthRank(summary.totalAssetValue)
 
   const show = (key: DashboardCardKey) => prefs[key]
 
@@ -142,7 +142,7 @@ export default function DashboardPage() {
         <HealthCardsGrid cards={healthCards} />
       </div>
 
-      {show('rank') && <RankOverviewCard ranks={ranks} />}
+      {show('rank') && <RankOverviewCard rank={overallRank} totalValue={summary.totalAssetValue} />}
       {show('goals') && <GoalsSummaryCard />}
       {show('transactions') && <TransactionSummaryCard />}
       {show('cashFlowInsight') && <CashFlowInsightCard />}
