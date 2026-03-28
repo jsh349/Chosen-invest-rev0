@@ -60,6 +60,7 @@ export default function TransactionsPage() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!form.date) { setError('Date is required.'); return }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(form.date)) { setError('Use YYYY-MM-DD format.'); return }
     if (!form.description.trim()) { setError('Description is required.'); return }
     const raw = parseFloat(form.amount)
     if (isNaN(raw) || raw <= 0) { setError('Amount must be a positive number.'); return }

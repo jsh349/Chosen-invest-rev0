@@ -167,6 +167,7 @@ export default function GoalsPage() {
   function handleAddSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!addForm.name.trim()) { setAddError('Goal name is required.'); return }
+    if (addForm.targetDate && !/^\d{4}-\d{2}-\d{2}$/.test(addForm.targetDate)) { setAddError('Use YYYY-MM-DD date format.'); return }
     const amounts = parseForm(addForm)
     if (!amounts) { setAddError('Target amount must be a positive number and saved amount must be 0 or more.'); return }
     const now = new Date().toISOString()
@@ -202,6 +203,7 @@ export default function GoalsPage() {
 
   function handleEditSave(id: string) {
     if (!editForm.name.trim()) { setEditError('Goal name is required.'); return }
+    if (editForm.targetDate && !/^\d{4}-\d{2}-\d{2}$/.test(editForm.targetDate)) { setEditError('Use YYYY-MM-DD date format.'); return }
     const amounts = parseForm(editForm)
     if (!amounts) { setEditError('Target amount must be a positive number and saved amount must be 0 or more.'); return }
     updateGoal(id, {
