@@ -7,6 +7,7 @@ export const ROUTES = {
   portfolioList:  '/portfolio/list',
   market:         '/market',
   goals:          '/goals',
+  transactions:   '/transactions',
   analysis:       '/analysis',
   ai:             '/ai',
   settings:       '/settings',

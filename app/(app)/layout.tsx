@@ -3,6 +3,7 @@ import { auth } from '@/auth'
 import { AppShell } from '@/components/layout/app-shell'
 import { AssetsProvider } from '@/lib/store/assets-store'
 import { GoalsProvider } from '@/lib/store/goals-store'
+import { TransactionsProvider } from '@/lib/store/transactions-store'
 import { ROUTES } from '@/lib/constants/routes'
 
 export default async function AppLayout({
@@ -16,7 +17,9 @@ export default async function AppLayout({
   return (
     <AssetsProvider>
       <GoalsProvider>
-        <AppShell>{children}</AppShell>
+        <TransactionsProvider>
+          <AppShell>{children}</AppShell>
+        </TransactionsProvider>
       </GoalsProvider>
     </AssetsProvider>
   )
