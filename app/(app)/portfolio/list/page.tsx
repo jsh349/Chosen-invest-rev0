@@ -10,7 +10,6 @@ import { useAssets } from '@/lib/store/assets-store'
 import { CATEGORY_MAP } from '@/lib/constants/asset-categories'
 import { formatCurrency } from '@/lib/utils/currency'
 import { ROUTES } from '@/lib/constants/routes'
-import { MOCK_ASSETS } from '@/lib/mock/assets'
 import { cn } from '@/lib/utils/cn'
 import type { AssetCategory } from '@/lib/types/asset'
 
@@ -29,9 +28,20 @@ export default function PortfolioListPage() {
     )
   }
 
-  const activeAssets = hasCustomAssets ? assets : MOCK_ASSETS
-  const isDemoMode = !hasCustomAssets
-  const totalValue = activeAssets.reduce((sum, a) => sum + a.value, 0)
+  if (!hasCustomAssets) {
+    return (
+      <div className="flex min-h-[50vh] flex-col items-center justify-center text-center px-4">
+        <h1 className="mb-2 text-xl font-bold text-white">Portfolio</h1>
+        <p className="mb-6 text-sm text-gray-500">No assets saved yet.</p>
+        <Link href={ROUTES.portfolioInput} className={cn(buttonVariants({ size: 'lg' }), 'gap-2')}>
+          <PlusCircle className="h-4 w-4" />
+          Add Your First Asset
+        </Link>
+      </div>
+    )
+  }
+
+  const totalValue = assets.reduce((sum, a) => sum + a.value, 0)
 
   function startEdit(id: string) {
     const asset = assets.find((a) => a.id === id)
@@ -60,25 +70,14 @@ export default function PortfolioListPage() {
         <div>
           <h1 className="text-xl font-bold text-white">Portfolio</h1>
           <p className="mt-0.5 text-sm text-gray-500">
-            {isDemoMode
-              ? 'Demo data — add your own assets'
-              : `${activeAssets.length} assets · Total ${formatCurrency(totalValue)}`}
+            {assets.length} assets · Total {formatCurrency(totalValue)}
           </p>
         </div>
         <Link href={ROUTES.portfolioInput} className={cn(buttonVariants({ size: 'sm' }), 'gap-2')}>
           <PlusCircle className="h-4 w-4" />
-          {hasCustomAssets ? 'Edit Assets' : 'Add Assets'}
+          Add Assets
         </Link>
       </div>
-
-      {isDemoMode && (
-        <div className="flex items-center justify-between rounded-lg border border-amber-900/50 bg-amber-950/30 px-4 py-3">
-          <p className="text-sm text-amber-400">Showing demo data.</p>
-          <Link href={ROUTES.portfolioInput} className={buttonVariants({ size: 'sm' })}>
-            Add Your Assets
-          </Link>
-        </div>
-      )}
 
       <div className="flex items-center justify-between rounded-xl border border-surface-border bg-surface-card px-5 py-4">
         <span className="text-sm text-gray-400">Total Asset Value</span>
@@ -86,7 +85,7 @@ export default function PortfolioListPage() {
       </div>
 
       <div className="space-y-2">
-        {activeAssets.map((asset) => {
+        {assets.map((asset) => {
           const meta = CATEGORY_MAP[asset.category]
           const isEditing = editingId === asset.id
 
@@ -146,26 +145,24 @@ export default function PortfolioListPage() {
               <span className="text-sm font-semibold text-white">
                 {formatCurrency(asset.value)}
               </span>
-              {hasCustomAssets && (
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 text-gray-500 hover:text-brand-400"
-                    onClick={() => startEdit(asset.id)}
-                  >
-                    <Pencil className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 text-gray-500 hover:text-red-400"
-                    onClick={() => removeAsset(asset.id)}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              )}
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-gray-500 hover:text-brand-400"
+                  onClick={() => startEdit(asset.id)}
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-gray-500 hover:text-red-400"
+                  onClick={() => removeAsset(asset.id)}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              </div>
             </div>
           )
         })}
