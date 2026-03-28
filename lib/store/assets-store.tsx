@@ -39,20 +39,24 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
-    const stored = assetsAdapter.getAll()
-    if (stored.length > 0) setAssetsState(stored)
-    setIsLoaded(true)
+    let cancelled = false
+    assetsAdapter.getAll().then((stored) => {
+      if (cancelled) return
+      if (stored.length > 0) setAssetsState(stored)
+      setIsLoaded(true)
+    })
+    return () => { cancelled = true }
   }, [])
 
   const setAssets = useCallback((newAssets: Asset[]) => {
-    assetsAdapter.saveAll(newAssets)
+    void assetsAdapter.saveAll(newAssets)
     setAssetsState(newAssets)
   }, [])
 
   const addAsset = useCallback((asset: Asset) => {
     setAssetsState((prev) => {
       const updated = [...prev, asset]
-      assetsAdapter.saveAll(updated)
+      void assetsAdapter.saveAll(updated)
       return updated
     })
     recordAudit('Asset added', asset.name)
@@ -65,7 +69,7 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
         const updated = prev.map((a) =>
           a.id === id ? { ...a, ...patch, updatedAt: new Date().toISOString() } : a
         )
-        assetsAdapter.saveAll(updated)
+        void assetsAdapter.saveAll(updated)
         if (target) recordAudit('Asset edited', patch.name ?? target.name)
         return updated
       })
@@ -78,13 +82,13 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
       const target = prev.find((a) => a.id === id)
       if (target) recordAudit('Asset deleted', target.name)
       const updated = prev.filter((a) => a.id !== id)
-      assetsAdapter.saveAll(updated)
+      void assetsAdapter.saveAll(updated)
       return updated
     })
   }, [])
 
   const clearAssets = useCallback(() => {
-    assetsAdapter.clear()
+    void assetsAdapter.clear()
     setAssetsState([])
   }, [])
 

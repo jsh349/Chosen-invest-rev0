@@ -4,17 +4,24 @@ import { readJSON, writeJSON } from '@/lib/utils/local-storage'
 
 const LS_KEY = STORAGE_KEYS.assets
 
-/** Minimal data adapter for assets. Swap implementation for API later. */
-export const assetsAdapter = {
-  getAll(): Asset[] {
+/** Async adapter interface — matches the shape of a future API client. */
+export type AssetsAdapter = {
+  getAll(): Promise<Asset[]>
+  saveAll(assets: Asset[]): Promise<void>
+  clear(): Promise<void>
+}
+
+/** Local implementation backed by localStorage. */
+export const assetsAdapter: AssetsAdapter = {
+  async getAll() {
     return readJSON<Asset[]>(LS_KEY, [])
   },
 
-  saveAll(assets: Asset[]): void {
+  async saveAll(assets) {
     writeJSON(LS_KEY, assets)
   },
 
-  clear(): void {
+  async clear() {
     window.localStorage.removeItem(LS_KEY)
   },
 }
