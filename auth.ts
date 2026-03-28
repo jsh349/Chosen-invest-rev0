@@ -22,6 +22,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       const isLoggedIn = !!auth?.user
       const isAppRoute = nextUrl.pathname.startsWith('/dashboard') ||
                          nextUrl.pathname.startsWith('/portfolio') ||
+                         nextUrl.pathname.startsWith('/market') ||
                          nextUrl.pathname.startsWith('/analysis') ||
                          nextUrl.pathname.startsWith('/ai') ||
                          nextUrl.pathname.startsWith('/settings')

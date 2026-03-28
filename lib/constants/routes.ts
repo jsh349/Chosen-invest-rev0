@@ -5,6 +5,7 @@ export const ROUTES = {
   dashboard:      '/dashboard',
   portfolioInput: '/portfolio/input',
   portfolioList:  '/portfolio/list',
+  market:         '/market',
   analysis:       '/analysis',
   ai:             '/ai',
   settings:       '/settings',
