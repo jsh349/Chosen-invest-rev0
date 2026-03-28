@@ -6,6 +6,7 @@ import { useTransactions } from '@/lib/store/transactions-store'
 import { ROUTES } from '@/lib/constants/routes'
 import { cn } from '@/lib/utils/cn'
 import type { TransactionCategory } from '@/lib/types/transaction'
+import { computeCashFlow } from '@/lib/utils/transaction-summary'
 
 function formatAmount(amount: number) {
   const abs = Math.abs(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -41,9 +42,7 @@ export function TransactionSummaryCard() {
     )
   }
 
-  const income   = monthly.filter((t) => t.amount > 0).reduce((s, t) => s + t.amount, 0)
-  const expenses = monthly.filter((t) => t.amount < 0).reduce((s, t) => s + t.amount, 0)
-  const net      = income + expenses
+  const { income, expenses, net } = computeCashFlow(monthly)
 
   // Top spending category
   const expenseMap: Partial<Record<TransactionCategory, number>> = {}

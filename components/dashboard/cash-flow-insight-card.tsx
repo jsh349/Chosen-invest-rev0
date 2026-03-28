@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { useTransactions } from '@/lib/store/transactions-store'
 import { ROUTES } from '@/lib/constants/routes'
 import { cn } from '@/lib/utils/cn'
+import { computeCashFlow } from '@/lib/utils/transaction-summary'
 
 function formatUSD(value: number) {
   return Math.abs(value).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })
@@ -70,9 +71,7 @@ export function CashFlowInsightCard() {
 
   if (!isLoaded) return null
 
-  const income   = transactions.filter((t) => t.amount > 0).reduce((s, t) => s + t.amount, 0)
-  const expenses = transactions.filter((t) => t.amount < 0).reduce((s, t) => s + t.amount, 0)
-  const net      = income + expenses
+  const { income, expenses, net } = computeCashFlow(transactions)
   const insight  = deriveInsight(income, expenses, net, transactions.length)
 
   return (

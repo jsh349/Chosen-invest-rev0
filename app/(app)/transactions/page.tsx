@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Trash2, ArrowLeftRight } from 'lucide-react'
 import { useTransactions } from '@/lib/store/transactions-store'
 import { isRequired, parsePositive, isDateFormat } from '@/lib/utils/validation'
+import { computeCashFlow } from '@/lib/utils/transaction-summary'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
@@ -79,9 +80,7 @@ export default function TransactionsPage() {
   }
 
   // Summary always uses all transactions
-  const totalIncome  = transactions.filter((t) => t.amount > 0).reduce((s, t) => s + t.amount, 0)
-  const totalExpense = transactions.filter((t) => t.amount < 0).reduce((s, t) => s + t.amount, 0)
-  const net = totalIncome + totalExpense
+  const { income: totalIncome, expenses: totalExpense, net } = computeCashFlow(transactions)
 
   // Filter then sort
   const filtered = filterCategory === 'All'

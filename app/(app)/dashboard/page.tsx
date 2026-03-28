@@ -24,6 +24,7 @@ import { buildMockTrend } from '@/lib/mock/trend'
 import { ROUTES } from '@/lib/constants/routes'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
+import { computeCashFlow } from '@/lib/utils/transaction-summary'
 
 const CARD_KEYS = Object.keys(CARD_LABELS) as DashboardCardKey[]
 
@@ -67,7 +68,7 @@ export default function DashboardPage() {
   const summary = buildPortfolioSummary('local_user', assets)
   const healthCards = generateHealthCards(summary)
   const netCashFlow = transactions.length > 0
-    ? transactions.reduce((sum, t) => sum + t.amount, 0)
+    ? computeCashFlow(transactions).net
     : null
   const aiAnalysis = generateAISummary(summary, { hasGoals, netCashFlow })
   const trendData = buildMockTrend(summary.totalAssetValue)
