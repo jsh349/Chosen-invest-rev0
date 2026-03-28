@@ -3,6 +3,8 @@
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
 import { useGoals } from '@/lib/store/goals-store'
+import { getGoalStatus, GOAL_STATUS_STYLES } from '@/lib/utils/goal-status'
+import { cn } from '@/lib/utils/cn'
 import type { Goal } from '@/lib/types/goal'
 
 function nearestGoal(goals: Goal[]): Goal {
@@ -60,8 +62,13 @@ export function GoalsSummaryCard() {
         {/* Featured goal */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-medium text-gray-300">{featured.name}</span>
-            <span className="text-gray-500">{progress.toFixed(0)}%</span>
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="font-medium text-gray-300 truncate">{featured.name}</span>
+              <span className={cn('shrink-0 rounded-full px-2 py-0.5 text-xs font-medium', GOAL_STATUS_STYLES[getGoalStatus(featured.currentAmount, featured.targetAmount)])}>
+                {getGoalStatus(featured.currentAmount, featured.targetAmount)}
+              </span>
+            </div>
+            <span className="shrink-0 text-gray-500 ml-2">{progress.toFixed(0)}%</span>
           </div>
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-muted">
             <div

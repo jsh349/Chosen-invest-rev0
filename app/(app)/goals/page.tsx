@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
 import type { Goal, GoalType } from '@/lib/types/goal'
+import { getGoalStatus, GOAL_STATUS_STYLES } from '@/lib/utils/goal-status'
 
 const GOAL_TYPES: { value: GoalType; label: string }[] = [
   { value: 'savings',    label: 'Savings'    },
@@ -261,10 +262,13 @@ export default function GoalsPage() {
                   ) : (
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0 flex-1 space-y-2">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="truncate text-sm font-medium text-white">{goal.name}</span>
                           <span className="shrink-0 rounded-full bg-surface-muted px-2 py-0.5 text-xs text-gray-400 capitalize">
                             {goal.type}
+                          </span>
+                          <span className={cn('shrink-0 rounded-full px-2 py-0.5 text-xs font-medium', GOAL_STATUS_STYLES[getGoalStatus(goal.currentAmount, goal.targetAmount)])}>
+                            {getGoalStatus(goal.currentAmount, goal.targetAmount)}
                           </span>
                         </div>
                         <div className="space-y-1">
