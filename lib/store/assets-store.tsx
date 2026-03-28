@@ -10,10 +10,7 @@ import {
 } from 'react'
 import type { Asset } from '@/lib/types/asset'
 import { recordAudit } from '@/lib/store/audit-store'
-import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
-import { readJSON, writeJSON } from '@/lib/utils/local-storage'
-
-const LS_KEY = STORAGE_KEYS.assets
+import { assetsAdapter } from '@/lib/adapters/assets-adapter'
 
 type AssetsContextType = {
   assets: Asset[]
@@ -42,20 +39,20 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
-    const stored = readJSON<Asset[]>(LS_KEY, [])
+    const stored = assetsAdapter.getAll()
     if (stored.length > 0) setAssetsState(stored)
     setIsLoaded(true)
   }, [])
 
   const setAssets = useCallback((newAssets: Asset[]) => {
-    writeJSON(LS_KEY, newAssets)
+    assetsAdapter.saveAll(newAssets)
     setAssetsState(newAssets)
   }, [])
 
   const addAsset = useCallback((asset: Asset) => {
     setAssetsState((prev) => {
       const updated = [...prev, asset]
-      writeJSON(LS_KEY, updated)
+      assetsAdapter.saveAll(updated)
       return updated
     })
     recordAudit('Asset added', asset.name)
@@ -68,7 +65,7 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
         const updated = prev.map((a) =>
           a.id === id ? { ...a, ...patch, updatedAt: new Date().toISOString() } : a
         )
-        writeJSON(LS_KEY, updated)
+        assetsAdapter.saveAll(updated)
         if (target) recordAudit('Asset edited', patch.name ?? target.name)
         return updated
       })
@@ -81,13 +78,13 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
       const target = prev.find((a) => a.id === id)
       if (target) recordAudit('Asset deleted', target.name)
       const updated = prev.filter((a) => a.id !== id)
-      writeJSON(LS_KEY, updated)
+      assetsAdapter.saveAll(updated)
       return updated
     })
   }, [])
 
   const clearAssets = useCallback(() => {
-    window.localStorage.removeItem(LS_KEY)
+    assetsAdapter.clear()
     setAssetsState([])
   }, [])
 
