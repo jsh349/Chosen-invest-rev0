@@ -8,6 +8,7 @@ export const ROUTES = {
   market:         '/market',
   goals:          '/goals',
   transactions:   '/transactions',
+  household:      '/household',
   analysis:       '/analysis',
   ai:             '/ai',
   settings:       '/settings',
