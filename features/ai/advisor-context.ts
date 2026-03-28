@@ -4,6 +4,7 @@ import type { Transaction } from '@/lib/types/transaction'
 import type { PortfolioSummary } from '@/lib/types/dashboard'
 import { buildPortfolioSummary } from '@/features/dashboard/helpers'
 import { computeCashFlow, type CashFlowSummary } from '@/lib/utils/transaction-summary'
+import { LOCAL_USER_ID } from '@/lib/constants/auth'
 
 export type AdvisorContext = {
   portfolio: PortfolioSummary
@@ -19,7 +20,7 @@ export function buildAdvisorContext(
   transactions: Transaction[],
 ): AdvisorContext {
   return {
-    portfolio: buildPortfolioSummary('local_user', assets),
+    portfolio: buildPortfolioSummary(LOCAL_USER_ID, assets),
     hasGoals: goals.length > 0,
     goalCount: goals.length,
     cashFlow: transactions.length > 0 ? computeCashFlow(transactions) : null,

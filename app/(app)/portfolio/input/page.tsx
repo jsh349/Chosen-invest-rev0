@@ -12,11 +12,7 @@ import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { useAssets } from '@/lib/store/assets-store'
 import { formatCurrency } from '@/lib/utils/currency'
 import { ROUTES } from '@/lib/constants/routes'
-
-let idCounter = Date.now()
-function nextId() {
-  return `asset_${(++idCounter).toString(36)}`
-}
+import { LOCAL_USER_ID } from '@/lib/constants/auth'
 
 function assetToFormEntry(asset: Asset): AssetFormEntry {
   return {
@@ -73,7 +69,7 @@ export default function PortfolioInputPage() {
       return
     }
     const newAssets = validEntries.map((en) =>
-      formEntryToAsset(en, 'local_user', nextId())
+      formEntryToAsset(en, LOCAL_USER_ID, crypto.randomUUID())
     )
     setAssets(newAssets)
     router.push(ROUTES.dashboard)
