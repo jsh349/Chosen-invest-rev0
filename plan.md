@@ -1,530 +1,147 @@
-# Chosen Invest Development Plan
+# Plan.md — Chosen Invest Execution Hub
 
-## Goal
-Build Chosen Invest step by step so each phase can be implemented, tested, and debugged in isolation.
-Avoid large all-at-once coding changes.
-
----
-
-## Core Product Direction
-Chosen Invest should feel like a professional asset operating dashboard:
-- simple
-- familiar
-- institutional
-- intuitive
-- AI-guided
-- household-aware
-
-It should not look overly gamified.
-Game design should exist mainly in structure, progress, and motivation logic.
+## Metadata
+- Last Updated: 2026-03-28
+- Current Phase: Phase 1 Stabilization
+- Phase 1 Build: ✅ Complete
+- Next Milestone: localhost 검증 → Vercel 배포 확인 → Phase 2 시작
 
 ---
 
-## Build Rules for Vibe Coding
-1. One task = one screen, one card, or one function.
-2. Modify at most 3 files per task when possible.
-3. Use mock data before API integration.
-4. Do not add new features while errors remain unresolved.
-5. Run the app after every small change.
-6. Commit only after a stable working state.
-7. UI first, logic second, integration third, automation last.
-8. Every phase must have a clear done condition.
-9. If a task feels too large, split it again.
-10. Prefer stable progress over fast progress.
+## Current Status
+
+Phase 1 MVP Shell은 구현 완료됐다.
+
+완료된 것:
+- Landing Page (`/`)
+- Login Page (`/login`, Google OAuth via Auth.js v5)
+- Manual Asset Input (`/portfolio/input`)
+- Dashboard (`/dashboard`) — Overview, Allocation Chart, AI Summary, Health Cards
+- Stub pages: Analysis, AI, Settings, Portfolio List
+- App shell: Sidebar, Header, route protection via middleware.ts
+- Supabase, Turso, Gemini, Anthropic, Finnhub 클라이언트 세팅 완료
+
+현재 작업:
+- localhost:3001 실행 검증
+- Vercel Production 배포 확인
+- Phase 2 진입 준비
 
 ---
 
-# Phase 0 — Foundation Reset
+## Current Task
 
-## Objective
-Create a stable baseline before adding major features.
+**Task:** Phase 1 Stabilization
 
-## Scope
-- confirm app boots cleanly
-- confirm routing structure
-- confirm design system basics
-- confirm no blocking build/runtime errors
-- define core folder structure
+**Goal:**
+1. `npm run dev` → localhost:3001 에서 오류 없이 실행
+2. Vercel Production 배포 정상 작동 확인
+3. End-to-end 흐름 검증: Landing → Login → Asset Input → Dashboard
 
-## Deliverables
-- stable local run
-- stable production build
-- base layout shell
-- shared UI primitives
-- typed mock data models
-
-## Done When
-- app loads without runtime crash
-- build succeeds
-- basic dashboard shell renders
-- no major console errors
-
-## Checkpoint Before Next Phase
-- Do not move on if layout/router/auth/build issues remain unresolved.
+**Non-goals:**
+- 새 기능 추가 금지
+- Phase 2 기능 미리 구현 금지
+- 데이터 영속성 구현 금지 (Phase 5에서 처리)
 
 ---
 
-# Phase 1 — Static Dashboard Shell
+## Required References
 
-## Objective
-Build the professional home dashboard structure with no real backend dependency.
+이 작업에서 읽어야 할 문서:
+- `CLAUDE.md` — 항상
+- `doc/decisions.md` — 기술 결정 확인 시
+- `doc/app-architecture.md` — 구조 확인 필요 시
 
-## Scope
-Main sections only:
-- top header
-- overview card
-- allocation card
-- risk monitor card
-- action items card
-- performance snapshot card
-
-## Implementation Order
-1. header shell
-2. overview card
-3. allocation card
-4. risk card
-5. action items card
-6. performance snapshot card
-7. spacing and responsive cleanup
-
-## Rules
-- use mock data only
-- no database
-- no auth dependency
-- no live APIs
-
-## Done When
-- dashboard looks coherent and professional
-- each card renders from mock data
-- layout works on desktop first
-- mobile can be rough but usable
-
-## Checkpoint Before Next Phase
-- every card must render correctly
-- no broken imports
-- no hydration/runtime errors
+읽지 않아도 되는 문서:
+- `doc/phase1-mvp-shell.md` (완료됨, 아카이브 상태)
+- `doc/landing-and-auth.md` (완료됨)
+- `doc/asset-input-and-dashboard.md` (완료됨)
 
 ---
 
-# Phase 2 — Data Contracts and Mock Models
+## Compressed Context
 
-## Objective
-Define the data shape before wiring real services.
+```
+Tech Stack:
+  Framework:   Next.js 15 (App Router), TypeScript
+  Styling:     Tailwind CSS, dark theme
+  Auth:        Auth.js v5, Google OAuth (AUTH_* env vars)
+  DB:          Turso (libSQL) + Drizzle ORM (local: file:local.db)
+  Backend DB:  Supabase
+  AI:          Google Gemini 1.5 (primary), Anthropic Claude (secondary)
+  Market:      Finnhub API
+  Charts:      Recharts
+  Port:        3001
 
-## Scope
-Create typed models for:
-- household summary
-- asset allocation
-- risk summary
-- action items
-- performance trend
-- goals
-- transactions
-- tax opportunities
-- AI chat context
+Live Routes:
+  /                   → Landing
+  /login              → Google 로그인
+  /portfolio/input    → 자산 수동 입력
+  /dashboard          → 메인 대시보드
 
-## Deliverables
-- shared types/interfaces
-- mock JSON fixtures
-- data mapping helpers
+Stub Routes (Coming Soon 표시):
+  /analysis / /ai / /settings / /portfolio/list
 
-## Done When
-- all UI cards consume typed mock data
-- no `any` for core business objects
-- sample fixtures exist for every major screen
+Auth Flow:
+  auth.ts → NextAuth v5 Google provider
+  middleware.ts → 보호된 라우트 자동 redirect
+  app/(app)/layout.tsx → session 확인 후 진입
 
-## Checkpoint Before Next Phase
-- if types are unstable, stop here and fix them first
+Data Flow (Phase 1):
+  Dashboard는 MOCK_ASSETS (lib/mock/assets.ts) 기반으로 렌더링
+  실제 데이터 영속성은 Phase 5에서 구현 예정
 
----
-
-# Phase 3 — Chosen AI Chat UI Only
-
-## Objective
-Build the chat experience visually before full intelligence.
-
-## Scope
-- chat panel layout
-- input box
-- response cards
-- suggested prompts
-- action buttons below responses
-
-## Response Structure
-Each response should follow:
-1. Current view
-2. Key judgment
-3. Recommended next step
-4. Why it matters
-
-## Rules
-- use static/mock responses
-- do not connect real LLM yet
-- focus on UX clarity and tone
-
-## Done When
-- chat UI works cleanly
-- suggested prompts work
-- action buttons are visible
-- visual hierarchy feels professional
-
-## Checkpoint Before Next Phase
-- confirm chat feels like an asset operating assistant, not a generic chatbot
+Key Files:
+  auth.ts, middleware.ts
+  app/(app)/dashboard/page.tsx
+  app/(app)/portfolio/input/page.tsx
+  features/dashboard/helpers.ts (buildPortfolioSummary)
+  features/dashboard/diagnosis.ts (generateHealthCards)
+  features/ai/summary-generator.ts (generateAISummary)
+  lib/mock/assets.ts
+```
 
 ---
 
-# Phase 4 — Financial Analysis Engine (Local / Mock Logic)
+## Risks
 
-## Objective
-Implement local deterministic analysis functions before AI generation.
-
-## Core Functions
-- getAllocationStatus()
-- getRiskSummary()
-- getConcentrationRisk()
-- getLiquidityStatus()
-- getPriorityActions()
-- getGoalProgress()
-- getCashFlowSummary()
-- getTaxOpportunitySummary()
-
-## Rules
-- functions should return structured outputs
-- no LLM required here
-- keep logic simple and testable first
-
-## Done When
-- dashboard and chat can read analysis outputs
-- priority actions come from logic, not hardcoded text
-- outputs are predictable and explainable
-
-## Checkpoint Before Next Phase
-- if outputs are inconsistent, do not connect AI yet
+- Vercel 환경변수 미설정 시 auth 작동 불가
+- `AUTH_URL` 이 production URL로 업데이트 안 되면 OAuth redirect 실패
+- Turso `file:local.db` 는 로컬 전용 — Vercel 환경에서 별도 연결 필요
+- Next.js 15 + Auth.js v5 beta 조합 — 간헐적 타입 오류 가능성
 
 ---
 
-# Phase 5 — Real Data Integration: Read Only
+## Validation Steps
 
-## Objective
-Connect real account/user data in read-only mode.
-
-## Scope
-- fetch household summary
-- fetch asset balances
-- fetch transaction list
-- fetch goal data
-- fetch risk inputs
-
-## Rules
-- read only first
-- no write/update actions yet
-- keep fallback mock mode available
-
-## Done When
-- dashboard can render real data
-- chat context can load real data summary
-- app degrades gracefully if one source fails
-
-## Checkpoint Before Next Phase
-- real data loading must be stable
-- partial failures must not break whole dashboard
+```
+[ ] npm run dev → http://localhost:3001 오류 없이 실행
+[ ] / → Landing 페이지 정상 렌더링
+[ ] /login → Google 로그인 버튼 표시
+[ ] Google 로그인 → /portfolio/input 이동
+[ ] 자산 입력 → View Dashboard 클릭 → /dashboard 이동
+[ ] Dashboard → Overview, Chart, AI Summary, Health Cards 4개 섹션 모두 표시
+[ ] Vercel Production → 동일 흐름 정상 작동
+```
 
 ---
 
-# Phase 6 — Goal Management
+## Definition of Done
 
-## Objective
-Add clear goal planning features.
-
-## Scope
-- create goal
-- edit goal
-- goal progress card
-- funding gap estimate
-- projected target date
-- monthly contribution suggestion
-
-## Goal Types
-- retirement
-- emergency fund
-- education
-- home
-- travel
-- business capital
-- financial freedom
-
-## Done When
-- users can track at least 3 goals
-- dashboard shows top goals clearly
-- Chosen AI can reference goals in responses
-
-## Checkpoint Before Next Phase
-- goals must affect recommendations meaningfully
+- localhost:3001 에서 위 검증 체크리스트 전부 통과
+- Vercel Production에서 위 검증 체크리스트 전부 통과
+- 콘솔 에러 없음 (hydration error, type error 포함)
+- Phase 2 진입 승인
 
 ---
 
-# Phase 7 — Transaction Classification and Cash Flow
-
-## Objective
-Turn raw transactions into useful operating signals.
-
-## Scope
-- transaction feed
-- category assignment
-- category rules
-- recurring detection
-- monthly cash flow summary
-- unusual spending flags
-
-## Core Categories
-- income
-- housing
-- groceries
-- utilities
-- subscriptions
-- transport
-- travel
-- family
-- taxes
-- investments
-
-## Done When
-- monthly inflow/outflow is visible
-- AI can answer “what changed this month?”
-- users can correct categories
-
-## Checkpoint Before Next Phase
-- if category quality is poor, improve rules before scaling features
-
----
-
-# Phase 8 — Household / Family Collaboration
-
-## Objective
-Support shared financial operations.
-
-## Scope
-- household dashboard
-- invite partner
-- role permissions
-- shared goals
-- shared action items
-- note / review / approve flow
-
-## Roles
-- admin
-- partner
-- viewer
-
-## Done When
-- two users can view a shared household state
-- shared goals are visible
-- approval/review flow works for basic actions
-
-## Checkpoint Before Next Phase
-- permissions must be correct
-- privacy boundaries must be clear
-
----
-
-# Phase 9 — Chosen AI Orchestrated Assistant
-
-## Objective
-Turn the chat into a real contextual operating assistant.
-
-## Inputs
-- user profile
-- household summary
-- allocation
-- risk state
-- goals
-- transaction summary
-- tax opportunities
-- recent actions
-
-## AI Output Style
-- calm
-- precise
-- non-hype
-- action-oriented
-- context-aware
-
-## Required Behavior
-- always reference user context
-- focus on top 1–3 actions
-- explain why
-- suggest next step
-- adapt to beginner vs advanced mode
-
-## Done When
-- responses differ by actual user state
-- same question gets different answer depending on portfolio context
-- answer format is consistent
-
-## Checkpoint Before Next Phase
-- if AI answers are generic, improve orchestration before more features
-
----
-
-# Phase 10 — Tax Optimization / TLH Monitor
-
-## Objective
-Add tax-aware intelligence without overcomplicating execution.
-
-## Scope
-- harvestable loss detection
-- taxable lot summary
-- wash sale warning flags
-- replacement idea suggestions
-- estimated tax impact summary
-
-## Important Constraint
-Start as advisory mode only.
-Do not begin with fully automated trade execution.
-
-## Done When
-- users can see candidate tax-loss opportunities
-- AI can explain opportunity and warning flags
-- replacement guidance is visible
-
-## Checkpoint Before Next Phase
-- tax guidance must be clearly framed as informational/supportive
-
----
-
-# Phase 11 — Write Actions and Guided Execution
-
-## Objective
-Allow controlled user actions after analysis is stable.
-
-## Scope
-- mark action items complete
-- update goal settings
-- save category rules
-- save household notes
-- optionally prepare rebalance suggestions
-
-## Rules
-- no destructive actions without confirmation
-- audit trail for important financial changes
-
-## Done When
-- users can take meaningful guided actions
-- dashboard updates after action completion
-- no hidden automatic changes
-
----
-
-# Phase 12 — Reliability, QA, and Launch Readiness
-
-## Objective
-Stabilize before wider rollout.
-
-## Scope
-- runtime checks
-- empty state handling
-- loading/error states
-- permission tests
-- responsiveness
-- content tone review
-- analytics
-- logging
-
-## Done When
-- major flows tested
-- errors are visible and understandable
-- onboarding is simple
-- core flows feel trustworthy
-
----
-
-# Suggested Work Unit Template
-
-For every coding task, use this template:
-
-## Task
-Short name
-
-## Objective
-What exactly is being built
-
-## Inputs
-What data it uses
-
-## Output
-What should appear or happen
-
-## Files Allowed
-List target files
-
-## Not Included
-What must not be touched yet
-
-## Done When
-Exact visible completion criteria
-
----
-
-# Example Small Tasks
-
-## Task 1
-Build dashboard header with mock metrics
-
-## Task 2
-Build overview card with household assets summary
-
-## Task 3
-Build allocation card with mock asset groups
-
-## Task 4
-Build risk monitor card with simple status bars
-
-## Task 5
-Build action items card with 3 static priority items
-
-## Task 6
-Build performance snapshot with simple line chart
-
-## Task 7
-Build chat panel shell with empty state
-
-## Task 8
-Add static AI response card
-
-## Task 9
-Add typed household summary model
-
-## Task 10
-Implement getPriorityActions() with mock logic
-
----
-
-# Development Priority Order
-
-1. stable shell
-2. typed mock models
-3. dashboard cards
-4. chat UI
-5. local analysis logic
-6. real read-only data
-7. goals
-8. transaction classification
-9. household collaboration
-10. AI orchestration
-11. tax optimization
-12. guided write actions
-13. polish and launch prep
-
----
-
-# Final Principle
-
-Chosen Invest should be built like a controlled operating system:
-- first visible structure
-- then typed data
-- then deterministic analysis
-- then real integrations
-- then AI orchestration
-- then advanced optimization
-
-Never build too much at once.
+## Phase 2 Preview (다음 Plan.md에서 다룰 내용)
+
+Phase 2 작업은 이 Plan.md를 Phase 2용으로 교체한 뒤 시작한다.
+지금 여기에 Phase 2 내용을 추가하지 않는다.
+
+Phase 2 대상:
+- 자산 데이터 Turso DB 영속 저장
+- Portfolio List 페이지 활성화
+- Analysis 페이지 기본 활성화
+- Suggested Actions 추가
+- Net Worth Trend 차트 추가
