@@ -17,7 +17,7 @@ import { TransactionSummaryCard } from '@/components/dashboard/transaction-summa
 import { TaxOpportunityCard } from '@/components/dashboard/tax-opportunity-card'
 import { CashFlowInsightCard } from '@/components/dashboard/cash-flow-insight-card'
 import { RankOverviewCard } from '@/components/dashboard/rank-overview-card'
-import { computeOverallWealthRank } from '@/features/dashboard/rank'
+import { computeOverallWealthRank, computeAgeBasedRank } from '@/features/dashboard/rank'
 import { useAssets } from '@/lib/store/assets-store'
 import { useGoals } from '@/lib/store/goals-store'
 import { useTransactions } from '@/lib/store/transactions-store'
@@ -27,6 +27,7 @@ import { ROUTES } from '@/lib/constants/routes'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
+import { useSettings } from '@/lib/store/settings-store'
 
 const CARD_KEYS = Object.keys(CARD_LABELS) as DashboardCardKey[]
 
@@ -53,6 +54,7 @@ export default function DashboardPage() {
   const { goals } = useGoals()
   const { transactions } = useTransactions()
   const { prefs, isLoaded: prefsLoaded, toggle } = useDashboardPrefs()
+  const { settings } = useSettings()
   const [showPrefs, setShowPrefs] = useState(false)
 
   if (!isLoaded || !prefsLoaded) {
@@ -71,6 +73,8 @@ export default function DashboardPage() {
   const aiAnalysis = generateAISummary(advisorCtx)
   const trendData = buildMockTrend(summary.totalAssetValue)
   const overallRank = computeOverallWealthRank(summary.totalAssetValue)
+  const userAge = settings.birthYear ? new Date().getFullYear() - settings.birthYear : undefined
+  const ageRank = computeAgeBasedRank(summary.totalAssetValue, userAge)
 
   const show = (key: DashboardCardKey) => prefs[key]
 
@@ -142,7 +146,7 @@ export default function DashboardPage() {
         <HealthCardsGrid cards={healthCards} />
       </div>
 
-      {show('rank') && <RankOverviewCard rank={overallRank} totalValue={summary.totalAssetValue} />}
+      {show('rank') && <RankOverviewCard rank={overallRank} ageRank={ageRank} totalValue={summary.totalAssetValue} />}
       {show('goals') && <GoalsSummaryCard />}
       {show('transactions') && <TransactionSummaryCard />}
       {show('cashFlowInsight') && <CashFlowInsightCard />}

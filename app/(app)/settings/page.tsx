@@ -143,6 +143,29 @@ export default function SettingsPage() {
         </Row>
       </div>
 
+      {/* Profile */}
+      <div className="rounded-xl border border-surface-border bg-surface-card px-4">
+        <h2 className="border-b border-surface-border py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
+          Profile
+        </h2>
+        <Row label="Birth year" hint="Used for age-based wealth ranking">
+          <input
+            type="number"
+            min={1920}
+            max={new Date().getFullYear() - 10}
+            placeholder="e.g. 1990"
+            value={settings.birthYear ?? ''}
+            onChange={(e) => {
+              const raw = e.target.value
+              if (raw === '') { update({ birthYear: undefined }); return }
+              const yr = parseInt(raw, 10)
+              if (yr >= 1920 && yr <= new Date().getFullYear() - 10) update({ birthYear: yr })
+            }}
+            className={SELECT_CLASS}
+          />
+        </Row>
+      </div>
+
       {/* Navigation */}
       <div className="rounded-xl border border-surface-border bg-surface-card px-4">
         <h2 className="border-b border-surface-border py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">

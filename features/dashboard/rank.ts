@@ -45,6 +45,45 @@ export function computeOverallWealthRank(totalAssetValue: number): RankResult {
   }
 }
 
+/** Compute Age-Based Wealth rank. Returns informational state if age is missing. */
+export function computeAgeBasedRank(totalAssetValue: number, age?: number): RankResult {
+  if (age == null) {
+    return {
+      type: 'age_based',
+      label: 'Age-Based Rank',
+      percentile: null,
+      message: 'Set your birth year in Settings to see age-based ranking.',
+      missingField: 'age',
+    }
+  }
+
+  const ageBuckets = filterByAge(AGE_BASED_BUCKETS, age)
+  if (ageBuckets.length === 0) {
+    return {
+      type: 'age_based',
+      label: 'Age-Based Rank',
+      percentile: null,
+      message: `No benchmark data for age ${age}. Supported: 20–99.`,
+    }
+  }
+
+  const percentile = findPercentile(ageBuckets, totalAssetValue)
+  const topPct = 100 - percentile
+  const ageRange = ageBuckets[0].ageRange!
+
+  let message: string
+  if (percentile >= 75) message = `Top ${topPct}% among ages ${ageRange[0]}–${ageRange[1]}. Excellent position.`
+  else if (percentile >= 50) message = `Top ${topPct}% for your age group (${ageRange[0]}–${ageRange[1]}).`
+  else message = `Top ${topPct}% in the ${ageRange[0]}–${ageRange[1]} bracket. Room to grow.`
+
+  return {
+    type: 'age_based',
+    label: 'Age-Based Rank',
+    percentile,
+    message,
+  }
+}
+
 export function computeRanks(input: RankInput): RankResult[] {
   const { totalAssetValue, age, gender, annualReturnPct } = input
   const results: RankResult[] = []

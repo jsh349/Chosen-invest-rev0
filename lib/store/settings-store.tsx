@@ -20,6 +20,7 @@ export type AppSettings = {
   currency:         CurrencyCode
   showCents:        boolean
   defaultLanding:   'dashboard' | 'portfolio' | 'goals' | 'transactions'
+  birthYear?:       number
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
