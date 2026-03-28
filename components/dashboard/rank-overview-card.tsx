@@ -13,7 +13,7 @@ function formatCurrency(value: number): string {
   return `$${value.toFixed(0)}`
 }
 
-function PercentileBar({ percentile }: { percentile: number }) {
+function PercentileBar({ percentile, tall }: { percentile: number; tall?: boolean }) {
   const width = `${Math.min(100, Math.max(0, percentile))}%`
   const color =
     percentile >= 75
@@ -23,13 +23,14 @@ function PercentileBar({ percentile }: { percentile: number }) {
         : percentile >= 30
           ? 'bg-amber-400'
           : 'bg-gray-500'
+  const h = tall ? 'h-3' : 'h-2'
   return (
-    <div className="relative h-2 w-full rounded-full bg-surface-muted">
+    <div className={cn('relative w-full rounded-full bg-surface-muted', h)}>
       <div
-        className={cn('h-2 rounded-full transition-all', color)}
+        className={cn('rounded-full transition-all', h, color)}
         style={{ width }}
       />
-      <div className="mt-1 flex justify-between text-[10px] text-gray-600">
+      <div className="mt-1.5 flex justify-between text-[10px] text-gray-600">
         <span>0%</span>
         <span>50%</span>
         <span>100%</span>
@@ -38,54 +39,64 @@ function PercentileBar({ percentile }: { percentile: number }) {
   )
 }
 
-function RankSection({ result, subtitle }: { result: RankResult; subtitle?: string }) {
-  const hasPct = result.percentile != null
-  const topPct = hasPct ? 100 - result.percentile! : null
-
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-white">{result.label}</p>
-        {hasPct ? (
-          <span className="text-xs font-semibold text-brand-400">
-            Top {topPct}%
-          </span>
-        ) : (
-          <span className="text-xs text-gray-600">—</span>
-        )}
-      </div>
-      {subtitle && <p className="text-xs text-gray-500">{subtitle}</p>}
-      {hasPct ? (
-        <PercentileBar percentile={result.percentile!} />
-      ) : (
-        <div className="h-2 w-full rounded-full bg-surface-muted" />
-      )}
-      <p className="text-xs leading-relaxed text-gray-400">{result.message}</p>
-    </div>
-  )
+function topPctColor(topPct: number): string {
+  if (topPct <= 10) return 'text-emerald-400'
+  if (topPct <= 25) return 'text-emerald-400'
+  if (topPct <= 50) return 'text-brand-400'
+  return 'text-amber-400'
 }
 
 export function RankOverviewCard({ rank, ageRank, totalValue }: RankOverviewCardProps) {
+  const overallTop = rank.percentile != null ? 100 - rank.percentile : null
+  const ageTop = ageRank.percentile != null ? 100 - ageRank.percentile : null
+
   return (
-    <div className="rounded-xl border border-surface-border bg-surface-card p-5 space-y-5">
-      {/* Header */}
-      <div>
-        <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
-          Wealth Rank
-        </h3>
-        <p className="mt-0.5 text-xs text-gray-600">
-          {formatCurrency(totalValue)} total assets — compared to local benchmarks
+    <div className="rounded-xl border border-surface-border bg-surface-card p-6 space-y-6">
+      {/* Hero: Overall Wealth Rank */}
+      <div className="text-center space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">
+          Your Wealth Rank
+        </p>
+        {overallTop != null ? (
+          <p className={cn('text-5xl font-extrabold tracking-tight', topPctColor(overallTop))}>
+            Top {overallTop}%
+          </p>
+        ) : (
+          <p className="text-4xl font-bold text-gray-600">—</p>
+        )}
+        <p className="text-sm text-gray-400">
+          {formatCurrency(totalValue)} total assets
         </p>
       </div>
 
-      {/* Overall Wealth */}
-      <RankSection result={rank} />
+      {/* Overall bar */}
+      {rank.percentile != null && (
+        <PercentileBar percentile={rank.percentile} tall />
+      )}
+      <p className="text-sm leading-relaxed text-gray-400 text-center">{rank.message}</p>
 
       {/* Divider */}
       <div className="border-t border-surface-border" />
 
-      {/* Age-Based */}
-      <RankSection result={ageRank} />
+      {/* Age-Based Rank — compact secondary section */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <p className="text-base font-semibold text-white">{ageRank.label}</p>
+          {ageTop != null ? (
+            <span className={cn('text-lg font-bold', topPctColor(ageTop))}>
+              Top {ageTop}%
+            </span>
+          ) : (
+            <span className="text-sm text-gray-600">—</span>
+          )}
+        </div>
+        {ageRank.percentile != null ? (
+          <PercentileBar percentile={ageRank.percentile} />
+        ) : (
+          <div className="h-2 w-full rounded-full bg-surface-muted" />
+        )}
+        <p className="text-xs leading-relaxed text-gray-400">{ageRank.message}</p>
+      </div>
     </div>
   )
 }

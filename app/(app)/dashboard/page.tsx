@@ -129,6 +129,8 @@ export default function DashboardPage() {
 
       <DashboardOverview summary={summary} />
 
+      {show('rank') && <RankOverviewCard rank={overallRank} ageRank={ageRank} totalValue={summary.totalAssetValue} />}
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {show('allocation') && <AllocationChartCard slices={summary.categoryBreakdown} />}
         <div className="flex flex-col gap-6">
@@ -146,7 +148,6 @@ export default function DashboardPage() {
         <HealthCardsGrid cards={healthCards} />
       </div>
 
-      {show('rank') && <RankOverviewCard rank={overallRank} ageRank={ageRank} totalValue={summary.totalAssetValue} />}
       {show('goals') && <GoalsSummaryCard />}
       {show('transactions') && <TransactionSummaryCard />}
       {show('cashFlowInsight') && <CashFlowInsightCard />}
