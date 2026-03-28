@@ -10,6 +10,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
 import { isRequired, parsePositive, parseNonNegative, isDateFormat } from '@/lib/utils/validation'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
+import { FormError } from '@/components/ui/form-error'
 import type { Goal, GoalType } from '@/lib/types/goal'
 import { getGoalStatus, GOAL_STATUS_STYLES } from '@/lib/utils/goal-status'
 import { ROUTES } from '@/lib/constants/routes'
@@ -231,7 +232,7 @@ export default function GoalsPage() {
         <CardContent>
           <form onSubmit={handleAddSubmit} className="space-y-4">
             <FormFields form={addForm} onChange={handleAddChange} onSharedChange={(checked) => setAddForm((p) => ({ ...p, shared: checked }))} />
-            {addError && <p className="text-xs text-red-400">{addError}</p>}
+            <FormError message={addError} />
             <button type="submit" className={cn(buttonVariants({ size: 'sm' }), 'w-full sm:w-auto')}>
               Add Goal
             </button>
@@ -261,7 +262,7 @@ export default function GoalsPage() {
                   {isEditing ? (
                     <div className="space-y-4">
                       <FormFields form={editForm} onChange={handleEditChange} onSharedChange={(checked) => setEditForm((p) => ({ ...p, shared: checked }))} />
-                      {editError && <p className="text-xs text-red-400">{editError}</p>}
+                      <FormError message={editError} />
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleEditSave(goal.id)}

@@ -6,6 +6,7 @@ import { useTransactions } from '@/lib/store/transactions-store'
 import { isRequired, parsePositive, isDateFormat } from '@/lib/utils/validation'
 import { computeCashFlow } from '@/lib/utils/transaction-summary'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
+import { FormError } from '@/components/ui/form-error'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
@@ -159,7 +160,7 @@ export default function TransactionsPage() {
                 </select>
               </div>
             </div>
-            {error && <p className="text-xs text-red-400">{error}</p>}
+            <FormError message={error} />
             <button type="submit" className={cn(buttonVariants({ size: 'sm' }), 'w-full sm:w-auto')}>
               Add Transaction
             </button>

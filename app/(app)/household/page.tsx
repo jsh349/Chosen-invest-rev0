@@ -15,6 +15,9 @@ import { ROUTES } from '@/lib/constants/routes'
 import type { MemberRole } from '@/lib/types/household'
 import { isRequired, isBasicEmail } from '@/lib/utils/validation'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
+import { FormError } from '@/components/ui/form-error'
+
+const INPUT_CLASS = 'w-full rounded-lg border border-surface-border bg-surface-muted px-3 py-2 text-sm text-white placeholder-gray-600 focus:border-brand-500 focus:outline-none'
 
 const ROLES: { value: MemberRole; label: string; description: string }[] = [
   { value: 'admin',   label: 'Admin',   description: 'Full access'    },
@@ -105,7 +108,7 @@ export default function HouseholdPage() {
                   value={form.name}
                   onChange={handleChange}
                   placeholder="Jane Doe"
-                  className="w-full rounded-lg border border-surface-border bg-surface-muted px-3 py-2 text-sm text-white placeholder-gray-600 focus:border-brand-500 focus:outline-none"
+                  className={INPUT_CLASS}
                 />
               </div>
               <div className="space-y-1">
@@ -116,7 +119,7 @@ export default function HouseholdPage() {
                   onChange={handleChange}
                   placeholder="jane@example.com"
                   type="text"
-                  className="w-full rounded-lg border border-surface-border bg-surface-muted px-3 py-2 text-sm text-white placeholder-gray-600 focus:border-brand-500 focus:outline-none"
+                  className={INPUT_CLASS}
                 />
               </div>
               <div className="space-y-1">
@@ -133,7 +136,7 @@ export default function HouseholdPage() {
                 </select>
               </div>
             </div>
-            {error && <p className="text-xs text-red-400">{error}</p>}
+            <FormError message={error} />
             <button type="submit" className={cn(buttonVariants({ size: 'sm' }), 'w-full sm:w-auto')}>
               Add Member
             </button>
@@ -200,7 +203,7 @@ export default function HouseholdPage() {
                 value={noteForm.title}
                 onChange={(e) => { setNoteForm((p) => ({ ...p, title: e.target.value })); setNoteError('') }}
                 placeholder="e.g. Review insurance coverage"
-                className="w-full rounded-lg border border-surface-border bg-surface-muted px-3 py-2 text-sm text-white placeholder-gray-600 focus:border-brand-500 focus:outline-none"
+                className={INPUT_CLASS}
               />
             </div>
             <div className="space-y-1">
@@ -213,7 +216,7 @@ export default function HouseholdPage() {
                 className="w-full rounded-lg border border-surface-border bg-surface-muted px-3 py-2 text-sm text-white placeholder-gray-600 focus:border-brand-500 focus:outline-none resize-none"
               />
             </div>
-            {noteError && <p className="text-xs text-red-400">{noteError}</p>}
+            <FormError message={noteError} />
             <button type="submit" className={cn(buttonVariants({ size: 'sm' }), 'w-full sm:w-auto')}>
               Add Note
             </button>
