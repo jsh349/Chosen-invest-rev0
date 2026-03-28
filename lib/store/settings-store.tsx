@@ -23,6 +23,7 @@ export type AppSettings = {
   defaultLanding:   'dashboard' | 'portfolio' | 'goals' | 'transactions'
   birthYear?:       number
   gender?:          GenderOption
+  annualReturnPct?: number
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {

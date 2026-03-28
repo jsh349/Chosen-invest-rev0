@@ -17,7 +17,7 @@ import { TransactionSummaryCard } from '@/components/dashboard/transaction-summa
 import { TaxOpportunityCard } from '@/components/dashboard/tax-opportunity-card'
 import { CashFlowInsightCard } from '@/components/dashboard/cash-flow-insight-card'
 import { RankOverviewCard } from '@/components/dashboard/rank-overview-card'
-import { computeOverallWealthRank, computeAgeBasedRank, computeAgeGenderRank } from '@/features/dashboard/rank'
+import { computeOverallWealthRank, computeAgeBasedRank, computeAgeGenderRank, computeReturnRank } from '@/features/dashboard/rank'
 import { useAssets } from '@/lib/store/assets-store'
 import { useGoals } from '@/lib/store/goals-store'
 import { useTransactions } from '@/lib/store/transactions-store'
@@ -76,6 +76,7 @@ export default function DashboardPage() {
   const userAge = settings.birthYear ? new Date().getFullYear() - settings.birthYear : undefined
   const ageRank = computeAgeBasedRank(summary.totalAssetValue, userAge)
   const ageGenderRank = computeAgeGenderRank(summary.totalAssetValue, userAge, settings.gender)
+  const returnRank = computeReturnRank(settings.annualReturnPct)
 
   const show = (key: DashboardCardKey) => prefs[key]
 
@@ -130,7 +131,7 @@ export default function DashboardPage() {
 
       <DashboardOverview summary={summary} />
 
-      {show('rank') && <RankOverviewCard rank={overallRank} ageRank={ageRank} ageGenderRank={ageGenderRank} totalValue={summary.totalAssetValue} />}
+      {show('rank') && <RankOverviewCard rank={overallRank} ageRank={ageRank} ageGenderRank={ageGenderRank} returnRank={returnRank} totalValue={summary.totalAssetValue} />}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {show('allocation') && <AllocationChartCard slices={summary.categoryBreakdown} />}

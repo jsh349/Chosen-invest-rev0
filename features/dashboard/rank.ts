@@ -155,6 +155,35 @@ export function computeAgeGenderRank(
   }
 }
 
+/** Compute Investment Return rank from an estimated annual return %. */
+export function computeReturnRank(annualReturnPct?: number): RankResult {
+  if (annualReturnPct == null) {
+    return {
+      type: 'investment_return',
+      label: 'Investment Return Rank',
+      percentile: null,
+      message: 'Enter your estimated annual return in Settings to see this ranking.',
+      missingField: 'annualReturn',
+    }
+  }
+
+  const percentile = findPercentile(RETURN_BUCKETS, annualReturnPct)
+  const topPct = 100 - percentile
+  const sign = annualReturnPct >= 0 ? '+' : ''
+
+  let message: string
+  if (percentile >= 80) message = `${sign}${annualReturnPct.toFixed(1)}% annual return — top ${topPct}% of investors.`
+  else if (percentile >= 50) message = `${sign}${annualReturnPct.toFixed(1)}% return places you in the top ${topPct}%.`
+  else message = `${sign}${annualReturnPct.toFixed(1)}% return — top ${topPct}%. Market conditions vary.`
+
+  return {
+    type: 'investment_return',
+    label: 'Investment Return Rank',
+    percentile,
+    message,
+  }
+}
+
 export function computeRanks(input: RankInput): RankResult[] {
   const { totalAssetValue, age, gender, annualReturnPct } = input
   const results: RankResult[] = []

@@ -5,6 +5,7 @@ interface RankOverviewCardProps {
   rank: RankResult
   ageRank: RankResult
   ageGenderRank: RankResult
+  returnRank: RankResult
   totalValue: number
 }
 
@@ -73,7 +74,7 @@ function SubRankRow({ result }: { result: RankResult }) {
   )
 }
 
-export function RankOverviewCard({ rank, ageRank, ageGenderRank, totalValue }: RankOverviewCardProps) {
+export function RankOverviewCard({ rank, ageRank, ageGenderRank, returnRank, totalValue }: RankOverviewCardProps) {
   const overallTop = rank.percentile != null ? 100 - rank.percentile : null
 
   return (
@@ -112,6 +113,17 @@ export function RankOverviewCard({ rank, ageRank, ageGenderRank, totalValue }: R
 
       {/* Age + Gender Rank */}
       <SubRankRow result={ageGenderRank} />
+
+      {/* Divider */}
+      <div className="border-t border-surface-border" />
+
+      {/* Investment Return Rank */}
+      <SubRankRow result={returnRank} />
+
+      {/* Disclaimer */}
+      <p className="text-[10px] text-gray-600 text-center pt-1">
+        Rankings based on local benchmark estimates. Not financial advice.
+      </p>
     </div>
   )
 }

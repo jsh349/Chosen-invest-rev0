@@ -180,6 +180,23 @@ export default function SettingsPage() {
             <option value="undisclosed">Prefer not to say</option>
           </select>
         </Row>
+        <Row label="Est. annual return (%)" hint="Your estimated annualized investment return. Used for return ranking.">
+          <input
+            type="number"
+            step="0.1"
+            min={-50}
+            max={100}
+            placeholder="e.g. 8.5"
+            value={settings.annualReturnPct ?? ''}
+            onChange={(e) => {
+              const raw = e.target.value
+              if (raw === '') { update({ annualReturnPct: undefined }); return }
+              const n = parseFloat(raw)
+              if (Number.isFinite(n) && n >= -50 && n <= 100) update({ annualReturnPct: n })
+            }}
+            className={SELECT_CLASS}
+          />
+        </Row>
       </div>
 
       {/* Navigation */}
