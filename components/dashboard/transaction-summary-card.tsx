@@ -1,0 +1,90 @@
+'use client'
+
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { useTransactions } from '@/lib/store/transactions-store'
+import { cn } from '@/lib/utils/cn'
+import type { TransactionCategory } from '@/lib/types/transaction'
+
+function formatAmount(amount: number) {
+  const abs = Math.abs(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return amount >= 0 ? `+$${abs}` : `-$${abs}`
+}
+
+function currentYearMonth() {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
+export function TransactionSummaryCard() {
+  const { transactions, isLoaded } = useTransactions()
+
+  if (!isLoaded) return null
+
+  const ym = currentYearMonth()
+  const monthly = transactions.filter((t) => t.date.startsWith(ym))
+
+  if (monthly.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>This Month</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-gray-500">No transactions recorded this month.</p>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const income   = monthly.filter((t) => t.amount > 0).reduce((s, t) => s + t.amount, 0)
+  const expenses = monthly.filter((t) => t.amount < 0).reduce((s, t) => s + t.amount, 0)
+  const net      = income + expenses
+
+  // Top spending category
+  const expenseMap: Partial<Record<TransactionCategory, number>> = {}
+  for (const t of monthly) {
+    if (t.amount < 0) {
+      expenseMap[t.category] = (expenseMap[t.category] ?? 0) + Math.abs(t.amount)
+    }
+  }
+  const topCategory = Object.entries(expenseMap).sort((a, b) => b[1] - a[1])[0]
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>This Month</CardTitle>
+        <span className="text-xs text-gray-500">{monthly.length} transactions</span>
+      </CardHeader>
+      <CardContent className="space-y-4">
+
+        <div className="grid grid-cols-3 gap-3">
+          <div className="rounded-lg bg-surface-muted/40 px-3 py-2">
+            <p className="text-xs text-gray-500">Income</p>
+            <p className="mt-0.5 text-sm font-semibold text-green-400">{formatAmount(income)}</p>
+          </div>
+          <div className="rounded-lg bg-surface-muted/40 px-3 py-2">
+            <p className="text-xs text-gray-500">Expenses</p>
+            <p className="mt-0.5 text-sm font-semibold text-red-400">{formatAmount(expenses)}</p>
+          </div>
+          <div className="rounded-lg bg-surface-muted/40 px-3 py-2">
+            <p className="text-xs text-gray-500">Net</p>
+            <p className={cn('mt-0.5 text-sm font-semibold', net >= 0 ? 'text-green-400' : 'text-red-400')}>
+              {formatAmount(net)}
+            </p>
+          </div>
+        </div>
+
+        {topCategory && (
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-gray-500">Top spending category</span>
+            <span className="font-medium text-gray-300">
+              {topCategory[0]}&nbsp;
+              <span className="text-gray-500">(${topCategory[1].toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</span>
+            </span>
+          </div>
+        )}
+
+      </CardContent>
+    </Card>
+  )
+}

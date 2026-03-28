@@ -12,6 +12,7 @@ import { buildPortfolioSummary } from '@/features/dashboard/helpers'
 import { generateHealthCards } from '@/features/dashboard/diagnosis'
 import { generateAISummary } from '@/features/ai/summary-generator'
 import { NetWorthTrendCard } from '@/components/dashboard/net-worth-trend-card'
+import { TransactionSummaryCard } from '@/components/dashboard/transaction-summary-card'
 import { useAssets } from '@/lib/store/assets-store'
 import { buildMockTrend } from '@/lib/mock/trend'
 import { ROUTES } from '@/lib/constants/routes'
@@ -94,6 +95,8 @@ export default function DashboardPage() {
       </div>
 
       <GoalsSummaryCard />
+
+      <TransactionSummaryCard />
     </div>
   )
 }
