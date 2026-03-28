@@ -1,0 +1,237 @@
+전체 문서 구조
+0. 항상 읽는 최상위 규칙
+CLAUDE.md
+
+역할:
+
+Claude의 행동 규칙
+
+무엇을 하면 안 되는지
+
+Plan.md 없이 코딩 금지
+
+범위 확장 금지
+
+다른 repo와 혼합 금지
+
+MVP 과설계 금지
+
+이 문서는 항상 읽는 헌법이다.
+
+1. 제품 전체 설계 문서
+feature-tree.md
+
+역할:
+
+Chosen-invest의 전체 기능 지도
+
+모든 기능을 트리 구조로 정리
+
+각 기능 상태를 Live / Stub / Later로 구분
+
+MVP Must만 먼저 구현한다는 원칙 포함
+
+한 줄 요약:
+무슨 기능들이 존재하는가
+
+app-architecture.md
+
+역할:
+
+앱 존 구분
+
+라우트 구조
+
+레이아웃 구조
+
+폴더 구조
+
+Stub 페이지 배치 원칙
+
+한 줄 요약:
+그 기능들이 어디에 앉는가
+
+rollout-phases.md
+
+역할:
+
+기능 활성화 순서
+
+Phase 1 / 2 / 3 / 4 구분
+
+무엇을 먼저 Live로 만들지 정리
+
+한 줄 요약:
+언제 무엇을 켤 것인가
+
+2. MVP 사용자 경험 문서
+mvp-experience.md
+
+역할:
+
+MVP 사용자 흐름
+
+MVP 화면 목록
+
+각 화면 목적
+
+어떤 화면이 Live / Stub인지 정의
+
+한 줄 요약:
+사용자가 MVP에서 어떻게 움직이고 무엇을 보게 되는가
+
+3. MVP 데이터 설계 문서
+mvp-data-model.md
+
+역할:
+
+MVP 최소 데이터 모델
+
+입력 데이터와 파생 데이터 구분
+
+User / Asset 중심 설계
+
+Dashboard에 필요한 요약/차트/AI/진단 데이터 정의
+
+한 줄 요약:
+MVP가 작동하려면 어떤 데이터가 필요한가
+
+4. 구현 전략 문서
+reference-patterns.md
+
+역할:
+
+무엇을 오픈소스/공식 패턴으로 재사용할지
+
+무엇을 Chosen-invest만의 방식으로 직접 설계할지
+
+“재사용은 기반 구조, 차별화는 가치 전달 경험” 원칙 정리
+
+한 줄 요약:
+무엇을 가져오고, 무엇을 직접 만들 것인가
+
+5. 실행용 중심 문서
+Plan.md
+
+역할:
+
+현재 메인 작업의 마스터 설계도
+
+필요한 문서만 읽게 하는 컨텍스트 허브
+
+현재 작업 범위, 참조 문서, 압축된 맥락, 리스크, 완료 조건 정리
+
+한 줄 요약:
+지금 이 작업에서 Claude가 실제로 따라야 할 중심 설계도
+
+중요:
+
+CLAUDE.md 다음으로 가장 중요한 문서
+
+다른 md 파일을 매번 다 읽지 않게 해주는 문서
+
+6. 세부 실행 플랜 문서
+phase1-mvp-shell.md
+
+역할:
+
+Phase 1 MVP의 전체 실행 플랜
+
+앱 뼈대 + MVP Live 흐름 + 대시보드 핵심 구조까지 포함
+
+실제 구현 가능한 첫 실행 설계도
+
+한 줄 요약:
+Phase 1 MVP Shell 전체를 어떻게 만들 것인가
+
+landing-and-auth.md
+
+역할:
+
+랜딩 페이지
+
+로그인 페이지
+
+첫 진입 흐름
+
+마케팅 레이아웃 / 인증 레이아웃
+
+한 줄 요약:
+사용자 입구를 어떻게 만들 것인가
+
+asset-input-and-dashboard.md
+
+역할:
+
+자산 수동 입력 페이지
+
+대시보드 페이지
+
+자산 배분 차트
+
+AI 자산 요약
+
+재무 상태 진단 카드
+
+한 줄 요약:
+MVP의 핵심 가치 구간을 어떻게 만들 것인가
+
+CLAUDE.md
+└── 전체 행동 규칙
+
+feature-tree.md
+└── 전체 기능 지도
+
+app-architecture.md
+└── 전체 구조 / 라우트 / 레이아웃
+
+rollout-phases.md
+└── 단계별 활성화 계획
+
+mvp-experience.md
+└── MVP 사용자 경험
+
+mvp-data-model.md
+└── MVP 데이터 구조
+
+reference-patterns.md
+└── 오픈소스 / 레퍼런스 활용 기준
+
+Plan.md
+└── 현재 작업의 마스터 실행 설계도
+
+phase1-mvp-shell.md
+├── landing-and-auth.md
+└── asset-input-and-dashboard.md
+
+문서 읽는 우선순위
+항상
+
+CLAUDE.md
+
+현재 작업 시작 시 기본
+
+Plan.md
+
+필요할 때만
+
+feature-tree.md
+
+app-architecture.md
+
+rollout-phases.md
+
+mvp-experience.md
+
+mvp-data-model.md
+
+reference-patterns.md
+
+세부 작업할 때만
+
+phase1-mvp-shell.md
+
+landing-and-auth.md
+
+asset-input-and-dashboard.md
+

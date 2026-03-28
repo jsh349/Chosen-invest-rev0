@@ -1,0 +1,168 @@
+폴더 구조
+
+chosen-invest/
+├── CLAUDE.md
+├── Plan.md
+├── package.json
+├── tsconfig.json
+├── next.config.ts
+├── .env.local
+├── .gitignore
+│
+├── docs/
+│   ├── feature-tree.md
+│   ├── app-architecture.md
+│   ├── rollout-phases.md
+│   ├── mvp-experience.md
+│   ├── mvp-data-model.md
+│   ├── reference-patterns.md
+│   ├── phase1-mvp-shell.md
+│   ├── landing-and-auth.md
+│   ├── asset-input-and-dashboard.md
+│   └── decisions.md
+│
+├── app/
+│   ├── (marketing)/
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   │
+│   ├── (auth)/
+│   │   ├── layout.tsx
+│   │   ├── login/
+│   │   │   └── page.tsx
+│   │   └── signup/
+│   │       └── page.tsx
+│   │
+│   ├── (app)/
+│   │   ├── layout.tsx
+│   │   ├── dashboard/
+│   │   │   └── page.tsx
+│   │   ├── portfolio/
+│   │   │   ├── input/
+│   │   │   │   └── page.tsx
+│   │   │   └── list/
+│   │   │       └── page.tsx
+│   │   ├── analysis/
+│   │   │   └── page.tsx
+│   │   ├── ai/
+│   │   │   └── page.tsx
+│   │   ├── research/
+│   │   │   └── page.tsx
+│   │   ├── backtest/
+│   │   │   └── page.tsx
+│   │   ├── training/
+│   │   │   └── page.tsx
+│   │   ├── alerts/
+│   │   │   └── page.tsx
+│   │   ├── goals/
+│   │   │   └── page.tsx
+│   │   └── settings/
+│   │       └── page.tsx
+│   │
+│   ├── api/
+│   │   └── health/
+│   │       └── route.ts
+│   │
+│   ├── favicon.ico
+│   ├── globals.css
+│   └── layout.tsx
+│
+├── components/
+│   ├── layout/
+│   │   ├── app-header.tsx
+│   │   ├── app-sidebar.tsx
+│   │   ├── app-shell.tsx
+│   │   ├── marketing-header.tsx
+│   │   └── auth-shell.tsx
+│   │
+│   ├── ui/
+│   │   ├── button.tsx
+│   │   ├── card.tsx
+│   │   ├── input.tsx
+│   │   ├── label.tsx
+│   │   └── container.tsx
+│   │
+│   ├── dashboard/
+│   │   ├── dashboard-overview.tsx
+│   │   ├── allocation-chart-card.tsx
+│   │   ├── ai-summary-card.tsx
+│   │   └── health-cards-grid.tsx
+│   │
+│   ├── portfolio/
+│   │   ├── asset-input-form.tsx
+│   │   ├── asset-row.tsx
+│   │   └── category-select.tsx
+│   │
+│   ├── charts/
+│   │   └── allocation-chart.tsx
+│   │
+│   ├── ai/
+│   │   └── ai-summary.tsx
+│   │
+│   └── stub/
+│       └── coming-soon-page.tsx
+│
+├── features/
+│   ├── auth/
+│   │   ├── actions.ts
+│   │   ├── schemas.ts
+│   │   └── types.ts
+│   │
+│   ├── portfolio/
+│   │   ├── actions.ts
+│   │   ├── constants.ts
+│   │   ├── helpers.ts
+│   │   ├── schemas.ts
+│   │   └── types.ts
+│   │
+│   ├── dashboard/
+│   │   ├── helpers.ts
+│   │   ├── selectors.ts
+│   │   └── types.ts
+│   │
+│   ├── analysis/
+│   │   └── placeholders.ts
+│   │
+│   ├── ai/
+│   │   ├── summary-generator.ts
+│   │   └── types.ts
+│   │
+│   ├── charts/
+│   │   └── transforms.ts
+│   │
+│   └── settings/
+│       └── placeholders.ts
+│
+├── lib/
+│   ├── constants/
+│   │   ├── app-nav.ts
+│   │   ├── asset-categories.ts
+│   │   └── routes.ts
+│   │
+│   ├── mock/
+│   │   ├── assets.ts
+│   │   ├── dashboard.ts
+│   │   └── user.ts
+│   │
+│   ├── types/
+│   │   ├── asset.ts
+│   │   ├── dashboard.ts
+│   │   ├── health-card.ts
+│   │   └── user.ts
+│   │
+│   ├── utils/
+│   │   ├── cn.ts
+│   │   ├── currency.ts
+│   │   └── percentage.ts
+│   │
+│   └── validators/
+│       └── asset.ts
+│
+├── public/
+│   ├── logo.svg
+│   ├── hero-placeholder.png
+│   └── icons/
+│
+└── plans/
+    ├── archive/
+    └── README.md
