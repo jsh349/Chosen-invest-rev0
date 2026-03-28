@@ -1,0 +1,17 @@
+import { defineConfig } from '@playwright/test'
+
+export default defineConfig({
+  testDir: './tests/e2e',
+  timeout: 15000,
+  retries: 0,
+  use: {
+    baseURL: 'http://localhost:3001',
+    headless: true,
+    launchOptions: {
+      executablePath: '/root/.cache/ms-playwright/chromium-1194/chrome-linux/chrome',
+    },
+  },
+  projects: [
+    { name: 'chromium', use: { browserName: 'chromium' } },
+  ],
+})
