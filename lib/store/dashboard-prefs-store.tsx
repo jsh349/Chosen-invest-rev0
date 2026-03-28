@@ -22,6 +22,7 @@ export type DashboardCardKey =
   | 'transactions'
   | 'taxOpportunity'
   | 'cashFlowInsight'
+  | 'rank'
 
 export const CARD_LABELS: Record<DashboardCardKey, string> = {
   allocation:      'Allocation Overview',
@@ -31,6 +32,7 @@ export const CARD_LABELS: Record<DashboardCardKey, string> = {
   transactions:    'Transaction Summary',
   taxOpportunity:  'Tax Opportunity',
   cashFlowInsight: 'Cash Flow Insight',
+  rank:            'Wealth Rank',
 }
 
 const DEFAULT_PREFS: Record<DashboardCardKey, boolean> = {
@@ -41,6 +43,7 @@ const DEFAULT_PREFS: Record<DashboardCardKey, boolean> = {
   transactions:    true,
   taxOpportunity:  true,
   cashFlowInsight: true,
+  rank:            true,
 }
 
 type DashboardPrefsContextType = {
