@@ -9,10 +9,7 @@ import {
   type ReactNode,
 } from 'react'
 import type { HouseholdNote } from '@/lib/types/household-note'
-import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
-import { readJSON, writeJSON } from '@/lib/utils/local-storage'
-
-const LS_KEY = STORAGE_KEYS.householdNotes
+import { householdNotesAdapter } from '@/lib/adapters/household-notes-adapter'
 
 type HouseholdNotesContextType = {
   notes: HouseholdNote[]
@@ -33,7 +30,7 @@ export function HouseholdNotesProvider({ children }: { children: ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
-    const stored = readJSON<HouseholdNote[]>(LS_KEY, [])
+    const stored = householdNotesAdapter.getAll()
     if (stored.length > 0) setNotes(stored)
     setIsLoaded(true)
   }, [])
@@ -41,7 +38,7 @@ export function HouseholdNotesProvider({ children }: { children: ReactNode }) {
   const addNote = useCallback((note: HouseholdNote) => {
     setNotes((prev) => {
       const updated = [note, ...prev]
-      writeJSON(LS_KEY, updated)
+      householdNotesAdapter.saveAll(updated)
       return updated
     })
   }, [])
@@ -49,7 +46,7 @@ export function HouseholdNotesProvider({ children }: { children: ReactNode }) {
   const removeNote = useCallback((id: string) => {
     setNotes((prev) => {
       const updated = prev.filter((n) => n.id !== id)
-      writeJSON(LS_KEY, updated)
+      householdNotesAdapter.saveAll(updated)
       return updated
     })
   }, [])

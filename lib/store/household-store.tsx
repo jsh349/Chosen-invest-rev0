@@ -9,10 +9,7 @@ import {
   type ReactNode,
 } from 'react'
 import type { HouseholdMember } from '@/lib/types/household'
-import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
-import { readJSON, writeJSON } from '@/lib/utils/local-storage'
-
-const LS_KEY = STORAGE_KEYS.household
+import { householdAdapter } from '@/lib/adapters/household-adapter'
 
 type HouseholdContextType = {
   members: HouseholdMember[]
@@ -33,7 +30,7 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
-    const stored = readJSON<HouseholdMember[]>(LS_KEY, [])
+    const stored = householdAdapter.getAll()
     if (stored.length > 0) setMembers(stored)
     setIsLoaded(true)
   }, [])
@@ -41,7 +38,7 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
   const addMember = useCallback((member: HouseholdMember) => {
     setMembers((prev) => {
       const updated = [...prev, member]
-      writeJSON(LS_KEY, updated)
+      householdAdapter.saveAll(updated)
       return updated
     })
   }, [])
@@ -49,7 +46,7 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
   const removeMember = useCallback((id: string) => {
     setMembers((prev) => {
       const updated = prev.filter((m) => m.id !== id)
-      writeJSON(LS_KEY, updated)
+      householdAdapter.saveAll(updated)
       return updated
     })
   }, [])
