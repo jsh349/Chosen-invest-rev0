@@ -9,6 +9,7 @@ export const ROUTES = {
   goals:          '/goals',
   transactions:   '/transactions',
   household:      '/household',
+  taxOpportunity: '/tax-opportunity',
   analysis:       '/analysis',
   ai:             '/ai',
   settings:       '/settings',

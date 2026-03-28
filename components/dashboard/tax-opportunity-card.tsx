@@ -1,7 +1,9 @@
 'use client'
 
+import Link from 'next/link'
 import { ShieldAlert, CheckCircle2, AlertTriangle } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { ROUTES } from '@/lib/constants/routes'
 import type { Asset } from '@/lib/types/asset'
 
 // Categories that commonly have tax implications
@@ -69,6 +71,10 @@ export function TaxOpportunityCard({ assets }: { assets: Asset[] }) {
         <p className="rounded-lg bg-surface-muted/40 px-3 py-2 text-xs text-gray-500">
           This is informational only. Chosen Invest does not execute trades or provide personalised tax advice. Consult a qualified tax professional before making any decisions.
         </p>
+
+        <Link href={ROUTES.taxOpportunity} className="text-xs text-brand-400 hover:text-brand-300 transition-colors">
+          View details →
+        </Link>
 
       </CardContent>
     </Card>
