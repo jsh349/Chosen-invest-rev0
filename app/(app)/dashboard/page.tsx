@@ -6,6 +6,7 @@ import { DashboardOverview } from '@/components/dashboard/dashboard-overview'
 import { AllocationChartCard } from '@/components/dashboard/allocation-chart-card'
 import { AISummaryCard } from '@/components/dashboard/ai-summary-card'
 import { HealthCardsGrid } from '@/components/dashboard/health-cards-grid'
+import { PortfolioStatusCard } from '@/components/dashboard/portfolio-status-card'
 import { buildPortfolioSummary } from '@/features/dashboard/helpers'
 import { generateHealthCards } from '@/features/dashboard/diagnosis'
 import { generateAISummary } from '@/features/ai/summary-generator'
@@ -74,7 +75,10 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <AllocationChartCard slices={summary.categoryBreakdown} />
-        <AISummaryCard analysis={aiAnalysis} />
+        <div className="flex flex-col gap-6">
+          <PortfolioStatusCard summary={summary} />
+          <AISummaryCard analysis={aiAnalysis} />
+        </div>
       </div>
 
       <NetWorthTrendCard data={trendData} isMock={isDemoMode} />
