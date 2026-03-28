@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Trash2, Target, Pencil, Check, X } from 'lucide-react'
 import { useGoals } from '@/lib/store/goals-store'
 import { formatCurrency } from '@/lib/utils/currency'
@@ -9,6 +10,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
 import type { Goal, GoalType } from '@/lib/types/goal'
 import { getGoalStatus, GOAL_STATUS_STYLES } from '@/lib/utils/goal-status'
+import { ROUTES } from '@/lib/constants/routes'
 
 const GOAL_TYPES: { value: GoalType; label: string }[] = [
   { value: 'savings',    label: 'Savings'    },
@@ -288,6 +290,13 @@ export default function GoalsPage() {
                         )}
                       </div>
                       <div className="flex shrink-0 gap-1">
+                        <Link
+                          href={`${ROUTES.goals}/${goal.id}`}
+                          className="rounded-lg p-1.5 text-gray-600 hover:bg-surface-muted hover:text-white transition-colors"
+                          aria-label="View goal details"
+                        >
+                          <Target className="h-4 w-4" />
+                        </Link>
                         <button
                           onClick={() => startEdit(goal)}
                           className="rounded-lg p-1.5 text-gray-600 hover:bg-surface-muted hover:text-white transition-colors"
