@@ -143,8 +143,10 @@ export default function GoalsPage() {
                   name="targetDate"
                   value={form.targetDate}
                   onChange={handleChange}
-                  type="date"
-                  className="w-full rounded-lg border border-surface-border bg-surface-muted px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none"
+                  type="text"
+                  placeholder="YYYY-MM-DD"
+                  maxLength={10}
+                  className="w-full rounded-lg border border-surface-border bg-surface-muted px-3 py-2 text-sm text-white placeholder-gray-600 focus:border-brand-500 focus:outline-none"
                 />
               </div>
             </div>
