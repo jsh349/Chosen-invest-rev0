@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, ChevronRight } from 'lucide-react'
 import { AssetRow } from '@/components/portfolio/asset-row'
 import { Button } from '@/components/ui/button'
 import { blankFormEntry, formEntryToAsset } from '@/features/portfolio/helpers'
 import type { AssetFormEntry } from '@/features/portfolio/types'
+import type { Asset } from '@/lib/types/asset'
 import { useAssets } from '@/lib/store/assets-store'
 import { formatCurrency } from '@/lib/utils/currency'
 import { ROUTES } from '@/lib/constants/routes'
@@ -16,15 +17,38 @@ function nextId() {
   return `asset_${(++idCounter).toString(36)}`
 }
 
+function assetToFormEntry(asset: Asset): AssetFormEntry {
+  return {
+    name: asset.name,
+    category: asset.category,
+    value: asset.value.toString(),
+    currency: asset.currency ?? 'USD',
+  }
+}
+
 export default function PortfolioInputPage() {
   const router = useRouter()
-  const { setAssets } = useAssets()
-  const [entries, setEntries] = useState<AssetFormEntry[]>([blankFormEntry()])
+  const { assets, hasCustomAssets, isLoaded, setAssets } = useAssets()
+  const [entries, setEntries] = useState<AssetFormEntry[] | null>(null)
+
+  useEffect(() => {
+    if (!isLoaded) return
+    setEntries(hasCustomAssets ? assets.map(assetToFormEntry) : [blankFormEntry()])
+  }, [isLoaded])
+
+  if (!isLoaded || entries === null) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
+      </div>
+    )
+  }
 
   const total = entries.reduce((sum, e) => sum + (parseFloat(e.value) || 0), 0)
 
   function handleChange(index: number, field: keyof AssetFormEntry, value: string) {
     setEntries((prev) => {
+      if (!prev) return prev
       const updated = [...prev]
       updated[index] = { ...updated[index], [field]: value }
       return updated
@@ -32,11 +56,11 @@ export default function PortfolioInputPage() {
   }
 
   function handleAdd() {
-    setEntries((prev) => [...prev, blankFormEntry()])
+    setEntries((prev) => (prev ? [...prev, blankFormEntry()] : [blankFormEntry()]))
   }
 
   function handleRemove(index: number) {
-    setEntries((prev) => prev.filter((_, i) => i !== index))
+    setEntries((prev) => (prev ? prev.filter((_, i) => i !== index) : prev))
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -48,17 +72,19 @@ export default function PortfolioInputPage() {
       router.push(ROUTES.dashboard)
       return
     }
-    const assets = validEntries.map((en) =>
+    const newAssets = validEntries.map((en) =>
       formEntryToAsset(en, 'local_user', nextId())
     )
-    setAssets(assets)
+    setAssets(newAssets)
     router.push(ROUTES.dashboard)
   }
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-white">Add Your Assets</h1>
+        <h1 className="text-xl font-bold text-white">
+          {hasCustomAssets ? 'Edit Your Assets' : 'Add Your Assets'}
+        </h1>
         <p className="mt-0.5 text-sm text-gray-500">
           Enter each asset manually. Your data stays in your browser.
         </p>
@@ -86,7 +112,6 @@ export default function PortfolioInputPage() {
           Add Another Asset
         </Button>
 
-        {/* Running total */}
         {total > 0 && (
           <div className="flex items-center justify-between rounded-lg border border-surface-border bg-surface-card px-4 py-3">
             <span className="text-sm text-gray-400">Total entered</span>
@@ -100,10 +125,10 @@ export default function PortfolioInputPage() {
             variant="ghost"
             onClick={() => router.push(ROUTES.dashboard)}
           >
-            Skip for now
+            Cancel
           </Button>
           <Button type="submit">
-            View My Dashboard
+            Save &amp; View Dashboard
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
