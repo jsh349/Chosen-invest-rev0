@@ -1,6 +1,6 @@
 import { Clock } from 'lucide-react'
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
 import { ROUTES } from '@/lib/constants/routes'
 
 interface ComingSoonPageProps {
@@ -19,9 +19,9 @@ export function ComingSoonPage({
       </div>
       <h1 className="mb-2 text-xl font-semibold text-white">{title}</h1>
       <p className="mb-6 max-w-sm text-sm text-gray-500">{description}</p>
-      <Button variant="outline" asChild>
-        <Link href={ROUTES.dashboard}>Back to Dashboard</Link>
-      </Button>
+      <Link href={ROUTES.dashboard} className={buttonVariants({ variant: 'outline' })}>
+        Back to Dashboard
+      </Link>
     </div>
   )
 }

@@ -1,13 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import { Pencil, Trash2, PlusCircle } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Trash2, PlusCircle } from 'lucide-react'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { useAssets } from '@/lib/store/assets-store'
 import { CATEGORY_MAP } from '@/lib/constants/asset-categories'
 import { formatCurrency } from '@/lib/utils/currency'
 import { ROUTES } from '@/lib/constants/routes'
 import { MOCK_ASSETS } from '@/lib/mock/assets'
+import { cn } from '@/lib/utils/cn'
 
 export default function PortfolioListPage() {
   const { assets, hasCustomAssets, removeAsset, isLoaded } = useAssets()
@@ -35,20 +36,18 @@ export default function PortfolioListPage() {
               : `${activeAssets.length} assets · Total ${formatCurrency(totalValue)}`}
           </p>
         </div>
-        <Button size="sm" asChild>
-          <Link href={ROUTES.portfolioInput}>
-            <PlusCircle className="h-4 w-4" />
-            {hasCustomAssets ? 'Edit Assets' : 'Add Assets'}
-          </Link>
-        </Button>
+        <Link href={ROUTES.portfolioInput} className={cn(buttonVariants({ size: 'sm' }), 'gap-2')}>
+          <PlusCircle className="h-4 w-4" />
+          {hasCustomAssets ? 'Edit Assets' : 'Add Assets'}
+        </Link>
       </div>
 
       {isDemoMode && (
         <div className="flex items-center justify-between rounded-lg border border-amber-900/50 bg-amber-950/30 px-4 py-3">
           <p className="text-sm text-amber-400">Showing demo data.</p>
-          <Button size="sm" asChild>
-            <Link href={ROUTES.portfolioInput}>Add Your Assets</Link>
-          </Button>
+          <Link href={ROUTES.portfolioInput} className={buttonVariants({ size: 'sm' })}>
+            Add Your Assets
+          </Link>
         </div>
       )}
 
