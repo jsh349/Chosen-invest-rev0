@@ -1,0 +1,81 @@
+'use client'
+
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { formatCurrency } from '@/lib/utils/currency'
+import { useGoals } from '@/lib/store/goals-store'
+import type { Goal } from '@/lib/types/goal'
+
+function nearestGoal(goals: Goal[]): Goal {
+  const withDate = goals
+    .filter((g) => g.targetDate)
+    .sort((a, b) => a.targetDate!.localeCompare(b.targetDate!))
+  return withDate[0] ?? goals[0]
+}
+
+export function GoalsSummaryCard() {
+  const { goals, hasGoals, isLoaded } = useGoals()
+
+  if (!isLoaded) return null
+
+  if (!hasGoals) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Goals</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-gray-500">No goals set yet.</p>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const totalTarget = goals.reduce((sum, g) => sum + g.targetAmount, 0)
+  const totalCurrent = goals.reduce((sum, g) => sum + g.currentAmount, 0)
+  const featured = nearestGoal(goals)
+  const progress = featured.targetAmount > 0
+    ? Math.min(100, (featured.currentAmount / featured.targetAmount) * 100)
+    : 0
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Goals</CardTitle>
+        <span className="text-xs text-gray-500">{goals.length} active</span>
+      </CardHeader>
+      <CardContent className="space-y-4">
+
+        {/* Summary row */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-lg bg-surface-muted/40 px-3 py-2">
+            <p className="text-xs text-gray-500">Total Target</p>
+            <p className="mt-0.5 text-sm font-semibold text-white">{formatCurrency(totalTarget)}</p>
+          </div>
+          <div className="rounded-lg bg-surface-muted/40 px-3 py-2">
+            <p className="text-xs text-gray-500">Saved So Far</p>
+            <p className="mt-0.5 text-sm font-semibold text-white">{formatCurrency(totalCurrent)}</p>
+          </div>
+        </div>
+
+        {/* Featured goal */}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-medium text-gray-300">{featured.name}</span>
+            <span className="text-gray-500">{progress.toFixed(0)}%</span>
+          </div>
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-muted">
+            <div
+              className="h-full rounded-full bg-brand-500 transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <div className="flex justify-between text-xs text-gray-500">
+            <span>{formatCurrency(featured.currentAmount)} saved</span>
+            <span>{formatCurrency(featured.targetAmount)} target</span>
+          </div>
+        </div>
+
+      </CardContent>
+    </Card>
+  )
+}

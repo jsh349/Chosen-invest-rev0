@@ -7,6 +7,7 @@ import { AllocationChartCard } from '@/components/dashboard/allocation-chart-car
 import { AISummaryCard } from '@/components/dashboard/ai-summary-card'
 import { HealthCardsGrid } from '@/components/dashboard/health-cards-grid'
 import { PortfolioStatusCard } from '@/components/dashboard/portfolio-status-card'
+import { GoalsSummaryCard } from '@/components/dashboard/goals-summary-card'
 import { buildPortfolioSummary } from '@/features/dashboard/helpers'
 import { generateHealthCards } from '@/features/dashboard/diagnosis'
 import { generateAISummary } from '@/features/ai/summary-generator'
@@ -91,6 +92,8 @@ export default function DashboardPage() {
         </h2>
         <HealthCardsGrid cards={healthCards} />
       </div>
+
+      <GoalsSummaryCard />
     </div>
   )
 }
