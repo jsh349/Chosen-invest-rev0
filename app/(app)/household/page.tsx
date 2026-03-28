@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { Users, Trash2, Target } from 'lucide-react'
+import { Users, Trash2, Target, StickyNote } from 'lucide-react'
 import { useHousehold } from '@/lib/store/household-store'
 import { useGoals } from '@/lib/store/goals-store'
+import { useHouseholdNotes } from '@/lib/store/household-notes-store'
 import { formatCurrency } from '@/lib/utils/currency'
 import { getGoalStatus, GOAL_STATUS_STYLES } from '@/lib/utils/goal-status'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
@@ -28,10 +29,13 @@ const EMPTY_FORM = { name: '', email: '', role: 'viewer' as MemberRole }
 export default function HouseholdPage() {
   const { members, isLoaded: membersLoaded, addMember, removeMember } = useHousehold()
   const { goals, isLoaded: goalsLoaded } = useGoals()
+  const { notes, isLoaded: notesLoaded, addNote, removeNote } = useHouseholdNotes()
   const [form, setForm] = useState(EMPTY_FORM)
   const [error, setError] = useState('')
+  const [noteForm, setNoteForm] = useState({ title: '', message: '' })
+  const [noteError, setNoteError] = useState('')
 
-  if (!membersLoaded || !goalsLoaded) {
+  if (!membersLoaded || !goalsLoaded || !notesLoaded) {
     return (
       <div className="flex h-64 items-center justify-center">
         <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
@@ -44,6 +48,20 @@ export default function HouseholdPage() {
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
     setError('')
+  }
+
+  function handleNoteSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!noteForm.title.trim()) { setNoteError('Title is required.'); return }
+    if (!noteForm.message.trim()) { setNoteError('Message is required.'); return }
+    addNote({
+      id:        crypto.randomUUID(),
+      title:     noteForm.title.trim(),
+      message:   noteForm.message.trim(),
+      createdAt: new Date().toISOString(),
+    })
+    setNoteForm({ title: '', message: '' })
+    setNoteError('')
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -161,6 +179,69 @@ export default function HouseholdPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Review notes */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <StickyNote className="h-4 w-4 text-gray-400" />
+            Review Notes
+          </CardTitle>
+          <span className="text-xs text-gray-500">{notes.length} {notes.length === 1 ? 'note' : 'notes'}</span>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Add note form */}
+          <form onSubmit={handleNoteSubmit} className="space-y-3">
+            <div className="space-y-1">
+              <label className="text-xs text-gray-400">Title *</label>
+              <input
+                value={noteForm.title}
+                onChange={(e) => { setNoteForm((p) => ({ ...p, title: e.target.value })); setNoteError('') }}
+                placeholder="e.g. Review insurance coverage"
+                className="w-full rounded-lg border border-surface-border bg-surface-muted px-3 py-2 text-sm text-white placeholder-gray-600 focus:border-brand-500 focus:outline-none"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs text-gray-400">Message *</label>
+              <textarea
+                value={noteForm.message}
+                onChange={(e) => { setNoteForm((p) => ({ ...p, message: e.target.value })); setNoteError('') }}
+                placeholder="Add details or next steps..."
+                rows={3}
+                className="w-full rounded-lg border border-surface-border bg-surface-muted px-3 py-2 text-sm text-white placeholder-gray-600 focus:border-brand-500 focus:outline-none resize-none"
+              />
+            </div>
+            {noteError && <p className="text-xs text-red-400">{noteError}</p>}
+            <button type="submit" className={cn(buttonVariants({ size: 'sm' }), 'w-full sm:w-auto')}>
+              Add Note
+            </button>
+          </form>
+
+          {/* Note list */}
+          {notes.length === 0 ? (
+            <p className="text-sm text-gray-500 text-center py-4">No review notes yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {notes.map((note) => (
+                <div key={note.id} className="flex items-start gap-3 rounded-lg border border-surface-border bg-surface-muted/30 px-3 py-3">
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <p className="text-sm font-medium text-white">{note.title}</p>
+                    <p className="text-xs text-gray-400 whitespace-pre-wrap">{note.message}</p>
+                    <p className="text-xs text-gray-600">{new Date(note.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
+                  </div>
+                  <button
+                    onClick={() => removeNote(note.id)}
+                    className="shrink-0 rounded-lg p-1.5 text-gray-600 hover:bg-red-950 hover:text-red-400 transition-colors"
+                    aria-label="Delete note"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Shared goals */}
       <Card>
