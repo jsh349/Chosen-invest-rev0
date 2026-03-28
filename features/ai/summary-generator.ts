@@ -1,21 +1,30 @@
 import type { PortfolioSummary } from '@/lib/types/dashboard'
 import type { AIAnalysisResult } from '@/lib/types/dashboard'
 
-export function generateAISummary(summary: PortfolioSummary): AIAnalysisResult {
+export type AISummaryContext = {
+  hasGoals: boolean
+  netCashFlow: number | null  // null = no transaction data
+}
+
+export function generateAISummary(
+  summary: PortfolioSummary,
+  context: AISummaryContext = { hasGoals: false, netCashFlow: null },
+): AIAnalysisResult {
   const { categoryBreakdown, totalAssetValue, assetCount, userId } = summary
+  const { hasGoals, netCashFlow } = context
   const topCategory = categoryBreakdown[0]
   const topPct = topCategory?.percentage ?? 0
 
   const lines: string[] = []
   const keyPoints: string[] = []
 
-  // Opening
+  // Opening — no assets
   if (assetCount === 0) {
     lines.push('No assets recorded yet. Add your portfolio to receive a personalized summary.')
     return {
       userId,
       summaryText: lines.join(' '),
-      keyPoints: [],
+      keyPoints: ['Start by adding your assets in the Portfolio section'],
       inputSnapshot: { totalValue: 0, assetCount: 0, topCategory: '' },
       generatedAt: new Date().toISOString(),
     }
@@ -73,6 +82,23 @@ export function generateAISummary(summary: PortfolioSummary): AIAnalysisResult {
   } else if (!cashSlice || cashSlice.percentage < 5) {
     lines.push('Cash reserves are low. A larger liquidity buffer would improve your ability to handle unexpected expenses.')
     keyPoints.push('Low cash — consider building emergency fund')
+  }
+
+  // Goal signal
+  if (!hasGoals) {
+    keyPoints.push('No goals set — consider adding financial goals to stay on track')
+  } else {
+    keyPoints.push('Financial goals are set — keep monitoring progress')
+  }
+
+  // Cash flow signal
+  if (netCashFlow !== null) {
+    if (netCashFlow < 0) {
+      lines.push('Your recorded transactions show negative net cash flow this month. Review spending to ease pressure on your portfolio.')
+      keyPoints.push('Negative cash flow this month — review expenses')
+    } else if (netCashFlow > 0) {
+      keyPoints.push('Positive cash flow this month — good position')
+    }
   }
 
   // Closing

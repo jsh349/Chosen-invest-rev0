@@ -15,6 +15,8 @@ import { NetWorthTrendCard } from '@/components/dashboard/net-worth-trend-card'
 import { TransactionSummaryCard } from '@/components/dashboard/transaction-summary-card'
 import { TaxOpportunityCard } from '@/components/dashboard/tax-opportunity-card'
 import { useAssets } from '@/lib/store/assets-store'
+import { useGoals } from '@/lib/store/goals-store'
+import { useTransactions } from '@/lib/store/transactions-store'
 import { buildMockTrend } from '@/lib/mock/trend'
 import { ROUTES } from '@/lib/constants/routes'
 import { buttonVariants } from '@/components/ui/button'
@@ -40,6 +42,8 @@ function EmptyState() {
 
 export default function DashboardPage() {
   const { assets, hasCustomAssets, isLoaded } = useAssets()
+  const { hasGoals } = useGoals()
+  const { transactions } = useTransactions()
 
   if (!isLoaded) {
     return (
@@ -55,7 +59,12 @@ export default function DashboardPage() {
 
   const summary = buildPortfolioSummary('local_user', assets)
   const healthCards = generateHealthCards(summary)
-  const aiAnalysis = generateAISummary(summary)
+
+  const netCashFlow = transactions.length > 0
+    ? transactions.reduce((sum, t) => sum + t.amount, 0)
+    : null
+  const aiAnalysis = generateAISummary(summary, { hasGoals, netCashFlow })
+
   const trendData = buildMockTrend(summary.totalAssetValue)
 
   return (
