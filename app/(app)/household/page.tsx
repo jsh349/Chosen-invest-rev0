@@ -1,110 +1,58 @@
 'use client'
 
-import { Users, UserPlus, ShieldCheck, ListChecks } from 'lucide-react'
+import { useState } from 'react'
+import { Users, Trash2 } from 'lucide-react'
+import { useHousehold } from '@/lib/store/household-store'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
+import type { MemberRole } from '@/lib/types/household'
 
-// Local mock — no backend yet
-const MOCK_HOUSEHOLD = null as null | {
-  name: string
-  members: number
-  sharedGoals: number
-  pendingReviews: number
+const ROLES: { value: MemberRole; label: string; description: string }[] = [
+  { value: 'admin',   label: 'Admin',   description: 'Full access'     },
+  { value: 'partner', label: 'Partner', description: 'Can add & edit'  },
+  { value: 'viewer',  label: 'Viewer',  description: 'Read only'       },
+]
+
+const ROLE_COLORS: Record<MemberRole, string> = {
+  admin:   'text-brand-300 bg-brand-950',
+  partner: 'text-green-400 bg-green-950',
+  viewer:  'text-gray-400 bg-surface-muted',
 }
 
-function StatTile({ label, value }: { label: string; value: string | number }) {
-  return (
-    <div className="rounded-lg bg-surface-muted/40 px-4 py-3">
-      <p className="text-xs text-gray-500">{label}</p>
-      <p className="mt-0.5 text-lg font-semibold text-white">{value}</p>
-    </div>
-  )
-}
-
-function EmptyState() {
-  return (
-    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-surface-border py-20 text-center">
-      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-surface-border bg-surface-card">
-        <Users className="h-6 w-6 text-gray-500" />
-      </div>
-      <h2 className="mb-1 text-base font-semibold text-white">No household configured</h2>
-      <p className="mb-6 max-w-xs text-sm text-gray-500">
-        Create a household to share goals and track finances together with your family or partner.
-      </p>
-      <button
-        disabled
-        className={cn(buttonVariants({ size: 'lg' }), 'cursor-not-allowed opacity-40 gap-2')}
-      >
-        <UserPlus className="h-4 w-4" />
-        Create Household
-        <span className="ml-1 rounded-full bg-brand-800 px-2 py-0.5 text-xs text-brand-300">
-          Coming soon
-        </span>
-      </button>
-    </div>
-  )
-}
-
-function HouseholdDashboard({
-  household,
-}: {
-  household: NonNullable<typeof MOCK_HOUSEHOLD>
-}) {
-  return (
-    <div className="space-y-6">
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatTile label="Members"        value={household.members}       />
-        <StatTile label="Shared Goals"   value={household.sharedGoals}   />
-        <StatTile label="Pending Reviews" value={household.pendingReviews} />
-        <StatTile label="Status"         value="Active"                  />
-      </div>
-
-      {/* Sections */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-gray-400" />
-              Members
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-gray-500">Member list coming soon.</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ListChecks className="h-4 w-4 text-gray-400" />
-              Shared Goals
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-gray-500">Shared goal tracking coming soon.</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4 text-gray-400" />
-            Pending Reviews
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-gray-500">No pending reviews.</p>
-        </CardContent>
-      </Card>
-    </div>
-  )
-}
+const EMPTY_FORM = { name: '', email: '', role: 'viewer' as MemberRole }
 
 export default function HouseholdPage() {
-  const household = MOCK_HOUSEHOLD
+  const { members, isLoaded, addMember, removeMember } = useHousehold()
+  const [form, setForm] = useState(EMPTY_FORM)
+  const [error, setError] = useState('')
+
+  if (!isLoaded) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
+      </div>
+    )
+  }
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
+    setError('')
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!form.name.trim()) { setError('Name is required.'); return }
+    if (!form.email.trim() || !form.email.includes('@')) { setError('A valid email is required.'); return }
+    addMember({
+      id:        crypto.randomUUID(),
+      name:      form.name.trim(),
+      email:     form.email.trim().toLowerCase(),
+      role:      form.role,
+      createdAt: new Date().toISOString(),
+    })
+    setForm(EMPTY_FORM)
+  }
 
   return (
     <div className="space-y-6">
@@ -115,10 +63,97 @@ export default function HouseholdPage() {
         </p>
       </div>
 
-      {household ? (
-        <HouseholdDashboard household={household} />
+      {/* Add member form */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Add Member</CardTitle>
+          <span className="text-xs text-gray-500">Local mock — no invitations sent</span>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div className="space-y-1">
+                <label className="text-xs text-gray-400">Name *</label>
+                <input
+                  name="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  placeholder="Jane Doe"
+                  className="w-full rounded-lg border border-surface-border bg-surface-muted px-3 py-2 text-sm text-white placeholder-gray-600 focus:border-brand-500 focus:outline-none"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-gray-400">Email *</label>
+                <input
+                  name="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  placeholder="jane@example.com"
+                  type="text"
+                  className="w-full rounded-lg border border-surface-border bg-surface-muted px-3 py-2 text-sm text-white placeholder-gray-600 focus:border-brand-500 focus:outline-none"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-gray-400">Role *</label>
+                <select
+                  name="role"
+                  value={form.role}
+                  onChange={handleChange}
+                  className="w-full rounded-lg border border-surface-border bg-surface-muted px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none"
+                >
+                  {ROLES.map((r) => (
+                    <option key={r.value} value={r.value}>{r.label} — {r.description}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            {error && <p className="text-xs text-red-400">{error}</p>}
+            <button type="submit" className={cn(buttonVariants({ size: 'sm' }), 'w-full sm:w-auto')}>
+              Add Member
+            </button>
+          </form>
+        </CardContent>
+      </Card>
+
+      {/* Member list */}
+      {members.length === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-surface-border py-16 text-center">
+          <Users className="mb-3 h-8 w-8 text-gray-600" />
+          <p className="text-sm font-medium text-gray-400">No members yet</p>
+          <p className="mt-1 text-xs text-gray-600">Add household members above to get started.</p>
+        </div>
       ) : (
-        <EmptyState />
+        <Card>
+          <CardHeader>
+            <CardTitle>Members</CardTitle>
+            <span className="text-xs text-gray-500">{members.length} {members.length === 1 ? 'member' : 'members'}</span>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="divide-y divide-surface-border">
+              {members.map((m) => (
+                <div key={m.id} className="flex items-center gap-3 px-4 py-3">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-muted text-sm font-semibold text-white">
+                    {m.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-white">{m.name}</p>
+                    <p className="truncate text-xs text-gray-500">{m.email}</p>
+                  </div>
+                  <span className={cn('shrink-0 rounded-full px-2 py-0.5 text-xs font-medium capitalize', ROLE_COLORS[m.role])}>
+                    {m.role}
+                  </span>
+                  <button
+                    onClick={() => removeMember(m.id)}
+                    className="shrink-0 rounded-lg p-1.5 text-gray-600 hover:bg-red-950 hover:text-red-400 transition-colors"
+                    aria-label="Remove member"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   )
