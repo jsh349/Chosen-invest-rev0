@@ -10,8 +10,10 @@ import {
 } from 'react'
 import type { Transaction } from '@/lib/types/transaction'
 import { recordAudit } from '@/lib/store/audit-store'
+import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
+import { readJSON, writeJSON } from '@/lib/utils/local-storage'
 
-const LS_KEY = 'chosen_transactions_v1'
+const LS_KEY = STORAGE_KEYS.transactions
 
 type TransactionsContextType = {
   transactions: Transaction[]
@@ -32,19 +34,15 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
-    try {
-      const stored = window.localStorage.getItem(LS_KEY)
-      if (stored) setTransactions(JSON.parse(stored))
-    } catch {
-      // ignore malformed data
-    }
+    const stored = readJSON<Transaction[]>(LS_KEY, [])
+    if (stored.length > 0) setTransactions(stored)
     setIsLoaded(true)
   }, [])
 
   const addTransaction = useCallback((t: Transaction) => {
     setTransactions((prev) => {
       const updated = [t, ...prev]
-      window.localStorage.setItem(LS_KEY, JSON.stringify(updated))
+      writeJSON(LS_KEY, updated)
       return updated
     })
     recordAudit('Transaction added', t.description)
@@ -55,7 +53,7 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
       const target = prev.find((t) => t.id === id)
       if (target) recordAudit('Transaction deleted', target.description)
       const updated = prev.filter((t) => t.id !== id)
-      window.localStorage.setItem(LS_KEY, JSON.stringify(updated))
+      writeJSON(LS_KEY, updated)
       return updated
     })
   }, [])

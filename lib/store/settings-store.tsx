@@ -9,7 +9,10 @@ import {
   type ReactNode,
 } from 'react'
 
-const LS_KEY = 'chosen_settings_v1'
+import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
+import { readJSON, writeJSON } from '@/lib/utils/local-storage'
+
+const LS_KEY = STORAGE_KEYS.settings
 
 export type CurrencyCode = 'USD' | 'EUR' | 'GBP' | 'JPY' | 'KRW'
 
@@ -42,11 +45,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
-    try {
-      const stored = window.localStorage.getItem(LS_KEY)
-      if (stored) setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(stored) })
-    } catch {
-      // ignore malformed data
+    const stored = readJSON<Partial<AppSettings>>(LS_KEY, {})
+    if (Object.keys(stored).length > 0) {
+      setSettings({ ...DEFAULT_SETTINGS, ...stored })
     }
     setIsLoaded(true)
   }, [])
@@ -54,7 +55,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const update = useCallback((patch: Partial<AppSettings>) => {
     setSettings((prev) => {
       const updated = { ...prev, ...patch }
-      window.localStorage.setItem(LS_KEY, JSON.stringify(updated))
+      writeJSON(LS_KEY, updated)
       return updated
     })
   }, [])

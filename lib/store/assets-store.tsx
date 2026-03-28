@@ -10,8 +10,10 @@ import {
 } from 'react'
 import type { Asset } from '@/lib/types/asset'
 import { recordAudit } from '@/lib/store/audit-store'
+import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
+import { readJSON, writeJSON } from '@/lib/utils/local-storage'
 
-const LS_KEY = 'chosen_assets_v1'
+const LS_KEY = STORAGE_KEYS.assets
 
 type AssetsContextType = {
   assets: Asset[]
@@ -40,24 +42,20 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
-    try {
-      const stored = window.localStorage.getItem(LS_KEY)
-      if (stored) setAssetsState(JSON.parse(stored))
-    } catch {
-      // ignore
-    }
+    const stored = readJSON<Asset[]>(LS_KEY, [])
+    if (stored.length > 0) setAssetsState(stored)
     setIsLoaded(true)
   }, [])
 
   const setAssets = useCallback((newAssets: Asset[]) => {
-    window.localStorage.setItem(LS_KEY, JSON.stringify(newAssets))
+    writeJSON(LS_KEY, newAssets)
     setAssetsState(newAssets)
   }, [])
 
   const addAsset = useCallback((asset: Asset) => {
     setAssetsState((prev) => {
       const updated = [...prev, asset]
-      window.localStorage.setItem(LS_KEY, JSON.stringify(updated))
+      writeJSON(LS_KEY, updated)
       return updated
     })
     recordAudit('Asset added', asset.name)
@@ -70,7 +68,7 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
         const updated = prev.map((a) =>
           a.id === id ? { ...a, ...patch, updatedAt: new Date().toISOString() } : a
         )
-        window.localStorage.setItem(LS_KEY, JSON.stringify(updated))
+        writeJSON(LS_KEY, updated)
         if (target) recordAudit('Asset edited', patch.name ?? target.name)
         return updated
       })
@@ -83,7 +81,7 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
       const target = prev.find((a) => a.id === id)
       if (target) recordAudit('Asset deleted', target.name)
       const updated = prev.filter((a) => a.id !== id)
-      window.localStorage.setItem(LS_KEY, JSON.stringify(updated))
+      writeJSON(LS_KEY, updated)
       return updated
     })
   }, [])

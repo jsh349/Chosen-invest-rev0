@@ -9,7 +9,10 @@ import {
   type ReactNode,
 } from 'react'
 
-const LS_KEY = 'chosen_dashboard_prefs_v1'
+import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
+import { readJSON, writeJSON } from '@/lib/utils/local-storage'
+
+const LS_KEY = STORAGE_KEYS.dashboardPrefs
 
 export type DashboardCardKey =
   | 'allocation'
@@ -57,14 +60,9 @@ export function DashboardPrefsProvider({ children }: { children: ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
-    try {
-      const stored = window.localStorage.getItem(LS_KEY)
-      if (stored) {
-        // Merge stored with defaults so new keys always have a value
-        setPrefs({ ...DEFAULT_PREFS, ...JSON.parse(stored) })
-      }
-    } catch {
-      // ignore malformed data
+    const stored = readJSON<Record<string, boolean>>(LS_KEY, {})
+    if (Object.keys(stored).length > 0) {
+      setPrefs({ ...DEFAULT_PREFS, ...stored })
     }
     setIsLoaded(true)
   }, [])
@@ -72,7 +70,7 @@ export function DashboardPrefsProvider({ children }: { children: ReactNode }) {
   const toggle = useCallback((key: DashboardCardKey) => {
     setPrefs((prev) => {
       const updated = { ...prev, [key]: !prev[key] }
-      window.localStorage.setItem(LS_KEY, JSON.stringify(updated))
+      writeJSON(LS_KEY, updated)
       return updated
     })
   }, [])

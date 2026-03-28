@@ -4,20 +4,9 @@ import { useRef, useState } from 'react'
 import { Download, Upload, History } from 'lucide-react'
 import { useSettings, DEFAULT_SETTINGS, type CurrencyCode, type AppSettings } from '@/lib/store/settings-store'
 import { useAudit } from '@/lib/store/audit-store'
+import { ALL_STORAGE_KEYS } from '@/lib/constants/storage-keys'
 
 const SELECT_CLASS = 'w-full rounded-lg border border-surface-border bg-surface-muted px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none'
-
-// All localStorage keys managed by the app
-const EXPORT_KEYS = [
-  'chosen_assets_v1',
-  'chosen_goals_v1',
-  'chosen_transactions_v1',
-  'chosen_household_v1',
-  'chosen_household_notes_v1',
-  'chosen_settings_v1',
-  'chosen_dashboard_prefs_v1',
-  'chosen_audit_v1',
-] as const
 
 const CURRENCIES: { value: CurrencyCode; label: string }[] = [
   { value: 'USD', label: 'USD — US Dollar ($)'    },
@@ -48,7 +37,7 @@ function Row({ label, hint, children }: { label: string; hint?: string; children
 
 function handleExport() {
   const data: Record<string, unknown> = { exportedAt: new Date().toISOString() }
-  for (const key of EXPORT_KEYS) {
+  for (const key of ALL_STORAGE_KEYS) {
     try {
       const raw = window.localStorage.getItem(key)
       data[key] = raw ? JSON.parse(raw) : null
@@ -69,7 +58,7 @@ function validateImport(data: unknown): string | null {
   if (typeof data !== 'object' || data === null || Array.isArray(data)) {
     return 'File must be a JSON object.'
   }
-  const hasAnyKey = EXPORT_KEYS.some((k) => k in (data as Record<string, unknown>))
+  const hasAnyKey = ALL_STORAGE_KEYS.some((k) => k in (data as Record<string, unknown>))
   if (!hasAnyKey) {
     return 'File does not contain any recognised Chosen Invest data.'
   }
@@ -104,7 +93,7 @@ export default function SettingsPage() {
         if (error) { setImportStatus({ type: 'error', message: error }); return }
 
         let restored = 0
-        for (const key of EXPORT_KEYS) {
+        for (const key of ALL_STORAGE_KEYS) {
           const value = (data as Record<string, unknown>)[key]
           if (value !== null && value !== undefined) {
             window.localStorage.setItem(key, JSON.stringify(value))

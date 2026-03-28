@@ -9,8 +9,10 @@ import {
   type ReactNode,
 } from 'react'
 import type { HouseholdMember } from '@/lib/types/household'
+import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
+import { readJSON, writeJSON } from '@/lib/utils/local-storage'
 
-const LS_KEY = 'chosen_household_v1'
+const LS_KEY = STORAGE_KEYS.household
 
 type HouseholdContextType = {
   members: HouseholdMember[]
@@ -31,19 +33,15 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
-    try {
-      const stored = window.localStorage.getItem(LS_KEY)
-      if (stored) setMembers(JSON.parse(stored))
-    } catch {
-      // ignore malformed data
-    }
+    const stored = readJSON<HouseholdMember[]>(LS_KEY, [])
+    if (stored.length > 0) setMembers(stored)
     setIsLoaded(true)
   }, [])
 
   const addMember = useCallback((member: HouseholdMember) => {
     setMembers((prev) => {
       const updated = [...prev, member]
-      window.localStorage.setItem(LS_KEY, JSON.stringify(updated))
+      writeJSON(LS_KEY, updated)
       return updated
     })
   }, [])
@@ -51,7 +49,7 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
   const removeMember = useCallback((id: string) => {
     setMembers((prev) => {
       const updated = prev.filter((m) => m.id !== id)
-      window.localStorage.setItem(LS_KEY, JSON.stringify(updated))
+      writeJSON(LS_KEY, updated)
       return updated
     })
   }, [])

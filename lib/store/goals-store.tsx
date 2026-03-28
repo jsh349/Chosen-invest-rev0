@@ -10,8 +10,10 @@ import {
 } from 'react'
 import type { Goal } from '@/lib/types/goal'
 import { recordAudit } from '@/lib/store/audit-store'
+import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
+import { readJSON, writeJSON } from '@/lib/utils/local-storage'
 
-const LS_KEY = 'chosen_goals_v1'
+const LS_KEY = STORAGE_KEYS.goals
 
 type GoalsContextType = {
   goals: Goal[]
@@ -38,24 +40,20 @@ export function GoalsProvider({ children }: { children: ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
-    try {
-      const stored = window.localStorage.getItem(LS_KEY)
-      if (stored) setGoalsState(JSON.parse(stored))
-    } catch {
-      // ignore malformed data
-    }
+    const stored = readJSON<Goal[]>(LS_KEY, [])
+    if (stored.length > 0) setGoalsState(stored)
     setIsLoaded(true)
   }, [])
 
   const setGoals = useCallback((newGoals: Goal[]) => {
-    window.localStorage.setItem(LS_KEY, JSON.stringify(newGoals))
+    writeJSON(LS_KEY, newGoals)
     setGoalsState(newGoals)
   }, [])
 
   const addGoal = useCallback((goal: Goal) => {
     setGoalsState((prev) => {
       const updated = [...prev, goal]
-      window.localStorage.setItem(LS_KEY, JSON.stringify(updated))
+      writeJSON(LS_KEY, updated)
       return updated
     })
     recordAudit('Goal added', goal.name)
@@ -67,7 +65,7 @@ export function GoalsProvider({ children }: { children: ReactNode }) {
       const updated = prev.map((g) =>
         g.id === id ? { ...g, ...patch, updatedAt: new Date().toISOString() } : g
       )
-      window.localStorage.setItem(LS_KEY, JSON.stringify(updated))
+      writeJSON(LS_KEY, updated)
       if (target) recordAudit('Goal edited', patch.name ?? target.name)
       return updated
     })
@@ -78,7 +76,7 @@ export function GoalsProvider({ children }: { children: ReactNode }) {
       const target = prev.find((g) => g.id === id)
       if (target) recordAudit('Goal deleted', target.name)
       const updated = prev.filter((g) => g.id !== id)
-      window.localStorage.setItem(LS_KEY, JSON.stringify(updated))
+      writeJSON(LS_KEY, updated)
       return updated
     })
   }, [])

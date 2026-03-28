@@ -9,7 +9,10 @@ import {
   type ReactNode,
 } from 'react'
 
-const LS_KEY = 'chosen_audit_v1'
+import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
+import { readJSON, writeJSON } from '@/lib/utils/local-storage'
+
+const LS_KEY = STORAGE_KEYS.audit
 const MAX_ENTRIES = 50
 
 export type AuditEntry = {
@@ -22,16 +25,14 @@ export type AuditEntry = {
 /** Standalone helper — callable from any store without React context */
 export function recordAudit(action: string, detail: string) {
   try {
-    const raw = window.localStorage.getItem(LS_KEY)
-    const existing: AuditEntry[] = raw ? JSON.parse(raw) : []
+    const existing = readJSON<AuditEntry[]>(LS_KEY, [])
     const entry: AuditEntry = {
       id: crypto.randomUUID(),
       action,
       detail,
       timestamp: new Date().toISOString(),
     }
-    const updated = [entry, ...existing].slice(0, MAX_ENTRIES)
-    window.localStorage.setItem(LS_KEY, JSON.stringify(updated))
+    writeJSON(LS_KEY, [entry, ...existing].slice(0, MAX_ENTRIES))
   } catch {
     // never break the app for audit
   }
@@ -56,12 +57,7 @@ export function AuditProvider({ children }: { children: ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false)
 
   const load = useCallback(() => {
-    try {
-      const raw = window.localStorage.getItem(LS_KEY)
-      setEntries(raw ? JSON.parse(raw) : [])
-    } catch {
-      setEntries([])
-    }
+    setEntries(readJSON<AuditEntry[]>(LS_KEY, []))
   }, [])
 
   useEffect(() => {
