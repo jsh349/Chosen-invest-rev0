@@ -70,13 +70,18 @@ export default function DashboardPage() {
   const advisorCtx = buildAdvisorContext(assets, goals, transactions)
   const summary = advisorCtx.portfolio
   const healthCards = generateHealthCards(summary)
-  const aiAnalysis = generateAISummary(advisorCtx)
   const trendData = buildMockTrend(summary.totalAssetValue)
   const overallRank = computeOverallWealthRank(summary.totalAssetValue)
   const userAge = settings.birthYear ? new Date().getFullYear() - settings.birthYear : undefined
   const ageRank = computeAgeBasedRank(summary.totalAssetValue, userAge)
   const ageGenderRank = computeAgeGenderRank(summary.totalAssetValue, userAge, settings.gender)
   const returnRank = computeReturnRank(settings.annualReturnPct)
+  advisorCtx.rankSummary = {
+    overallPercentile: overallRank.percentile,
+    agePercentile: ageRank.percentile,
+    returnPercentile: returnRank.percentile,
+  }
+  const aiAnalysis = generateAISummary(advisorCtx)
 
   const show = (key: DashboardCardKey) => prefs[key]
 

@@ -97,6 +97,24 @@ export function generateAISummary(ctx: AdvisorContext): AIAnalysisResult {
     }
   }
 
+  // Rank context
+  const rs = ctx.rankSummary
+  if (rs) {
+    if (rs.overallPercentile != null && rs.overallPercentile >= 70) {
+      keyPoints.push(`Wealth rank: top ${100 - rs.overallPercentile}% nationally`)
+    }
+    if (rs.overallPercentile != null && rs.returnPercentile != null) {
+      if (rs.returnPercentile >= rs.overallPercentile + 15) {
+        lines.push('Your investment returns are outperforming relative to your wealth standing — strong momentum.')
+      } else if (rs.returnPercentile <= rs.overallPercentile - 15) {
+        lines.push('Your investment returns trail your overall wealth percentile. Consider reviewing your portfolio strategy.')
+      }
+    }
+    if (rs.agePercentile != null && rs.agePercentile >= 75) {
+      lines.push(`You rank in the top ${100 - rs.agePercentile}% for your age group — well ahead of peers.`)
+    }
+  }
+
   // Closing
   lines.push('Review your allocation regularly as your goals and circumstances evolve.')
 
