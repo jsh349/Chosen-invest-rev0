@@ -14,6 +14,7 @@ import { generateAISummary } from '@/features/ai/summary-generator'
 import { NetWorthTrendCard } from '@/components/dashboard/net-worth-trend-card'
 import { TransactionSummaryCard } from '@/components/dashboard/transaction-summary-card'
 import { TaxOpportunityCard } from '@/components/dashboard/tax-opportunity-card'
+import { CashFlowInsightCard } from '@/components/dashboard/cash-flow-insight-card'
 import { useAssets } from '@/lib/store/assets-store'
 import { useGoals } from '@/lib/store/goals-store'
 import { useTransactions } from '@/lib/store/transactions-store'
@@ -107,6 +108,8 @@ export default function DashboardPage() {
       <GoalsSummaryCard />
 
       <TransactionSummaryCard />
+
+      <CashFlowInsightCard />
 
       <TaxOpportunityCard assets={assets} />
     </div>
