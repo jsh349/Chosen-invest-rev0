@@ -1,3 +1,5 @@
+'use client'
+
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { AllocationChart } from '@/components/charts/allocation-chart'
 import type { AllocationSlice } from '@/lib/types/dashboard'
