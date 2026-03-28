@@ -2,22 +2,28 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus } from 'lucide-react'
+import { Plus, ChevronRight } from 'lucide-react'
 import { AssetRow } from '@/components/portfolio/asset-row'
 import { Button } from '@/components/ui/button'
-import { blankFormEntry } from '@/features/portfolio/helpers'
+import { blankFormEntry, formEntryToAsset } from '@/features/portfolio/helpers'
 import type { AssetFormEntry } from '@/features/portfolio/types'
+import { useAssets } from '@/lib/store/assets-store'
+import { formatCurrency } from '@/lib/utils/currency'
 import { ROUTES } from '@/lib/constants/routes'
+
+let idCounter = Date.now()
+function nextId() {
+  return `asset_${(++idCounter).toString(36)}`
+}
 
 export default function PortfolioInputPage() {
   const router = useRouter()
+  const { setAssets } = useAssets()
   const [entries, setEntries] = useState<AssetFormEntry[]>([blankFormEntry()])
 
-  function handleChange(
-    index: number,
-    field: keyof AssetFormEntry,
-    value: string
-  ) {
+  const total = entries.reduce((sum, e) => sum + (parseFloat(e.value) || 0), 0)
+
+  function handleChange(index: number, field: keyof AssetFormEntry, value: string) {
     setEntries((prev) => {
       const updated = [...prev]
       updated[index] = { ...updated[index], [field]: value }
@@ -35,8 +41,17 @@ export default function PortfolioInputPage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    // In Version 1 we use mock data on the dashboard.
-    // Future: persist entries to backend, then redirect.
+    const validEntries = entries.filter(
+      (en) => en.name.trim() && parseFloat(en.value) > 0
+    )
+    if (validEntries.length === 0) {
+      router.push(ROUTES.dashboard)
+      return
+    }
+    const assets = validEntries.map((en) =>
+      formEntryToAsset(en, 'local_user', nextId())
+    )
+    setAssets(assets)
     router.push(ROUTES.dashboard)
   }
 
@@ -45,7 +60,7 @@ export default function PortfolioInputPage() {
       <div>
         <h1 className="text-xl font-bold text-white">Add Your Assets</h1>
         <p className="mt-0.5 text-sm text-gray-500">
-          Enter each asset manually. You can update this at any time.
+          Enter each asset manually. Your data stays in your browser.
         </p>
       </div>
 
@@ -71,6 +86,14 @@ export default function PortfolioInputPage() {
           Add Another Asset
         </Button>
 
+        {/* Running total */}
+        {total > 0 && (
+          <div className="flex items-center justify-between rounded-lg border border-surface-border bg-surface-card px-4 py-3">
+            <span className="text-sm text-gray-400">Total entered</span>
+            <span className="text-base font-bold text-white">{formatCurrency(total)}</span>
+          </div>
+        )}
+
         <div className="flex justify-end gap-3 pt-2">
           <Button
             type="button"
@@ -79,14 +102,12 @@ export default function PortfolioInputPage() {
           >
             Skip for now
           </Button>
-          <Button type="submit">View Dashboard</Button>
+          <Button type="submit">
+            View My Dashboard
+            <ChevronRight className="h-4 w-4" />
+          </Button>
         </div>
       </form>
-
-      <p className="text-xs text-gray-600">
-        Version 1 uses your input to display the dashboard. Data is not yet
-        persisted between sessions.
-      </p>
     </div>
   )
 }
