@@ -1,16 +1,10 @@
-import type { PortfolioSummary, AIAnalysisResult, SuggestedAction } from '@/lib/types/dashboard'
+import type { AIAnalysisResult, SuggestedAction } from '@/lib/types/dashboard'
+import type { AdvisorContext } from '@/features/ai/advisor-context'
 
-export type AISummaryContext = {
-  hasGoals: boolean
-  netCashFlow: number | null  // null = no transaction data
-}
-
-export function generateAISummary(
-  summary: PortfolioSummary,
-  context: AISummaryContext = { hasGoals: false, netCashFlow: null },
-): AIAnalysisResult {
-  const { categoryBreakdown, totalAssetValue, assetCount, userId } = summary
-  const { hasGoals, netCashFlow } = context
+export function generateAISummary(ctx: AdvisorContext): AIAnalysisResult {
+  const { categoryBreakdown, totalAssetValue, assetCount, userId } = ctx.portfolio
+  const hasGoals = ctx.hasGoals
+  const netCashFlow = ctx.cashFlow?.net ?? null
   const topCategory = categoryBreakdown[0]
   const topPct = topCategory?.percentage ?? 0
 

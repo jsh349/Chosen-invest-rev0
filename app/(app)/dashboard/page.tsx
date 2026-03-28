@@ -9,9 +9,9 @@ import { AISummaryCard } from '@/components/dashboard/ai-summary-card'
 import { HealthCardsGrid } from '@/components/dashboard/health-cards-grid'
 import { PortfolioStatusCard } from '@/components/dashboard/portfolio-status-card'
 import { GoalsSummaryCard } from '@/components/dashboard/goals-summary-card'
-import { buildPortfolioSummary } from '@/features/dashboard/helpers'
 import { generateHealthCards } from '@/features/dashboard/diagnosis'
 import { generateAISummary } from '@/features/ai/summary-generator'
+import { buildAdvisorContext } from '@/features/ai/advisor-context'
 import { NetWorthTrendCard } from '@/components/dashboard/net-worth-trend-card'
 import { TransactionSummaryCard } from '@/components/dashboard/transaction-summary-card'
 import { TaxOpportunityCard } from '@/components/dashboard/tax-opportunity-card'
@@ -24,7 +24,6 @@ import { buildMockTrend } from '@/lib/mock/trend'
 import { ROUTES } from '@/lib/constants/routes'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
-import { computeCashFlow } from '@/lib/utils/transaction-summary'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 
 const CARD_KEYS = Object.keys(CARD_LABELS) as DashboardCardKey[]
@@ -49,7 +48,7 @@ function EmptyState() {
 
 export default function DashboardPage() {
   const { assets, hasCustomAssets, isLoaded } = useAssets()
-  const { hasGoals } = useGoals()
+  const { goals } = useGoals()
   const { transactions } = useTransactions()
   const { prefs, isLoaded: prefsLoaded, toggle } = useDashboardPrefs()
   const [showPrefs, setShowPrefs] = useState(false)
@@ -64,12 +63,10 @@ export default function DashboardPage() {
     return <EmptyState />
   }
 
-  const summary = buildPortfolioSummary('local_user', assets)
+  const advisorCtx = buildAdvisorContext(assets, goals, transactions)
+  const summary = advisorCtx.portfolio
   const healthCards = generateHealthCards(summary)
-  const netCashFlow = transactions.length > 0
-    ? computeCashFlow(transactions).net
-    : null
-  const aiAnalysis = generateAISummary(summary, { hasGoals, netCashFlow })
+  const aiAnalysis = generateAISummary(advisorCtx)
   const trendData = buildMockTrend(summary.totalAssetValue)
 
   const show = (key: DashboardCardKey) => prefs[key]
