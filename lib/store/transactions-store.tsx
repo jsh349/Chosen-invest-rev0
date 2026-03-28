@@ -10,10 +10,7 @@ import {
 } from 'react'
 import type { Transaction } from '@/lib/types/transaction'
 import { recordAudit } from '@/lib/store/audit-store'
-import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
-import { readJSON, writeJSON } from '@/lib/utils/local-storage'
-
-const LS_KEY = STORAGE_KEYS.transactions
+import { transactionsAdapter } from '@/lib/adapters/transactions-adapter'
 
 type TransactionsContextType = {
   transactions: Transaction[]
@@ -34,7 +31,7 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
-    const stored = readJSON<Transaction[]>(LS_KEY, [])
+    const stored = transactionsAdapter.getAll()
     if (stored.length > 0) setTransactions(stored)
     setIsLoaded(true)
   }, [])
@@ -42,7 +39,7 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
   const addTransaction = useCallback((t: Transaction) => {
     setTransactions((prev) => {
       const updated = [t, ...prev]
-      writeJSON(LS_KEY, updated)
+      transactionsAdapter.saveAll(updated)
       return updated
     })
     recordAudit('Transaction added', t.description)
@@ -53,7 +50,7 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
       const target = prev.find((t) => t.id === id)
       if (target) recordAudit('Transaction deleted', target.description)
       const updated = prev.filter((t) => t.id !== id)
-      writeJSON(LS_KEY, updated)
+      transactionsAdapter.saveAll(updated)
       return updated
     })
   }, [])
