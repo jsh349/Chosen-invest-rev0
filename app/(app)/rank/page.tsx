@@ -23,6 +23,7 @@ import { getRankInsight } from '@/lib/utils/rank-insight'
 import { getRankBadges } from '@/lib/utils/rank-badges'
 import { getRankActions } from '@/lib/utils/rank-actions'
 import { getRankGoalInsight } from '@/lib/utils/rank-goal-insight'
+import { buildMonthlySummary } from '@/lib/utils/rank-monthly-summary'
 import type { RankResult } from '@/lib/types/rank'
 
 type RankMode = 'individual' | 'household'
@@ -177,6 +178,10 @@ export default function RankPage() {
 
   const rankGoalInsight = isFullyLoaded && goalsLoaded && summary.assetCount > 0
     ? getRankGoalInsight(ranks, goals)
+    : null
+
+  const monthlySummary = isFullyLoaded && snapshotsLoaded
+    ? buildMonthlySummary(snapshots)
     : null
 
   // Rules of Hooks: useEffect must be before any conditional return.
@@ -345,6 +350,31 @@ export default function RankPage() {
           {/* Share card — compact summary preview */}
           {summary.assetCount > 0 && <RankShareCard ranks={ranks} />}
         </>
+      )}
+
+      {/* Monthly rank summary — shown when at least one snapshot exists */}
+      {monthlySummary && (
+        <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Monthly Summary</p>
+          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+            {monthlySummary.currentOverall !== null && (
+              <p className={cn('text-2xl font-bold tabular-nums', percentileColor(monthlySummary.currentOverall))}>
+                Top {100 - monthlySummary.currentOverall}%
+              </p>
+            )}
+            {monthlySummary.delta !== null && (
+              <span className={cn(
+                'text-sm font-semibold tabular-nums',
+                monthlySummary.delta > 0 ? 'text-emerald-400' :
+                monthlySummary.delta < 0 ? 'text-red-400' :
+                'text-gray-500'
+              )}>
+                {monthlySummary.delta > 0 ? '+' : ''}{monthlySummary.delta} pts
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-gray-400 leading-relaxed">{monthlySummary.note}</p>
+        </div>
       )}
 
       {/* Snapshot history — only shown when 2+ snapshots exist */}
