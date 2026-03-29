@@ -1,6 +1,7 @@
 import type { BenchmarkBucket } from '@/lib/types/rank'
 import type { BenchmarkFile } from '@/lib/types/benchmark-import'
 import { validateBenchmarkFile, parseBenchmarkFile } from '@/lib/utils/benchmark-import'
+import { checkBenchmarkCompatibility } from '@/lib/utils/benchmark-schema-guard'
 import { runBenchmarkQA } from '@/lib/utils/benchmark-qa'
 import {
   OVERALL_WEALTH_BUCKETS,
@@ -107,6 +108,12 @@ function resolveAdapter(): RankBenchmarksAdapter {
       if (validationError) {
         console.warn(`[BenchmarkAdapter] Curated file failed validation (${validationError}). Using built-in defaults.`)
       } else {
+        const compatResult = checkBenchmarkCompatibility(CURATED_BENCHMARK_FILE)
+        if (!compatResult.compatible) {
+          console.warn(`[BenchmarkAdapter] Curated file failed schema compatibility check (${compatResult.reasons.join('; ')}). Using built-in defaults.`)
+          _isUsingFallback = true
+          return buildDefaultAdapter()
+        }
         try {
           const buckets = parseBenchmarkFile(CURATED_BENCHMARK_FILE)
           const qaIssues = runBenchmarkQA(buckets, { silent: process.env.NODE_ENV === 'test' })
@@ -200,6 +207,11 @@ runBenchmarkQA({
  * Falls back to built-in defaults if parsing throws unexpectedly.
  */
 export function rankBenchmarksAdapterFromFile(file: BenchmarkFile): RankBenchmarksAdapter {
+  const compatResult = checkBenchmarkCompatibility(file)
+  if (!compatResult.compatible) {
+    console.warn(`[BenchmarkAdapter] rankBenchmarksAdapterFromFile: schema compatibility check failed (${compatResult.reasons.join('; ')}). Falling back to defaults.`)
+    return buildDefaultAdapter()
+  }
   try {
     const buckets = parseBenchmarkFile(file)
     runBenchmarkQA(buckets, { silent: process.env.NODE_ENV === 'test' })
