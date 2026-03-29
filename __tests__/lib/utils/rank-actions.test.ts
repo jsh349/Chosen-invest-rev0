@@ -59,35 +59,35 @@ describe('getRankActions', () => {
     expect(actions.some((a) => a.href === ROUTES.portfolioList)).toBe(false)
   })
 
-  // Rule 3 — return missing → settings (only when settings not already present)
-  it('Rule 3: return missing adds settings action when not already present', () => {
+  // Rule 3 — no goals → goals page
+  it('Rule 3: no goals produces goals action', () => {
+    const actions = getRankActions(makeRanks({ overallPct: 80 }), { hasGoals: false })
+    expect(actions.some((a) => a.href === ROUTES.goals)).toBe(true)
+  })
+
+  it('Rule 3: does NOT fire when goals are set', () => {
+    const actions = getRankActions(makeRanks({ overallPct: 80 }), { hasGoals: true })
+    expect(actions.some((a) => a.href === ROUTES.goals)).toBe(false)
+  })
+
+  it('Rule 3: default hasGoals is false (backward-compatible)', () => {
+    // Calling without second arg → Rule 3 eligible if slots available
+    const actions = getRankActions(makeRanks({ overallPct: 80 }))
+    expect(actions.some((a) => a.href === ROUTES.goals)).toBe(true)
+  })
+
+  // Rule 4 — return missing → settings (only when settings not already present)
+  it('Rule 4: return missing adds settings action when not already present', () => {
     const actions = getRankActions(makeRanks({ overallPct: 80, returnMissing: true }), { hasGoals: true })
     expect(actions.some((a) => a.href === ROUTES.settings)).toBe(true)
     expect(actions[0].label).toContain('return estimate')
   })
 
-  it('Rule 3: does NOT add a second settings link when Rule 1 already added one', () => {
-    // Rule 1 fires (ageMissing) → settings already in list; Rule 3 skips to avoid duplicate
+  it('Rule 4: does NOT add a second settings link when Rule 1 already added one', () => {
+    // Rule 1 fires (ageMissing) → settings already in list; Rule 4 skips to avoid duplicate
     const actions = getRankActions(makeRanks({ ageMissing: true, returnMissing: true }), { hasGoals: true })
     const settingsLinks = actions.filter((a) => a.href === ROUTES.settings)
     expect(settingsLinks).toHaveLength(1)
-  })
-
-  // Rule 4 — no goals → goals page
-  it('Rule 4: no goals produces goals action', () => {
-    const actions = getRankActions(makeRanks({ overallPct: 80 }), { hasGoals: false })
-    expect(actions.some((a) => a.href === ROUTES.goals)).toBe(true)
-  })
-
-  it('Rule 4: does NOT fire when goals are set', () => {
-    const actions = getRankActions(makeRanks({ overallPct: 80 }), { hasGoals: true })
-    expect(actions.some((a) => a.href === ROUTES.goals)).toBe(false)
-  })
-
-  it('Rule 4: default hasGoals is false (backward-compatible)', () => {
-    // Calling without second arg → Rule 4 eligible if slots available
-    const actions = getRankActions(makeRanks({ overallPct: 80 }))
-    expect(actions.some((a) => a.href === ROUTES.goals)).toBe(true)
   })
 
   // Cap at 2

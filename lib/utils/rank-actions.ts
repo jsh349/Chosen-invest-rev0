@@ -37,18 +37,18 @@ export function getRankActions(
     actions.push({ label: 'Review portfolio composition', href: ROUTES.portfolioList })
   }
 
-  // Rule 3: return estimate missing and not already linking to Settings
+  // Rule 3: overall rank available but no goals set
+  if (actions.length < 2 && overallPct !== null && !hasGoals) {
+    actions.push({ label: 'Set a financial goal', href: ROUTES.goals })
+  }
+
+  // Rule 4: return estimate missing and not already linking to Settings
   if (
     actions.length < 2 &&
     returnMissing &&
     !actions.some((a) => a.href === ROUTES.settings)
   ) {
     actions.push({ label: 'Add return estimate for full ranking', href: ROUTES.settings })
-  }
-
-  // Rule 4: overall rank available but no goals set
-  if (actions.length < 2 && overallPct !== null && !hasGoals) {
-    actions.push({ label: 'Set a financial goal', href: ROUTES.goals })
   }
 
   return actions.slice(0, 2)
