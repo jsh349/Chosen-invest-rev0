@@ -23,6 +23,12 @@ function isSafeToRestore(key: string, value: unknown): boolean {
   return true
 }
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
+import {
+  getAvailableBenchmarkSources,
+  getActiveBenchmarkSourceId,
+  setActiveBenchmarkSourceId,
+  type BenchmarkSource,
+} from '@/lib/adapters/rank-benchmarks-adapter'
 
 const SELECT_CLASS = 'w-full rounded-lg border border-surface-border bg-surface-muted px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none'
 
@@ -89,6 +95,11 @@ export default function SettingsPage() {
   const { entries: auditEntries, isLoaded: auditLoaded, refresh: refreshAudit, clear: clearAudit } = useAudit()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [importStatus, setImportStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+
+  const benchmarkSources = getAvailableBenchmarkSources()
+  const [selectedBenchmarkSource, setSelectedBenchmarkSource] = useState<BenchmarkSource['id']>(
+    getActiveBenchmarkSourceId
+  )
 
   // recordAudit() writes directly to localStorage outside the React context,
   // so context state can be stale when navigating here. Refresh on mount so
@@ -319,6 +330,38 @@ export default function SettingsPage() {
           </div>
         )}
       </div>
+
+      {/* Benchmark source — shown only when 2+ sources are available (internal use) */}
+      {benchmarkSources.length >= 2 && (
+        <div className="rounded-xl border border-surface-border bg-surface-card px-4">
+          <h2 className="border-b border-surface-border py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
+            Benchmark Data <span className="normal-case font-normal text-gray-600">(internal)</span>
+          </h2>
+          <Row label="Active source" hint="Rank calculations use this benchmark dataset">
+            <div className="flex items-center gap-2">
+              <select
+                value={selectedBenchmarkSource}
+                onChange={(e) => setSelectedBenchmarkSource(e.target.value as BenchmarkSource['id'])}
+                className={SELECT_CLASS}
+              >
+                {benchmarkSources.map((s) => (
+                  <option key={s.id} value={s.id}>{s.label}</option>
+                ))}
+              </select>
+              <button
+                onClick={() => {
+                  setActiveBenchmarkSourceId(selectedBenchmarkSource)
+                  window.location.reload()
+                }}
+                disabled={selectedBenchmarkSource === getActiveBenchmarkSourceId()}
+                className="shrink-0 rounded-lg border border-surface-border px-3 py-2 text-xs text-gray-300 hover:border-brand-700 hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Apply
+              </button>
+            </div>
+          </Row>
+        </div>
+      )}
 
       {/* Reset */}
       <div className="flex items-center justify-between rounded-xl border border-surface-border bg-surface-card px-4 py-3">
