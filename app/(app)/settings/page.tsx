@@ -15,6 +15,7 @@ import {
   type BenchmarkSource,
 } from '@/lib/adapters/rank-benchmarks-adapter'
 import { getBenchmarkCapabilities } from '@/lib/utils/benchmark-capabilities'
+import { getBenchmarkHealthStatus } from '@/lib/utils/benchmark-health'
 import { BENCHMARK_META } from '@/lib/mock/rank-benchmarks'
 import { readBenchmarkRefreshState } from '@/lib/utils/benchmark-refresh'
 
@@ -175,6 +176,7 @@ export default function SettingsPage() {
   const debugCaps     = getBenchmarkCapabilities(debugSrcId)
   const debugFallback = isUsingFallbackBenchmark()
   const debugRefresh  = readBenchmarkRefreshState()
+  const debugHealth   = getBenchmarkHealthStatus(debugCaps, debugFallback)
 
   return (
     <div className="space-y-6">
@@ -402,6 +404,18 @@ export default function SettingsPage() {
         </summary>
         <div className="mt-3 space-y-1.5 font-mono text-[11px] text-gray-500">
           <p><span className="inline-block w-32 text-gray-600">Active source</span>{debugSrcId}</p>
+          <p>
+            <span className="inline-block w-32 text-gray-600">Health</span>
+            <span className={
+              debugHealth.status === 'healthy'  ? 'text-emerald-400' :
+              debugHealth.status === 'partial'  ? 'text-amber-400'   :
+              debugHealth.status === 'fallback' ? 'text-amber-400'   :
+                                                  'text-red-400'
+            }>
+              {debugHealth.status}
+            </span>
+            <span className="ml-2 text-gray-600">{debugHealth.note}</span>
+          </p>
           <p><span className="inline-block w-32 text-gray-600">Fallback active</span>{debugFallback ? 'yes' : 'no'}</p>
           <p><span className="inline-block w-32 text-gray-600">Fallback-only</span>{debugCaps.isFallbackOnly ? 'yes' : 'no'}</p>
           <p><span className="inline-block w-32 text-gray-600">Capabilities</span>
