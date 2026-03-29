@@ -4,13 +4,19 @@ import { readJSON, writeJSON } from '@/lib/utils/local-storage'
 
 const LS_KEY = STORAGE_KEYS.goals
 
-/** Minimal data adapter for goals. Swap implementation for API later. */
-export const goalsAdapter = {
-  getAll(): Goal[] {
+/** Async adapter interface — matches the shape of a future API client. */
+export type GoalsAdapter = {
+  getAll(): Promise<Goal[]>
+  saveAll(goals: Goal[]): Promise<void>
+}
+
+/** Local implementation backed by localStorage. */
+export const goalsAdapter: GoalsAdapter = {
+  async getAll() {
     return readJSON<Goal[]>(LS_KEY, [])
   },
 
-  saveAll(goals: Goal[]): void {
+  async saveAll(goals) {
     writeJSON(LS_KEY, goals)
   },
 }

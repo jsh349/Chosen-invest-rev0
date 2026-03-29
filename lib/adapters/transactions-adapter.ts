@@ -4,13 +4,19 @@ import { readJSON, writeJSON } from '@/lib/utils/local-storage'
 
 const LS_KEY = STORAGE_KEYS.transactions
 
-/** Minimal data adapter for transactions. Swap implementation for API later. */
-export const transactionsAdapter = {
-  getAll(): Transaction[] {
+/** Async adapter interface — matches the shape of a future API client. */
+export type TransactionsAdapter = {
+  getAll(): Promise<Transaction[]>
+  saveAll(transactions: Transaction[]): Promise<void>
+}
+
+/** Local implementation backed by localStorage. */
+export const transactionsAdapter: TransactionsAdapter = {
+  async getAll() {
     return readJSON<Transaction[]>(LS_KEY, [])
   },
 
-  saveAll(transactions: Transaction[]): void {
+  async saveAll(transactions) {
     writeJSON(LS_KEY, transactions)
   },
 }

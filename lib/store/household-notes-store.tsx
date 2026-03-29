@@ -30,15 +30,19 @@ export function HouseholdNotesProvider({ children }: { children: ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
-    const stored = householdNotesAdapter.getAll()
-    if (stored.length > 0) setNotes(stored)
-    setIsLoaded(true)
+    let cancelled = false
+    householdNotesAdapter.getAll().then((stored) => {
+      if (cancelled) return
+      if (stored.length > 0) setNotes(stored)
+      setIsLoaded(true)
+    })
+    return () => { cancelled = true }
   }, [])
 
   const addNote = useCallback((note: HouseholdNote) => {
     setNotes((prev) => {
       const updated = [note, ...prev]
-      householdNotesAdapter.saveAll(updated)
+      void householdNotesAdapter.saveAll(updated)
       return updated
     })
   }, [])
@@ -46,7 +50,7 @@ export function HouseholdNotesProvider({ children }: { children: ReactNode }) {
   const removeNote = useCallback((id: string) => {
     setNotes((prev) => {
       const updated = prev.filter((n) => n.id !== id)
-      householdNotesAdapter.saveAll(updated)
+      void householdNotesAdapter.saveAll(updated)
       return updated
     })
   }, [])

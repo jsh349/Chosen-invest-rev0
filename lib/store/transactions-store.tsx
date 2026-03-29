@@ -31,15 +31,19 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
-    const stored = transactionsAdapter.getAll()
-    if (stored.length > 0) setTransactions(stored)
-    setIsLoaded(true)
+    let cancelled = false
+    transactionsAdapter.getAll().then((stored) => {
+      if (cancelled) return
+      if (stored.length > 0) setTransactions(stored)
+      setIsLoaded(true)
+    })
+    return () => { cancelled = true }
   }, [])
 
   const addTransaction = useCallback((t: Transaction) => {
     setTransactions((prev) => {
       const updated = [t, ...prev]
-      transactionsAdapter.saveAll(updated)
+      void transactionsAdapter.saveAll(updated)
       return updated
     })
     recordAudit('Transaction added', t.description)
@@ -50,7 +54,7 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
       const target = prev.find((t) => t.id === id)
       if (target) recordAudit('Transaction deleted', target.description)
       const updated = prev.filter((t) => t.id !== id)
-      transactionsAdapter.saveAll(updated)
+      void transactionsAdapter.saveAll(updated)
       return updated
     })
   }, [])

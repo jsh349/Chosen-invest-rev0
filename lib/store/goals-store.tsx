@@ -37,20 +37,24 @@ export function GoalsProvider({ children }: { children: ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
-    const stored = goalsAdapter.getAll()
-    if (stored.length > 0) setGoalsState(stored)
-    setIsLoaded(true)
+    let cancelled = false
+    goalsAdapter.getAll().then((stored) => {
+      if (cancelled) return
+      if (stored.length > 0) setGoalsState(stored)
+      setIsLoaded(true)
+    })
+    return () => { cancelled = true }
   }, [])
 
   const setGoals = useCallback((newGoals: Goal[]) => {
-    goalsAdapter.saveAll(newGoals)
+    void goalsAdapter.saveAll(newGoals)
     setGoalsState(newGoals)
   }, [])
 
   const addGoal = useCallback((goal: Goal) => {
     setGoalsState((prev) => {
       const updated = [...prev, goal]
-      goalsAdapter.saveAll(updated)
+      void goalsAdapter.saveAll(updated)
       return updated
     })
     recordAudit('Goal added', goal.name)
@@ -62,7 +66,7 @@ export function GoalsProvider({ children }: { children: ReactNode }) {
       const updated = prev.map((g) =>
         g.id === id ? { ...g, ...patch, updatedAt: new Date().toISOString() } : g
       )
-      goalsAdapter.saveAll(updated)
+      void goalsAdapter.saveAll(updated)
       if (target) recordAudit('Goal edited', patch.name ?? target.name)
       return updated
     })
@@ -73,7 +77,7 @@ export function GoalsProvider({ children }: { children: ReactNode }) {
       const target = prev.find((g) => g.id === id)
       if (target) recordAudit('Goal deleted', target.name)
       const updated = prev.filter((g) => g.id !== id)
-      goalsAdapter.saveAll(updated)
+      void goalsAdapter.saveAll(updated)
       return updated
     })
   }, [])

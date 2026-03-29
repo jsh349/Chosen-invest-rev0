@@ -30,15 +30,19 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
-    const stored = householdAdapter.getAll()
-    if (stored.length > 0) setMembers(stored)
-    setIsLoaded(true)
+    let cancelled = false
+    householdAdapter.getAll().then((stored) => {
+      if (cancelled) return
+      if (stored.length > 0) setMembers(stored)
+      setIsLoaded(true)
+    })
+    return () => { cancelled = true }
   }, [])
 
   const addMember = useCallback((member: HouseholdMember) => {
     setMembers((prev) => {
       const updated = [...prev, member]
-      householdAdapter.saveAll(updated)
+      void householdAdapter.saveAll(updated)
       return updated
     })
   }, [])
@@ -46,7 +50,7 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
   const removeMember = useCallback((id: string) => {
     setMembers((prev) => {
       const updated = prev.filter((m) => m.id !== id)
-      householdAdapter.saveAll(updated)
+      void householdAdapter.saveAll(updated)
       return updated
     })
   }, [])
