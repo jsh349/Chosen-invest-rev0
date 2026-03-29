@@ -1,5 +1,6 @@
 import type { AIAnalysisResult, SuggestedAction } from '@/lib/types/dashboard'
 import type { AdvisorContext } from '@/features/ai/advisor-context'
+import { formatCompact } from '@/lib/utils/currency'
 
 export function generateAISummary(ctx: AdvisorContext): AIAnalysisResult {
   const { categoryBreakdown, totalAssetValue, assetCount, userId } = ctx.portfolio
@@ -39,7 +40,7 @@ export function generateAISummary(ctx: AdvisorContext): AIAnalysisResult {
 
   // Main overview
   lines.push(
-    `Your portfolio holds ${assetCount} asset${assetCount > 1 ? 's' : ''} with a total value of $${(totalAssetValue / 1000).toFixed(0)}K.`
+    `Your portfolio holds ${assetCount} asset${assetCount > 1 ? 's' : ''} with a total value of ${formatCompact(totalAssetValue)}.`
   )
 
   // Top category commentary
