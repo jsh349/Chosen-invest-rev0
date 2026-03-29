@@ -161,11 +161,17 @@ export default function RankPage() {
         </div>
       )}
 
-      {/* Disclaimer */}
-      <p className="text-center text-xs text-gray-600">
-        Based on reference benchmark ranges only. Not financial advice.
-        Benchmark data is local and does not reflect real-time market or government statistics.
-      </p>
+      {/* Methodology note */}
+      <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-1.5">
+        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">How this works</p>
+        <p className="text-xs text-gray-400 leading-relaxed">
+          Rank estimates are based on local reference benchmark ranges, not real-time government or market data.
+          Results depend on your total asset value and any profile inputs you have set (birth year, gender, estimated return).
+        </p>
+        <p className="text-xs text-gray-600">
+          Missing profile fields will show an unavailable state rather than an estimate. Not financial advice.
+        </p>
+      </div>
     </div>
   )
 }
