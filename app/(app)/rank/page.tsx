@@ -13,6 +13,7 @@ import { buildPortfolioSummary } from '@/features/dashboard/helpers'
 import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { RankShareCard } from '@/components/rank/rank-share-card'
+import { PeriodicRankSummaryCard } from '@/components/rank/periodic-rank-summary-card'
 import { LOCAL_USER_ID } from '@/lib/constants/auth'
 import { ROUTES } from '@/lib/constants/routes'
 import { cn } from '@/lib/utils/cn'
@@ -423,6 +424,11 @@ export default function RankPage() {
 
           {/* Primary rank highlight — most relevant available rank, prominently displayed */}
           {summary.assetCount > 0 && <PrimaryRankHighlight ranks={ranks} />}
+
+          {/* Periodic rank summary — compact trend card; fallback shown on first visit */}
+          {summary.assetCount > 0 && (
+            <PeriodicRankSummaryCard monthlySummary={monthlySummary} />
+          )}
 
           {/* Narrative summary — one or two sentences synthesising available rank signals */}
           {explanationSet.showNarrative && narrativeSummary && (
