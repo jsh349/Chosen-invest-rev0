@@ -77,7 +77,10 @@ export default function DashboardPage() {
   const summary = baseCtx.portfolio
   const healthCards = useMemo(() => generateHealthCards(summary), [summary])
   const trendData = useMemo(() => buildMockTrend(summary.totalAssetValue), [summary.totalAssetValue])
-  const userAge = settings.birthYear ? new Date().getFullYear() - settings.birthYear : undefined
+  const userAge = useMemo(
+    () => settings.birthYear ? new Date().getFullYear() - settings.birthYear : undefined,
+    [settings.birthYear]
+  )
   const overallRank = useMemo(() => computeOverallWealthRank(summary.totalAssetValue), [summary.totalAssetValue])
   const ageRank = useMemo(() => computeAgeBasedRank(summary.totalAssetValue, userAge), [summary.totalAssetValue, userAge])
   const ageGenderRank = useMemo(() => computeAgeGenderRank(summary.totalAssetValue, userAge, settings.gender), [summary.totalAssetValue, userAge, settings.gender])

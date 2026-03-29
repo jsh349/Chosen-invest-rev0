@@ -17,7 +17,7 @@ import { LOCAL_USER_ID } from '@/lib/constants/auth'
 import { ROUTES } from '@/lib/constants/routes'
 import { cn } from '@/lib/utils/cn'
 import { BENCHMARK_META } from '@/lib/mock/rank-benchmarks'
-import { getActiveBenchmarkSourceId, isUsingFallbackBenchmark } from '@/lib/adapters/rank-benchmarks-adapter'
+import { getActiveBenchmarkSourceId, isUsingFallbackBenchmark, getActiveBenchmarkMeta } from '@/lib/adapters/rank-benchmarks-adapter'
 import { percentileBandLabel } from '@/lib/utils/percentile-label'
 import { getRankInsight } from '@/lib/utils/rank-insight'
 import { getRankBadges } from '@/lib/utils/rank-badges'
@@ -189,16 +189,22 @@ export default function RankPage() {
   const [benchmarkAlertVisible, setBenchmarkAlertVisible] = useState(false)
   const [reviewVisible, setReviewVisible] = useState(false)
 
-  const isFullyLoaded = assetsLoaded && householdLoaded && settingsLoaded && snapshotsLoaded
-  const activeBenchmarkSource = getActiveBenchmarkSourceId()
+  const isFullyLoaded = assetsLoaded && householdLoaded && settingsLoaded && snapshotsLoaded && goalsLoaded
+  // Read once at mount — source preference requires page reload to change.
+  const activeBenchmarkSource = useMemo(() => getActiveBenchmarkSourceId(), [])
   const usingFallbackBenchmark = isUsingFallbackBenchmark()
+  // Resolved once at mount for the same reason.
+  const activeBenchmarkMeta = useMemo(() => getActiveBenchmarkMeta(), [])
 
-  // Compute early (safe with defaults) so useEffect can be placed before the loading guard.
-  // buildPortfolioSummary is safe to call with an empty array while loading.
-  const summary = buildPortfolioSummary(LOCAL_USER_ID, assets)
-  const userAge = settings.birthYear
-    ? new Date().getFullYear() - settings.birthYear
-    : undefined
+  // Memoized so mode/alert/review state changes don't re-run the full calculation.
+  const summary = useMemo(
+    () => buildPortfolioSummary(LOCAL_USER_ID, assets),
+    [assets]
+  )
+  const userAge = useMemo(
+    () => settings.birthYear ? new Date().getFullYear() - settings.birthYear : undefined,
+    [settings.birthYear]
+  )
 
   const ranks = useMemo<RankResult[]>(() => {
     if (!isFullyLoaded) return []
@@ -611,7 +617,13 @@ export default function RankPage() {
             {/* Return rank */}
             <div className="space-y-0.5">
               <p className="text-[10px] text-gray-600 uppercase tracking-wide">Return rank</p>
-              <p className="text-sm text-gray-500">—</p>
+              {monthlySummary.currentReturn !== null ? (
+                <p className={cn('text-sm font-semibold tabular-nums', percentileColor(monthlySummary.currentReturn))}>
+                  Top {100 - monthlySummary.currentReturn}%
+                </p>
+              ) : (
+                <p className="text-sm text-gray-600">—</p>
+              )}
               <p className={cn('text-xs tabular-nums',
                 monthlySummary.returnDelta === null ? 'text-gray-600' :
                 monthlySummary.returnDelta > 0      ? 'text-emerald-400' :
@@ -730,11 +742,11 @@ export default function RankPage() {
           </span>
           <span className="text-[10px] text-gray-600">
             <span className="text-gray-500">Version: </span>
-            {BENCHMARK_META.version}
+            {activeBenchmarkMeta.version}
           </span>
           <span className="text-[10px] text-gray-600">
             <span className="text-gray-500">Updated: </span>
-            {BENCHMARK_META.updatedAt}
+            {activeBenchmarkMeta.updatedAt}
           </span>
           <span className="text-[10px] text-gray-600">
             <span className="text-gray-500">Active source: </span>

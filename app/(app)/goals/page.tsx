@@ -12,7 +12,7 @@ import { isRequired, parsePositive, parseNonNegative, isDateFormat } from '@/lib
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { FormError } from '@/components/ui/form-error'
 import type { Goal, GoalType } from '@/lib/types/goal'
-import { getGoalStatus, GOAL_STATUS_LABELS, GOAL_STATUS_STYLES } from '@/lib/utils/goal-status'
+import { getGoalStatus, goalProgressPct, GOAL_STATUS_LABELS, GOAL_STATUS_STYLES } from '@/lib/utils/goal-status'
 import { ROUTES } from '@/lib/constants/routes'
 
 const GOAL_TYPES: { value: GoalType; label: string }[] = [
@@ -35,10 +35,6 @@ const EMPTY_FORM = {
 
 type FormState = typeof EMPTY_FORM
 
-function progressPct(goal: Goal) {
-  if (goal.targetAmount <= 0) return 0
-  return Math.min(100, (goal.currentAmount / goal.targetAmount) * 100)
-}
 
 function goalToForm(goal: Goal): FormState {
   return {
@@ -254,7 +250,7 @@ export default function GoalsPage() {
             {goals.length} {goals.length === 1 ? 'Goal' : 'Goals'}
           </h2>
           {goals.map((goal) => {
-            const pct = progressPct(goal)
+            const pct = goalProgressPct(goal)
             const isEditing = editingId === goal.id
 
             return (

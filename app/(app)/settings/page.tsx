@@ -156,10 +156,9 @@ export default function SettingsPage() {
         for (const key of ALL_STORAGE_KEYS) {
           const value = (data as Record<string, unknown>)[key]
           if (value !== null && value !== undefined && isSafeToRestore(key, value)) {
-            if (typeof window !== 'undefined') {
-              // Scalar string keys are stored as raw strings — no JSON layer
-              window.localStorage.setItem(key, STRING_KEYS.has(key) ? (value as string) : JSON.stringify(value))
-            }
+            // Scalar string keys are stored as raw strings — no JSON layer.
+            // FileReader.onload only runs in the browser, so no SSR guard needed.
+            window.localStorage.setItem(key, STRING_KEYS.has(key) ? (value as string) : JSON.stringify(value))
             restored++
           }
         }

@@ -4,7 +4,7 @@ import { use } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Target } from 'lucide-react'
 import { useGoals } from '@/lib/store/goals-store'
-import { getGoalStatus, GOAL_STATUS_LABELS, GOAL_STATUS_STYLES } from '@/lib/utils/goal-status'
+import { getGoalStatus, goalProgressPct, GOAL_STATUS_LABELS, GOAL_STATUS_STYLES } from '@/lib/utils/goal-status'
 import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils/cn'
@@ -49,9 +49,7 @@ export default function GoalDetailPage({ params }: { params: Promise<{ id: strin
     )
   }
 
-  const progress = goal.targetAmount > 0
-    ? Math.min(100, (goal.currentAmount / goal.targetAmount) * 100)
-    : 0
+  const progress = goalProgressPct(goal)
   const status = getGoalStatus(goal.currentAmount, goal.targetAmount)
   const typeLabel = goal.type.charAt(0).toUpperCase() + goal.type.slice(1)
 

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
 import { useGoals } from '@/lib/store/goals-store'
-import { getGoalStatus, GOAL_STATUS_LABELS, GOAL_STATUS_STYLES } from '@/lib/utils/goal-status'
+import { getGoalStatus, goalProgressPct, GOAL_STATUS_LABELS, GOAL_STATUS_STYLES } from '@/lib/utils/goal-status'
 import { ROUTES } from '@/lib/constants/routes'
 import { cn } from '@/lib/utils/cn'
 import type { Goal } from '@/lib/types/goal'
@@ -47,9 +47,7 @@ export function GoalsSummaryCard() {
   const totalTarget = goals.reduce((sum, g) => sum + g.targetAmount, 0)
   const totalCurrent = goals.reduce((sum, g) => sum + g.currentAmount, 0)
   const featured = nearestGoal(goals)
-  const progress = featured.targetAmount > 0
-    ? Math.min(100, (featured.currentAmount / featured.targetAmount) * 100)
-    : 0
+  const progress = goalProgressPct(featured)
 
   return (
     <Card>

@@ -13,7 +13,17 @@ export const GOAL_STATUS_STYLES: Record<GoalStatus, string> = {
 }
 
 export function getGoalStatus(currentAmount: number, targetAmount: number): GoalStatus {
-  if (targetAmount <= 0 || currentAmount <= 0) return 'not_started'
+  if (targetAmount <= 0) return 'not_started'           // invalid or unset target
   if (currentAmount >= targetAmount) return 'complete'
-  return 'in_progress'
+  if (currentAmount > 0) return 'in_progress'
+  return 'not_started'                                   // valid target, no savings yet
+}
+
+/**
+ * Progress percentage for a goal, clamped to [0, 100].
+ * Returns 0 when targetAmount is invalid.
+ */
+export function goalProgressPct(goal: { currentAmount: number; targetAmount: number }): number {
+  if (goal.targetAmount <= 0) return 0
+  return Math.min(100, (goal.currentAmount / goal.targetAmount) * 100)
 }
