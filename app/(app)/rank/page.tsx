@@ -7,6 +7,7 @@ import { useAssets } from '@/lib/store/assets-store'
 import { useHousehold } from '@/lib/store/household-store'
 import { useSettings } from '@/lib/store/settings-store'
 import { useRankSnapshots } from '@/lib/hooks/use-rank-snapshots'
+import { useGoals } from '@/lib/store/goals-store'
 import { computeOverallWealthRank, computeAgeBasedRank, computeAgeGenderRank, computeReturnRank } from '@/features/dashboard/rank'
 import { buildPortfolioSummary } from '@/features/dashboard/helpers'
 import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
@@ -21,6 +22,7 @@ import { percentileBandLabel } from '@/lib/utils/percentile-label'
 import { getRankInsight } from '@/lib/utils/rank-insight'
 import { getRankBadges } from '@/lib/utils/rank-badges'
 import { getRankActions } from '@/lib/utils/rank-actions'
+import { getRankGoalInsight } from '@/lib/utils/rank-goal-insight'
 import type { RankResult } from '@/lib/types/rank'
 
 type RankMode = 'individual' | 'household'
@@ -141,6 +143,7 @@ export default function RankPage() {
   const { settings, isLoaded: settingsLoaded } = useSettings()
   const { compact } = useFormatCurrency()
   const { snapshots, isLoaded: snapshotsLoaded, saveSnapshot } = useRankSnapshots()
+  const { goals, isLoaded: goalsLoaded } = useGoals()
   const [mode, setMode] = useState<RankMode>('individual')
 
   const isFullyLoaded = assetsLoaded && householdLoaded && settingsLoaded && snapshotsLoaded
@@ -171,6 +174,10 @@ export default function RankPage() {
   const rankActions = isFullyLoaded && summary.assetCount > 0
     ? getRankActions(ranks)
     : []
+
+  const rankGoalInsight = isFullyLoaded && goalsLoaded && summary.assetCount > 0
+    ? getRankGoalInsight(ranks, goals)
+    : null
 
   // Rules of Hooks: useEffect must be before any conditional return.
   // Guard inside the effect so it only fires once all data is loaded.
@@ -283,6 +290,13 @@ export default function RankPage() {
           {rankInsight && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3">
               <p className="text-xs text-gray-400 leading-relaxed">{rankInsight}</p>
+            </div>
+          )}
+
+          {/* Rank–goal bridge insight */}
+          {rankGoalInsight && (
+            <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3">
+              <p className="text-xs text-gray-400 leading-relaxed">{rankGoalInsight}</p>
             </div>
           )}
 
