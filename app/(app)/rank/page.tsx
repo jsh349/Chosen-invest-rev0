@@ -25,8 +25,9 @@ import { getRankActions } from '@/lib/utils/rank-actions'
 import { getRankGoalInsight } from '@/lib/utils/rank-goal-insight'
 import { buildMonthlySummary } from '@/lib/utils/rank-monthly-summary'
 import { buildMilestoneHistory } from '@/lib/utils/rank-milestone-history'
-import { checkBenchmarkChanged, dismissBenchmarkAlert, benchmarkVersionNote } from '@/lib/utils/benchmark-change-alert'
+import { checkBenchmarkChanged, dismissBenchmarkAlert, benchmarkVersionNote, getBenchmarkFingerprint } from '@/lib/utils/benchmark-change-alert'
 import { getNextRankHint } from '@/lib/utils/rank-next-hint'
+import { getRankReviewFingerprint, checkRankReviewDue, dismissRankReview } from '@/lib/utils/rank-review'
 import type { RankResult } from '@/lib/types/rank'
 
 type RankMode = 'individual' | 'household'
@@ -150,6 +151,7 @@ export default function RankPage() {
   const { goals, isLoaded: goalsLoaded } = useGoals()
   const [mode, setMode] = useState<RankMode>('individual')
   const [benchmarkAlertVisible, setBenchmarkAlertVisible] = useState(false)
+  const [reviewVisible, setReviewVisible] = useState(false)
 
   const isFullyLoaded = assetsLoaded && householdLoaded && settingsLoaded && snapshotsLoaded
   const activeBenchmarkSource = getActiveBenchmarkSourceId()
@@ -212,6 +214,19 @@ export default function RankPage() {
   useEffect(() => {
     setBenchmarkAlertVisible(checkBenchmarkChanged())
   }, [])
+
+  useEffect(() => {
+    if (!isFullyLoaded || summary.assetCount === 0) return
+    const fp = getRankReviewFingerprint({
+      totalAssetValue:      summary.totalAssetValue,
+      birthYear:            settings.birthYear,
+      gender:               settings.gender,
+      annualReturnPct:      settings.annualReturnPct,
+      benchmarkFingerprint: getBenchmarkFingerprint(),
+    })
+    setReviewVisible(checkRankReviewDue(fp))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFullyLoaded, summary.totalAssetValue, settings.birthYear, settings.gender, settings.annualReturnPct])
 
   if (!isFullyLoaded) return <LoadingSpinner />
 
@@ -310,6 +325,31 @@ export default function RankPage() {
               >
                 Add assets →
               </Link>
+            </div>
+          )}
+
+          {/* Rank review prompt — shown when rank-relevant inputs have changed since last dismissal */}
+          {reviewVisible && (
+            <div className="flex items-center justify-between gap-3 rounded-xl border border-brand-500/20 bg-brand-500/5 px-5 py-3">
+              <p className="text-xs text-brand-300 leading-relaxed">
+                Your rank inputs have changed — review your updated insights.
+              </p>
+              <button
+                onClick={() => {
+                  const fp = getRankReviewFingerprint({
+                    totalAssetValue:      summary.totalAssetValue,
+                    birthYear:            settings.birthYear,
+                    gender:               settings.gender,
+                    annualReturnPct:      settings.annualReturnPct,
+                    benchmarkFingerprint: getBenchmarkFingerprint(),
+                  })
+                  dismissRankReview(fp)
+                  setReviewVisible(false)
+                }}
+                className="shrink-0 text-[10px] text-gray-500 hover:text-gray-300 transition-colors"
+              >
+                Dismiss
+              </button>
             </div>
           )}
 

@@ -17,6 +17,8 @@ export const STORAGE_KEYS = {
   benchmarkPending: 'chosen_benchmark_pending_v1',
   /** Metadata of the last successfully applied benchmark. JSON object or absent. */
   benchmarkApplied: 'chosen_benchmark_applied_v1',
+  /** Last-dismissed rank review fingerprint. Scalar string. */
+  rankReviewSeen:   'chosen_rank_review_seen_v1',
 } as const
 
 export type StorageKey = typeof STORAGE_KEYS[keyof typeof STORAGE_KEYS]
