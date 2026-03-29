@@ -91,22 +91,40 @@ function buildDefaultAdapter(): RankBenchmarksAdapter {
 /**
  * Resolve the active adapter once at module load.
  * Respects the stored source preference; falls back to built-in defaults
- * when the curated file is absent, invalid, or the preference is unset.
+ * when the curated file is absent, invalid, fails QA, or throws during parsing.
+ * Logs a console.warn for each fallback path so issues are visible in devtools.
  */
 function resolveAdapter(): RankBenchmarksAdapter {
   const pref = getActiveBenchmarkSourceId()
-  if (pref === 'curated' && CURATED_BENCHMARK_FILE !== null) {
-    const error = validateBenchmarkFile(CURATED_BENCHMARK_FILE)
-    if (!error) {
-      const buckets = parseBenchmarkFile(CURATED_BENCHMARK_FILE)
-      return {
-        getOverallWealthBenchmarks: () => buckets.overallWealth,
-        getAgeBenchmarks:           () => buckets.ageBased,
-        getAgeGenderBenchmarks:     () => buckets.ageGender,
-        getReturnBenchmarks:        () => buckets.investmentReturn,
+
+  if (pref === 'curated') {
+    if (CURATED_BENCHMARK_FILE === null) {
+      console.warn('[BenchmarkAdapter] Curated source selected but file is not available. Using built-in defaults.')
+    } else {
+      const validationError = validateBenchmarkFile(CURATED_BENCHMARK_FILE)
+      if (validationError) {
+        console.warn(`[BenchmarkAdapter] Curated file failed validation (${validationError}). Using built-in defaults.`)
+      } else {
+        try {
+          const buckets = parseBenchmarkFile(CURATED_BENCHMARK_FILE)
+          const qaIssues = runBenchmarkQA(buckets, { silent: process.env.NODE_ENV === 'test' })
+          if (qaIssues > 0) {
+            console.warn(`[BenchmarkAdapter] Curated file failed QA (${qaIssues} issue(s)). Using built-in defaults.`)
+          } else {
+            return {
+              getOverallWealthBenchmarks: () => buckets.overallWealth,
+              getAgeBenchmarks:           () => buckets.ageBased,
+              getAgeGenderBenchmarks:     () => buckets.ageGender,
+              getReturnBenchmarks:        () => buckets.investmentReturn,
+            }
+          }
+        } catch (err) {
+          console.warn('[BenchmarkAdapter] Failed to parse curated file. Using built-in defaults.', err)
+        }
       }
     }
   }
+
   return buildDefaultAdapter()
 }
 
@@ -125,13 +143,23 @@ runBenchmarkQA({
 /**
  * Creates a RankBenchmarksAdapter from a validated BenchmarkFile.
  * Call validateBenchmarkFile() first to confirm the file is well-formed.
+ *
+ * Runs a non-blocking QA pass; logs console.warn for any semantic issues found
+ * but still returns the adapter (caller has already confirmed structural validity).
+ * Falls back to built-in defaults if parsing throws unexpectedly.
  */
 export function rankBenchmarksAdapterFromFile(file: BenchmarkFile): RankBenchmarksAdapter {
-  const buckets = parseBenchmarkFile(file)
-  return {
-    getOverallWealthBenchmarks: () => buckets.overallWealth,
-    getAgeBenchmarks:           () => buckets.ageBased,
-    getAgeGenderBenchmarks:     () => buckets.ageGender,
-    getReturnBenchmarks:        () => buckets.investmentReturn,
+  try {
+    const buckets = parseBenchmarkFile(file)
+    runBenchmarkQA(buckets, { silent: process.env.NODE_ENV === 'test' })
+    return {
+      getOverallWealthBenchmarks: () => buckets.overallWealth,
+      getAgeBenchmarks:           () => buckets.ageBased,
+      getAgeGenderBenchmarks:     () => buckets.ageGender,
+      getReturnBenchmarks:        () => buckets.investmentReturn,
+    }
+  } catch (err) {
+    console.warn('[BenchmarkAdapter] rankBenchmarksAdapterFromFile: failed to parse file. Falling back to defaults.', err)
+    return buildDefaultAdapter()
   }
 }
