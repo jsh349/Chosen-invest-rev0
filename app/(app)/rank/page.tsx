@@ -16,6 +16,7 @@ import { LOCAL_USER_ID } from '@/lib/constants/auth'
 import { ROUTES } from '@/lib/constants/routes'
 import { cn } from '@/lib/utils/cn'
 import { BENCHMARK_META } from '@/lib/mock/rank-benchmarks'
+import { percentileBandLabel } from '@/lib/utils/percentile-label'
 import type { RankResult } from '@/lib/types/rank'
 
 type RankMode = 'individual' | 'household'
@@ -51,7 +52,6 @@ function PercentileBar({ percentile }: { percentile: number }) {
 
 function RankRow({ result }: { result: RankResult }) {
   const hasPct = result.percentile != null
-  const topPct = hasPct ? 100 - result.percentile! : null
 
   return (
     <div className="border-b border-surface-border py-5 last:border-0">
@@ -60,9 +60,9 @@ function RankRow({ result }: { result: RankResult }) {
           <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
             {result.label}
           </p>
-          {topPct != null ? (
+          {hasPct ? (
             <p className={cn('text-3xl font-bold tracking-tight', percentileColor(result.percentile!))}>
-              Top {topPct}%
+              {percentileBandLabel(result.percentile!)}
             </p>
           ) : (
             <p className="text-2xl font-bold text-gray-600">—</p>
