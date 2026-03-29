@@ -38,13 +38,6 @@ function returnBand(b: BenchmarkBucket): string {
   return `${b.minValue.toFixed(0)}% – ${b.maxValue.toFixed(0)}%`
 }
 
-export type RankInput = {
-  totalAssetValue: number
-  age?: number
-  gender?: GenderOption
-  annualReturnPct?: number
-}
-
 /** Compute only the Overall Wealth rank from total asset value. */
 export function computeOverallWealthRank(totalAssetValue: number): RankResult {
   const buckets = rankBenchmarksAdapter.getOverallWealthBenchmarks()
@@ -208,103 +201,4 @@ export function computeReturnRank(annualReturnPct?: number): RankResult {
   }
 
   return { type: 'investment_return', label: 'Investment Return Rank', percentile, message, detail }
-}
-
-export function computeRanks(input: RankInput): RankResult[] {
-  const { totalAssetValue, age, gender, annualReturnPct } = input
-  const results: RankResult[] = []
-
-  // 1. Overall Wealth
-  results.push(computeOverallWealthRank(totalAssetValue))
-
-  // 2. Age-Based
-  if (age != null) {
-    const ageBuckets = filterByAge(rankBenchmarksAdapter.getAgeBenchmarks(), age)
-    if (ageBuckets.length > 0) {
-      const pct = findPercentile(ageBuckets, totalAssetValue)
-      results.push({
-        type: 'age_based',
-        label: 'Age-Based Rank',
-        percentile: pct,
-        message: `Among ${age}s age group, you rank in the top ${100 - pct}%.`,
-      })
-    } else {
-      results.push({
-        type: 'age_based',
-        label: 'Age-Based Rank',
-        percentile: null,
-        message: 'No benchmark data available for your age range.',
-      })
-    }
-  } else {
-    results.push({
-      type: 'age_based',
-      label: 'Age-Based Rank',
-      percentile: null,
-      message: 'Add your age in Settings to see age-based ranking.',
-      missingField: 'age',
-    })
-  }
-
-  // 3. Age + Gender
-  if (age != null && gender != null && gender !== 'other') {
-    const agBuckets = rankBenchmarksAdapter.getAgeGenderBenchmarks().filter(
-      (b) =>
-        b.ageRange &&
-        age >= b.ageRange[0] &&
-        age <= b.ageRange[1] &&
-        b.gender === gender
-    )
-    if (agBuckets.length > 0) {
-      const pct = findPercentile(agBuckets, totalAssetValue)
-      results.push({
-        type: 'age_gender',
-        label: 'Age + Gender Rank',
-        percentile: pct,
-        message: `Among ${gender} ${age}s group, you rank in the top ${100 - pct}%.`,
-      })
-    } else {
-      results.push({
-        type: 'age_gender',
-        label: 'Age + Gender Rank',
-        percentile: null,
-        message: 'No benchmark data for your age + gender combination yet.',
-      })
-    }
-  } else {
-    const missing =
-      age == null && gender == null
-        ? 'age and gender'
-        : age == null
-          ? 'age'
-          : 'gender'
-    results.push({
-      type: 'age_gender',
-      label: 'Age + Gender Rank',
-      percentile: null,
-      message: `Add your ${missing} in Settings to see this ranking.`,
-      missingField: missing,
-    })
-  }
-
-  // 4. Investment Return
-  if (annualReturnPct != null) {
-    const pct = findPercentile(rankBenchmarksAdapter.getReturnBenchmarks(), annualReturnPct)
-    results.push({
-      type: 'investment_return',
-      label: 'Investment Return Rank',
-      percentile: pct,
-      message: `Your ${annualReturnPct.toFixed(1)}% return ranks in the top ${100 - pct}%.`,
-    })
-  } else {
-    results.push({
-      type: 'investment_return',
-      label: 'Investment Return Rank',
-      percentile: null,
-      message: 'Return data not yet available. Add transaction history to calculate.',
-      missingField: 'annualReturn',
-    })
-  }
-
-  return results
 }

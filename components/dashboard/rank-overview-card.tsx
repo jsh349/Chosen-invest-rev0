@@ -36,7 +36,8 @@ function PercentileBar({ percentile, tall }: { percentile: number; tall?: boolea
 function topPctColor(topPct: number): string {
   if (topPct <= 25) return 'text-emerald-400'
   if (topPct <= 50) return 'text-brand-400'
-  return 'text-amber-400'
+  if (topPct <= 70) return 'text-amber-400'
+  return 'text-gray-400'
 }
 
 function RankTile({ result }: { result: RankResult }) {
@@ -113,7 +114,7 @@ export function RankOverviewCard({ rank, ageRank, ageGenderRank, returnRank, tot
 
       {/* Footer */}
       <p className="text-[10px] text-gray-600 text-center">
-        Based on reference benchmark ranges. Not financial advice.
+        Based on reference benchmarks. These are estimates only and not financial advice.
       </p>
     </div>
   )
