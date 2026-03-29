@@ -16,6 +16,7 @@ import { LOCAL_USER_ID } from '@/lib/constants/auth'
 import { ROUTES } from '@/lib/constants/routes'
 import { cn } from '@/lib/utils/cn'
 import { BENCHMARK_META } from '@/lib/mock/rank-benchmarks'
+import { getActiveBenchmarkSourceId } from '@/lib/adapters/rank-benchmarks-adapter'
 import { percentileBandLabel } from '@/lib/utils/percentile-label'
 import { getRankInsight } from '@/lib/utils/rank-insight'
 import { getRankBadges } from '@/lib/utils/rank-badges'
@@ -143,6 +144,7 @@ export default function RankPage() {
   const [mode, setMode] = useState<RankMode>('individual')
 
   const isFullyLoaded = assetsLoaded && householdLoaded && settingsLoaded && snapshotsLoaded
+  const activeBenchmarkSource = getActiveBenchmarkSourceId()
 
   // Compute early (safe with defaults) so useEffect can be placed before the loading guard.
   // buildPortfolioSummary is safe to call with an empty array while loading.
@@ -393,6 +395,10 @@ export default function RankPage() {
           <span className="text-[10px] text-gray-600">
             <span className="text-gray-500">Updated: </span>
             {BENCHMARK_META.updatedAt}
+          </span>
+          <span className="text-[10px] text-gray-600">
+            <span className="text-gray-500">Active source: </span>
+            {activeBenchmarkSource === 'curated' ? 'Curated dataset' : 'Built-in (default)'}
           </span>
           {BENCHMARK_META.notes && (
             <span className="text-[10px] text-gray-600 w-full">{BENCHMARK_META.notes}</span>
