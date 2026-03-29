@@ -71,8 +71,8 @@ export function computeAgeBasedRank(totalAssetValue: number, age?: number): Rank
       type: 'age_based',
       label: 'Age-Based Rank',
       percentile: null,
-      message: 'Set your birth year in Settings to see age-based ranking.',
-      missingField: 'age',
+      message: 'Add your birth year in Settings to enable age-based ranking.',
+      missingField: 'birth year',
     }
   }
 
@@ -116,8 +116,8 @@ export function computeAgeGenderRank(
       type: 'age_gender',
       label: 'Age + Gender Rank',
       percentile: null,
-      message: 'Set your birth year and gender in Settings to see this ranking.',
-      missingField: 'age and gender',
+      message: 'Add your birth year and gender in Settings to enable this ranking.',
+      missingField: 'birth year and gender',
     }
   }
   if (age == null) {
@@ -125,8 +125,8 @@ export function computeAgeGenderRank(
       type: 'age_gender',
       label: 'Age + Gender Rank',
       percentile: null,
-      message: 'Set your birth year in Settings to see this ranking.',
-      missingField: 'age',
+      message: 'Add your birth year in Settings to enable this ranking.',
+      missingField: 'birth year',
     }
   }
   if (gender == null || gender === 'undisclosed') {
@@ -134,7 +134,7 @@ export function computeAgeGenderRank(
       type: 'age_gender',
       label: 'Age + Gender Rank',
       percentile: null,
-      message: 'Set your gender in Settings to see this ranking.',
+      message: 'Add your gender in Settings to enable this ranking.',
       missingField: 'gender',
     }
   }
@@ -192,8 +192,8 @@ export function computeReturnRank(annualReturnPct?: number): RankResult {
       type: 'investment_return',
       label: 'Investment Return Rank',
       percentile: null,
-      message: 'Enter your estimated annual return in Settings to see this ranking.',
-      missingField: 'annualReturn',
+      message: 'Add your estimated annual return in Settings to enable this ranking.',
+      missingField: 'annual return',
     }
   }
 

@@ -16,13 +16,13 @@ function makeRanks({
   return [
     { type: 'overall_wealth', label: 'Overall', percentile: overallPct, message: '' },
     ageMissing
-      ? { type: 'age_based', label: 'Age', percentile: null, message: '', missingField: 'age' }
+      ? { type: 'age_based', label: 'Age', percentile: null, message: '', missingField: 'birth year' }
       : { type: 'age_based', label: 'Age', percentile: overallPct, message: '' },
     genderMissing
       ? { type: 'age_gender', label: 'Gender', percentile: null, message: '', missingField: 'gender' }
       : { type: 'age_gender', label: 'Gender', percentile: overallPct, message: '' },
     returnMissing
-      ? { type: 'investment_return', label: 'Return', percentile: null, message: '', missingField: 'annualReturn' }
+      ? { type: 'investment_return', label: 'Return', percentile: null, message: '', missingField: 'annual return' }
       : { type: 'investment_return', label: 'Return', percentile: overallPct, message: '' },
   ]
 }

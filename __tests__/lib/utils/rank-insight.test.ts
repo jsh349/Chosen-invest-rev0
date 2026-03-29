@@ -26,25 +26,25 @@ describe('getRankInsight', () => {
 
   // Rule 1 — wealth significantly above return (gap >= 20)
   it('Rule 1: fires when wealth exceeds return by 20+', () => {
-    const insight = getRankInsight([overall(80), ret(55), ageBased(null, 'age'), ageGender(null, 'age and gender')])
+    const insight = getRankInsight([overall(80), ret(55), ageBased(null, 'birth year'), ageGender(null, 'birth year and gender')])
     expect(insight).toContain('Wealth rank is higher')
   })
 
   it('Rule 1: does NOT fire when gap is 19', () => {
-    const insight = getRankInsight([overall(74), ret(55), ageBased(null, 'age'), ageGender(null, 'age and gender')])
+    const insight = getRankInsight([overall(74), ret(55), ageBased(null, 'birth year'), ageGender(null, 'birth year and gender')])
     // gap = 19 → Rule 1 skipped; Rule 3 fires instead
     expect(insight).not.toContain('Wealth rank is higher')
   })
 
   // Rule 2 — return significantly above wealth
   it('Rule 2: fires when return exceeds wealth by 20+', () => {
-    const insight = getRankInsight([overall(50), ret(75), ageBased(null, 'age'), ageGender(null, 'age and gender')])
+    const insight = getRankInsight([overall(50), ret(75), ageBased(null, 'birth year'), ageGender(null, 'birth year and gender')])
     expect(insight).toContain('Return rank is higher')
   })
 
   // Rule 3 — overall available but age missing
   it('Rule 3: fires when age missing field is set', () => {
-    const insight = getRankInsight([overall(60), ret(55), ageBased(null, 'age'), ageGender(null, 'age')])
+    const insight = getRankInsight([overall(60), ret(55), ageBased(null, 'birth year'), ageGender(null, 'birth year')])
     expect(insight).toContain('birth year')
   })
 
@@ -63,7 +63,7 @@ describe('getRankInsight', () => {
 
   // Priority — first matching rule wins
   it('Rule 1 takes priority over Rule 3', () => {
-    const insight = getRankInsight([overall(80), ret(55), ageBased(null, 'age'), ageGender(null, 'age and gender')])
+    const insight = getRankInsight([overall(80), ret(55), ageBased(null, 'birth year'), ageGender(null, 'birth year and gender')])
     expect(insight).toContain('Wealth rank is higher')
     expect(insight).not.toContain('birth year')
   })
