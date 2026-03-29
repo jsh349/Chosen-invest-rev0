@@ -549,27 +549,47 @@ export default function RankPage() {
                 <tr className="text-left text-gray-600 border-b border-surface-border">
                   <th className="pb-2 pr-4 font-medium">Date</th>
                   <th className="pb-2 pr-4 font-medium">Overall</th>
-                  <th className="pb-2 pr-4 font-medium">Age-Based</th>
-                  <th className="pb-2 font-medium">Return</th>
+                  <th className="pb-2 pr-4 font-medium">Return</th>
+                  <th className="pb-2 font-medium">Change</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-surface-border">
-                {snapshots.slice(0, 5).map((s) => (
-                  <tr key={s.id} className="text-gray-400">
-                    <td className="py-2 pr-4 tabular-nums text-gray-500">
-                      {new Date(s.savedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    </td>
-                    <td className="py-2 pr-4 tabular-nums">
-                      {s.overallPercentile != null ? `Top ${100 - s.overallPercentile}%` : '—'}
-                    </td>
-                    <td className="py-2 pr-4 tabular-nums">
-                      {s.agePercentile != null ? `Top ${100 - s.agePercentile}%` : '—'}
-                    </td>
-                    <td className="py-2 tabular-nums">
-                      {s.returnPercentile != null ? `Top ${100 - s.returnPercentile}%` : '—'}
-                    </td>
-                  </tr>
-                ))}
+                {snapshots.slice(0, 5).map((s, idx) => {
+                  const prev  = snapshots[idx + 1]
+                  const delta =
+                    s.overallPercentile != null && prev?.overallPercentile != null
+                      ? s.overallPercentile - prev.overallPercentile
+                      : null
+                  const d = new Date(s.savedAt)
+                  const dateLabel = d.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day:   'numeric',
+                    ...(d.getFullYear() !== new Date().getFullYear() && { year: 'numeric' }),
+                  })
+                  return (
+                    <tr key={s.id} className="text-gray-400">
+                      <td className="py-2 pr-4 tabular-nums text-gray-500 whitespace-nowrap">{dateLabel}</td>
+                      <td className="py-2 pr-4 tabular-nums">
+                        {s.overallPercentile != null ? `Top ${100 - s.overallPercentile}%` : '—'}
+                      </td>
+                      <td className="py-2 pr-4 tabular-nums">
+                        {s.returnPercentile != null ? `Top ${100 - s.returnPercentile}%` : '—'}
+                      </td>
+                      <td className={cn(
+                        'py-2 tabular-nums whitespace-nowrap',
+                        delta === null ? 'text-gray-600' :
+                        delta > 0     ? 'text-emerald-400' :
+                        delta < 0     ? 'text-red-400' :
+                                        'text-gray-500'
+                      )}>
+                        {delta === null ? '—' :
+                         delta > 0     ? `+${delta} pts` :
+                         delta < 0     ? `${delta} pts` :
+                                         'no change'}
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
