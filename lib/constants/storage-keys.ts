@@ -19,6 +19,8 @@ export const STORAGE_KEYS = {
   benchmarkApplied: 'chosen_benchmark_applied_v1',
   /** Last-dismissed rank review fingerprint. Scalar string. */
   rankReviewSeen:   'chosen_rank_review_seen_v1',
+  /** Last-selected rank comparison mode ('individual' | 'household'). Scalar string. */
+  rankComparisonMode: 'chosen_rank_mode_v1',
 } as const
 
 export type StorageKey = typeof STORAGE_KEYS[keyof typeof STORAGE_KEYS]

@@ -35,6 +35,8 @@ import { RankDetailExplanationBlock } from '@/components/rank/rank-detail-explan
 import { getBenchmarkCapabilities } from '@/lib/utils/benchmark-capabilities'
 import { getBenchmarkHealthStatus } from '@/lib/utils/benchmark-health'
 import { getRankConfidenceNote } from '@/lib/utils/rank-confidence-note'
+import { readScalar, writeScalar } from '@/lib/utils/local-storage'
+import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
 import { getRankNarrativeSummary } from '@/lib/utils/rank-narrative-summary'
 import { getPrimaryRank } from '@/lib/utils/rank-priority'
 import { getRankReviewSummary } from '@/lib/utils/rank-review-summary'
@@ -42,6 +44,15 @@ import { getRankReviewFingerprint, checkRankReviewDue, dismissRankReview } from 
 import type { RankResult } from '@/lib/types/rank'
 
 type RankMode = 'individual' | 'household'
+
+const RANK_MODES: RankMode[] = ['individual', 'household']
+
+function readPersistedMode(): RankMode {
+  const stored = readScalar(STORAGE_KEYS.rankComparisonMode)
+  return (stored && (RANK_MODES as string[]).includes(stored))
+    ? (stored as RankMode)
+    : 'individual'
+}
 
 function rankCompleteness(availableCount: number): { label: string; color: string } {
   if (availableCount <= 1) return { label: 'Basic',         color: 'text-gray-400' }
@@ -189,7 +200,7 @@ export default function RankPage() {
   const { compact } = useFormatCurrency()
   const { snapshots, isLoaded: snapshotsLoaded, saveSnapshot } = useRankSnapshots()
   const { goals, isLoaded: goalsLoaded } = useGoals()
-  const [mode, setMode] = useState<RankMode>('individual')
+  const [mode, setMode] = useState<RankMode>(readPersistedMode)
   const [benchmarkAlertVisible, setBenchmarkAlertVisible] = useState(false)
   const [reviewVisible, setReviewVisible] = useState(false)
 
@@ -342,7 +353,7 @@ export default function RankPage() {
               : 'Combined household wealth ranked against reference benchmarks'}
           </p>
         </div>
-        <ModeToggle mode={mode} onChange={setMode} />
+        <ModeToggle mode={mode} onChange={(m) => { setMode(m); writeScalar(STORAGE_KEYS.rankComparisonMode, m) }} />
       </div>
 
       {/* Household mode — informational state */}
