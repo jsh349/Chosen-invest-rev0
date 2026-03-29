@@ -8,6 +8,7 @@ export const STORAGE_KEYS = {
   settings:       'chosen_settings_v1',
   dashboardPrefs: 'chosen_dashboard_prefs_v1',
   audit:          'chosen_audit_v1',
+  rankSnapshots:  'chosen_rank_snapshots_v1',
 } as const
 
 export type StorageKey = typeof STORAGE_KEYS[keyof typeof STORAGE_KEYS]

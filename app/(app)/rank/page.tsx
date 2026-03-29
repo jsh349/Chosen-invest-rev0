@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Settings, Users } from 'lucide-react'
 import { useAssets } from '@/lib/store/assets-store'
 import { useHousehold } from '@/lib/store/household-store'
 import { useSettings } from '@/lib/store/settings-store'
+import { useRankSnapshots } from '@/lib/hooks/use-rank-snapshots'
 import { computeOverallWealthRank, computeAgeBasedRank, computeAgeGenderRank, computeReturnRank } from '@/features/dashboard/rank'
 import { buildPortfolioSummary } from '@/features/dashboard/helpers'
 import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
@@ -117,6 +118,7 @@ export default function RankPage() {
   const { members, isLoaded: householdLoaded } = useHousehold()
   const { settings } = useSettings()
   const { compact } = useFormatCurrency()
+  const { snapshots, saveSnapshot } = useRankSnapshots()
   const [mode, setMode] = useState<RankMode>('individual')
 
   if (!assetsLoaded || !householdLoaded) return <LoadingSpinner />
@@ -135,6 +137,13 @@ export default function RankPage() {
 
   const availableCount = ranks.filter((r) => r.percentile != null).length
   const hasHouseholdMembers = members.length > 0
+
+  // Save snapshot once per meaningful visit (deduplicated inside the hook)
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useEffect(() => {
+    if (summary.assetCount > 0) saveSnapshot(ranks, summary.totalAssetValue)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <div className="space-y-6">
@@ -228,6 +237,46 @@ export default function RankPage() {
             </div>
           )}
         </>
+      )}
+
+      {/* Snapshot history — only shown when 2+ snapshots exist */}
+      {snapshots.length >= 2 && (
+        <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Recent Snapshots</p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="text-left text-gray-600 border-b border-surface-border">
+                  <th className="pb-2 pr-4 font-medium">Date</th>
+                  <th className="pb-2 pr-4 font-medium">Overall</th>
+                  <th className="pb-2 pr-4 font-medium">Age-Based</th>
+                  <th className="pb-2 font-medium">Return</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-surface-border">
+                {snapshots.slice(0, 5).map((s) => (
+                  <tr key={s.id} className="text-gray-400">
+                    <td className="py-2 pr-4 tabular-nums text-gray-500">
+                      {new Date(s.savedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </td>
+                    <td className="py-2 pr-4 tabular-nums">
+                      {s.overallPercentile != null ? `Top ${100 - s.overallPercentile}%` : '—'}
+                    </td>
+                    <td className="py-2 pr-4 tabular-nums">
+                      {s.agePercentile != null ? `Top ${100 - s.agePercentile}%` : '—'}
+                    </td>
+                    <td className="py-2 tabular-nums">
+                      {s.returnPercentile != null ? `Top ${100 - s.returnPercentile}%` : '—'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="text-[10px] text-gray-600">
+            Saved locally on each visit when rank values change. Max {snapshots.length <= 10 ? snapshots.length : 10} stored.
+          </p>
+        </div>
       )}
 
       {/* Methodology note */}
