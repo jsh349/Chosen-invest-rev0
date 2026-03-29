@@ -14,12 +14,19 @@ import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
 import { ROUTES } from '@/lib/constants/routes'
 import { LOCAL_USER_ID } from '@/lib/constants/auth'
 
-function assetToFormEntry(asset: Asset): AssetFormEntry {
+// Extends AssetFormEntry locally to carry identity fields for existing assets.
+// _id and _createdAt are preserved through edits and used at submit time so
+// re-saving the form does not replace existing asset IDs or timestamps.
+type FormEntry = AssetFormEntry & { _id?: string; _createdAt?: string }
+
+function assetToFormEntry(asset: Asset): FormEntry {
   return {
     name: asset.name,
     category: asset.category,
     value: asset.value.toString(),
     currency: asset.currency ?? 'USD',
+    _id: asset.id,
+    _createdAt: asset.createdAt,
   }
 }
 
@@ -27,7 +34,7 @@ export default function PortfolioInputPage() {
   const router = useRouter()
   const { assets, hasCustomAssets, isLoaded, setAssets } = useAssets()
   const { fmt } = useFormatCurrency()
-  const [entries, setEntries] = useState<AssetFormEntry[] | null>(null)
+  const [entries, setEntries] = useState<FormEntry[] | null>(null)
 
   useEffect(() => {
     if (!isLoaded) return
@@ -69,9 +76,11 @@ export default function PortfolioInputPage() {
       router.push(ROUTES.dashboard)
       return
     }
-    const newAssets = validEntries.map((en) =>
-      formEntryToAsset(en, LOCAL_USER_ID, crypto.randomUUID())
-    )
+    const now = new Date().toISOString()
+    const newAssets = validEntries.map((en) => ({
+      ...formEntryToAsset(en, LOCAL_USER_ID, en._id ?? crypto.randomUUID()),
+      createdAt: en._createdAt ?? now,
+    }))
     setAssets(newAssets)
     router.push(ROUTES.dashboard)
   }
