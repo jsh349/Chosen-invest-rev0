@@ -13,10 +13,14 @@ import { RANK_GAP_THRESHOLD } from '@/lib/utils/rank-insight'
  *   - Overall 40–49         → "near the benchmark median"
  *   - Overall < 40          → "below the benchmark median"
  *
- * A second sentence is appended (at most one) when:
- *   - Return rank is ≥ 20 pts below overall  → note about return standing
- *   - Return rank is ≥ 20 pts above overall  → note about return strength
- *   - Profile is incomplete and no return gap → prompt to complete profile
+ * A second sentence is appended (at most one, evaluated in priority order):
+ *   1. Return ≥ 20 pts below overall    → return rank lower than wealth rank
+ *   2. Return ≥ 20 pts above overall    → return rank stronger than wealth rank
+ *   3. Both overall ≥ 75 and return ≥ 75 → both compare favorably
+ *   4. Only return estimate missing     → specific prompt to add return estimate
+ *   5. Only age missing (return present) → specific prompt to add birth year
+ *   6. Only gender missing              → specific prompt to add gender
+ *   7. Multiple inputs missing          → generic prompt to complete profile
  *
  * Always returns a non-empty string.
  */
@@ -26,11 +30,12 @@ export function getRankNarrativeSummary(ranks: RankResult[]): string {
   const overallPct = overall?.percentile ?? null
   const retPct     = ret?.percentile     ?? null
 
-  const profileIncomplete = !!(
-    ageBased?.missingField  ||
-    ageGender?.missingField ||
-    ret?.missingField
-  )
+  // Granular missing-field flags used for specific second-sentence variants.
+  const missingReturn  = !!ret?.missingField
+  const missingAge     = !!ageBased?.missingField
+  // missingGender is only true when age IS present but gender is not.
+  const missingGender  = !missingAge && !!ageGender?.missingField
+  const profileIncomplete = missingReturn || missingAge || missingGender
 
   // No overall data — nothing meaningful to say yet
   if (overallPct === null) {
@@ -39,7 +44,7 @@ export function getRankNarrativeSummary(ranks: RankResult[]): string {
       : 'Overall wealth rank is unavailable with current portfolio data.'
   }
 
-  // Opening sentence based on overall percentile
+  // Opening sentence based on overall percentile tier
   let opening: string
   if (overallPct >= 75) {
     opening = 'Your overall asset position compares favorably against the reference group.'
@@ -51,13 +56,28 @@ export function getRankNarrativeSummary(ranks: RankResult[]): string {
     opening = 'Your overall asset position is below the benchmark median.'
   }
 
-  // Optional second sentence — return gap takes priority over profile note
+  // Optional second sentence — evaluated in priority order, first match wins.
   let second = ''
   if (retPct !== null && overallPct - retPct >= RANK_GAP_THRESHOLD) {
+    // Wealth significantly ahead of return
     second = ' Your investment return rank is notably lower than your wealth rank.'
   } else if (retPct !== null && retPct - overallPct >= RANK_GAP_THRESHOLD) {
+    // Return significantly ahead of wealth
     second = ' Your investment return rank is notably stronger than your wealth rank.'
+  } else if (overallPct >= 75 && retPct !== null && retPct >= 75) {
+    // Both wealth and return rank strongly — worth noting explicitly
+    second = ' Both wealth and return ranks compare favorably against the reference group.'
+  } else if (missingReturn && !missingAge) {
+    // Return estimate is the only missing input
+    second = ' Adding a return estimate will unlock investment rank comparison.'
+  } else if (missingAge && !missingReturn) {
+    // Birth year is missing but return is available
+    second = ' Adding birth year will enable age-based rank comparison.'
+  } else if (missingGender) {
+    // Age is set; only gender is missing
+    second = ' Adding gender will enable a more specific age and gender comparison.'
   } else if (profileIncomplete) {
+    // Multiple inputs missing — generic fallback
     second = ' More detailed comparisons will be available when profile inputs are completed.'
   }
 

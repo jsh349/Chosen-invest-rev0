@@ -103,12 +103,95 @@ describe('getRankNarrativeSummary — return gap second sentence', () => {
 })
 
 // ---------------------------------------------------------------------------
-// Second sentence — profile incomplete
+// Second sentence — both strong (priority 3)
+// ---------------------------------------------------------------------------
+
+describe('getRankNarrativeSummary — both strong', () => {
+  it('notes both strong when overall ≥ 75 and return ≥ 75', () => {
+    const text = getRankNarrativeSummary([OVERALL(80), RETURN(75)])
+    expect(text).toMatch(/both wealth and return ranks compare favorably/i)
+  })
+
+  it('notes both strong at exact thresholds', () => {
+    const text = getRankNarrativeSummary([OVERALL(75), RETURN(75)])
+    expect(text).toMatch(/both wealth and return ranks compare favorably/i)
+  })
+
+  it('does not fire both-strong when return < 75', () => {
+    const text = getRankNarrativeSummary([OVERALL(80), RETURN(74)])
+    expect(text).not.toMatch(/both wealth and return/)
+  })
+
+  it('does not fire both-strong when overall < 75', () => {
+    const text = getRankNarrativeSummary([OVERALL(74), RETURN(80)])
+    // return is stronger, but overall < 75 so no both-strong
+    expect(text).not.toMatch(/both wealth and return/)
+  })
+
+  it('gap detection takes priority over both-strong', () => {
+    // overall=95, return=75: gap = 20 → gap rule fires before both-strong
+    const text = getRankNarrativeSummary([OVERALL(95), RETURN(75)])
+    expect(text).toMatch(/return rank is notably lower/)
+    expect(text).not.toMatch(/both wealth and return/)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Second sentence — specific missing-input notes (priorities 4–6)
+// ---------------------------------------------------------------------------
+
+describe('getRankNarrativeSummary — specific missing input notes', () => {
+  it('prompts for return estimate when only return is missing', () => {
+    // age + gender available, return missing
+    const text = getRankNarrativeSummary([
+      OVERALL(60), AGE(55), GENDER(50), RETURN(null, 'annual return'),
+    ])
+    expect(text).toMatch(/return estimate/)
+    expect(text).not.toMatch(/profile inputs/)
+  })
+
+  it('prompts for birth year when only age is missing and return is available', () => {
+    const text = getRankNarrativeSummary([
+      OVERALL(60), AGE(null, 'birth year'), RETURN(55),
+    ])
+    expect(text).toMatch(/birth year/)
+    expect(text).not.toMatch(/profile inputs/)
+  })
+
+  it('prompts for gender when age is present but gender is missing', () => {
+    // age available (no missingField), ageGender has missingField = gender, return available
+    const text = getRankNarrativeSummary([
+      OVERALL(60), AGE(55), GENDER(null, 'gender'), RETURN(58),
+    ])
+    expect(text).toMatch(/gender/)
+    expect(text).not.toMatch(/profile inputs/)
+  })
+
+  it('falls back to generic note when both return and age are missing', () => {
+    const text = getRankNarrativeSummary([
+      OVERALL(60), AGE(null, 'birth year'), RETURN(null, 'annual return'),
+    ])
+    expect(text).toMatch(/profile inputs/)
+  })
+
+  it('gap detection takes priority over specific missing note', () => {
+    const text = getRankNarrativeSummary([
+      OVERALL(70), RETURN(45), AGE(null, 'birth year'),
+    ])
+    expect(text).toMatch(/return rank is notably lower/)
+    expect(text).not.toMatch(/birth year|profile inputs/)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Second sentence — profile incomplete (generic fallback, legacy tests)
 // ---------------------------------------------------------------------------
 
 describe('getRankNarrativeSummary — profile incomplete note', () => {
-  it('adds profile note when age is missing', () => {
-    const text = getRankNarrativeSummary([OVERALL(60), AGE(null, 'age')])
+  it('adds profile note when both age and return are missing', () => {
+    const text = getRankNarrativeSummary([
+      OVERALL(60), AGE(null, 'age'), RETURN(null, 'annual return'),
+    ])
     expect(text).toMatch(/profile inputs/)
   })
 
