@@ -118,6 +118,32 @@ export const SCENARIO_RETURN_GAP: RankResult[] = [
   mkReturn(50),
 ]
 
+/**
+ * Strong return — return rank (80) is 30 points above overall rank (50).
+ * Exceeds RANK_GAP_THRESHOLD (20); should trigger rank insight Rule 2
+ * ("Return rank is higher than overall wealth rank").
+ * Regression scenario: return stronger than wealth.
+ */
+export const SCENARIO_STRONG_RETURN: RankResult[] = [
+  mkOverall(50),
+  mkAge(48),
+  mkAgeGender(46),
+  mkReturn(80),
+]
+
+/**
+ * Both strong — overall rank (80) and return rank (76) both ≥ 75.
+ * No meaningful gap between them (difference = 4 < RANK_GAP_THRESHOLD).
+ * Should trigger the "both compare favorably" narrative variant (Phase 128).
+ * Regression scenario: both ranks above the top tier threshold.
+ */
+export const SCENARIO_BOTH_STRONG: RankResult[] = [
+  mkOverall(80),
+  mkAge(77),
+  mkAgeGender(74),
+  mkReturn(76),
+]
+
 // ---------------------------------------------------------------------------
 // All scenarios — useful for exhaustive iteration in tests
 // ---------------------------------------------------------------------------
@@ -129,6 +155,8 @@ export const ALL_SCENARIOS: Readonly<Record<string, RankResult[]>> = {
   FULL:             SCENARIO_FULL,
   NO_PROFILE:       SCENARIO_NO_PROFILE,
   RETURN_GAP:       SCENARIO_RETURN_GAP,
+  STRONG_RETURN:    SCENARIO_STRONG_RETURN,
+  BOTH_STRONG:      SCENARIO_BOTH_STRONG,
 }
 
 // ---------------------------------------------------------------------------
@@ -155,4 +183,29 @@ export const FIXTURE_VALID_BENCHMARK_FILE: BenchmarkFile = {
 export const FIXTURE_QA_FAILING_FILE: BenchmarkFile = {
   ...FIXTURE_VALID_BENCHMARK_FILE,
   overallWealth: [{ minValue: 0, maxValue: 1_000_000, percentile: NaN }],
+}
+
+/**
+ * Fails validateBenchmarkFile immediately because version is '2' (unsupported).
+ * Typed as unknown since it is intentionally structurally invalid.
+ * Regression scenario: malformed metadata / wrong version.
+ */
+export const FIXTURE_WRONG_VERSION_FILE: unknown = {
+  ...FIXTURE_VALID_BENCHMARK_FILE,
+  version: '2',
+}
+
+/**
+ * Passes validateBenchmarkFile (non-empty arrays, valid metadata), but
+ * investmentReturn contains a row with percentile 0 — which normalizeRow
+ * rejects (below the 1–99 valid range). parseBenchmarkFile therefore
+ * produces zero investmentReturn buckets.
+ *
+ * Regression scenario: source advertises a capability but the data
+ * contains no usable rows for that category after normalisation.
+ */
+export const FIXTURE_MISSING_RETURN_BUCKETS_FILE: BenchmarkFile = {
+  ...FIXTURE_VALID_BENCHMARK_FILE,
+  // percentile 0 is out of range — normalizeRow drops it, yielding 0 buckets.
+  investmentReturn: [{ minValue: 0, maxValue: 20, percentile: 0 }],
 }

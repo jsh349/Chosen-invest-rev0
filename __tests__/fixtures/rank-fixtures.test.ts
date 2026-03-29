@@ -14,16 +14,23 @@ import {
   SCENARIO_FULL,
   SCENARIO_NO_PROFILE,
   SCENARIO_RETURN_GAP,
+  SCENARIO_STRONG_RETURN,
+  SCENARIO_BOTH_STRONG,
   ALL_SCENARIOS,
   FIXTURE_VALID_BENCHMARK_FILE,
   FIXTURE_QA_FAILING_FILE,
+  FIXTURE_WRONG_VERSION_FILE,
+  FIXTURE_MISSING_RETURN_BUCKETS_FILE,
   mkOverall, mkAge, mkAgeGender, mkReturn,
 } from './rank-fixtures'
 
-import { validateBenchmarkFile } from '@/lib/utils/benchmark-import'
+import { validateBenchmarkFile, parseBenchmarkFile } from '@/lib/utils/benchmark-import'
 import { runBenchmarkQA } from '@/lib/utils/benchmark-qa'
 import { getRankInsight } from '@/lib/utils/rank-insight'
 import { getPrimaryRank } from '@/lib/utils/rank-priority'
+import { getRankNarrativeSummary } from '@/lib/utils/rank-narrative-summary'
+import { getBenchmarkHealthStatus } from '@/lib/utils/benchmark-health'
+import type { BenchmarkSourceCapabilities } from '@/lib/utils/benchmark-capabilities'
 
 // ---------------------------------------------------------------------------
 // Builder helpers
@@ -201,10 +208,114 @@ describe('FIXTURE_QA_FAILING_FILE', () => {
   it('runBenchmarkQA returns > 0 issues for the parsed buckets', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
     // Parse the file to get actual BenchmarkBucket[] then run QA
-    const { parseBenchmarkFile } = require('@/lib/utils/benchmark-import')
-    const buckets = parseBenchmarkFile(FIXTURE_QA_FAILING_FILE)
+    const { parseBenchmarkFile: pf } = require('@/lib/utils/benchmark-import')
+    const buckets = pf(FIXTURE_QA_FAILING_FILE)
     const issues = runBenchmarkQA(buckets, { silent: true })
     expect(issues).toBeGreaterThan(0)
     warn.mockRestore()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Regression: malformed metadata (wrong version)
+// ---------------------------------------------------------------------------
+
+describe('FIXTURE_WRONG_VERSION_FILE — malformed metadata', () => {
+  it('fails validateBenchmarkFile with a version error', () => {
+    const err = validateBenchmarkFile(FIXTURE_WRONG_VERSION_FILE)
+    expect(err).not.toBeNull()
+    expect(err).toMatch(/version/i)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Regression: missing capability (source has no usable return buckets)
+// ---------------------------------------------------------------------------
+
+describe('FIXTURE_MISSING_RETURN_BUCKETS_FILE — missing capability after parse', () => {
+  it('passes validateBenchmarkFile (schema is structurally valid)', () => {
+    expect(validateBenchmarkFile(FIXTURE_MISSING_RETURN_BUCKETS_FILE)).toBeNull()
+  })
+
+  it('produces zero investmentReturn buckets after parseBenchmarkFile', () => {
+    const buckets = parseBenchmarkFile(FIXTURE_MISSING_RETURN_BUCKETS_FILE)
+    expect(buckets.investmentReturn).toHaveLength(0)
+  })
+
+  it('still produces non-empty overallWealth, ageBased, ageGender buckets', () => {
+    const buckets = parseBenchmarkFile(FIXTURE_MISSING_RETURN_BUCKETS_FILE)
+    expect(buckets.overallWealth.length).toBeGreaterThan(0)
+    expect(buckets.ageBased.length).toBeGreaterThan(0)
+    expect(buckets.ageGender.length).toBeGreaterThan(0)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Regression: fallback activation — health status with isUsingFallback
+// ---------------------------------------------------------------------------
+
+describe('fallback activation health status', () => {
+  const allCaps: BenchmarkSourceCapabilities = {
+    supportsWealth: true, supportsAge: true, supportsAgeGender: true,
+    supportsReturn: true, isFallbackOnly: false,
+  }
+
+  it('healthy when caps are full and fallback is not active', () => {
+    expect(getBenchmarkHealthStatus(allCaps, false).status).toBe('healthy')
+  })
+
+  it('fallback status when isUsingFallback is true, regardless of caps', () => {
+    expect(getBenchmarkHealthStatus(allCaps, true).status).toBe('fallback')
+  })
+
+  it('invalid status when isFallbackOnly and fallback not active', () => {
+    const stubCaps: BenchmarkSourceCapabilities = { ...allCaps, isFallbackOnly: true }
+    expect(getBenchmarkHealthStatus(stubCaps, false).status).toBe('invalid')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Regression: partial rank completeness — SCENARIO_STRONG_RETURN
+// ---------------------------------------------------------------------------
+
+describe('SCENARIO_STRONG_RETURN', () => {
+  it('return percentile is at least 20 points above overall percentile', () => {
+    const [overall,,, ret] = SCENARIO_STRONG_RETURN
+    expect(ret.percentile! - overall.percentile!).toBeGreaterThanOrEqual(20)
+  })
+
+  it('triggers rank insight Rule 2 (return rank higher than wealth rank)', () => {
+    const insight = getRankInsight(SCENARIO_STRONG_RETURN)
+    expect(insight).toContain('Return rank is higher')
+  })
+
+  it('primary rank is overall_wealth (highest-priority type)', () => {
+    expect(getPrimaryRank(SCENARIO_STRONG_RETURN)?.type).toBe('overall_wealth')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Regression: both ranks strong — SCENARIO_BOTH_STRONG
+// ---------------------------------------------------------------------------
+
+describe('SCENARIO_BOTH_STRONG', () => {
+  it('overall and return are both ≥ 75', () => {
+    const [overall,,, ret] = SCENARIO_BOTH_STRONG
+    expect(overall.percentile!).toBeGreaterThanOrEqual(75)
+    expect(ret.percentile!).toBeGreaterThanOrEqual(75)
+  })
+
+  it('gap between overall and return is below RANK_GAP_THRESHOLD (20)', () => {
+    const [overall,,, ret] = SCENARIO_BOTH_STRONG
+    expect(Math.abs(overall.percentile! - ret.percentile!)).toBeLessThan(20)
+  })
+
+  it('narrative summary contains "both" favorable note', () => {
+    const text = getRankNarrativeSummary(SCENARIO_BOTH_STRONG)
+    expect(text).toMatch(/both wealth and return ranks compare favorably/i)
+  })
+
+  it('getRankInsight returns null (no meaningful gap)', () => {
+    expect(getRankInsight(SCENARIO_BOTH_STRONG)).toBeNull()
   })
 })
