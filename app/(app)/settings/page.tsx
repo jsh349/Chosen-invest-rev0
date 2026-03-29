@@ -15,6 +15,7 @@ const ARRAY_KEYS: ReadonlySet<string> = new Set([
   STORAGE_KEYS.household,
   STORAGE_KEYS.householdNotes,
   STORAGE_KEYS.audit,
+  STORAGE_KEYS.rankSnapshots,
 ])
 
 function isSafeToRestore(key: string, value: unknown): boolean {
@@ -23,6 +24,12 @@ function isSafeToRestore(key: string, value: unknown): boolean {
   return true
 }
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
+import {
+  getAvailableBenchmarkSources,
+  getActiveBenchmarkSourceId,
+  setActiveBenchmarkSourceId,
+  type BenchmarkSource,
+} from '@/lib/adapters/rank-benchmarks-adapter'
 
 const SELECT_CLASS = 'w-full rounded-lg border border-surface-border bg-surface-muted px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none'
 
@@ -90,10 +97,24 @@ export default function SettingsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [importStatus, setImportStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
 
+  // Local raw strings so typing partial numbers (e.g. "199") doesn't reset the field.
+  // Synced back from settings when settings change externally (e.g. Reset).
+  const [birthYearRaw, setBirthYearRaw] = useState<string>(settings.birthYear?.toString() ?? '')
+  const [returnRaw, setReturnRaw] = useState<string>(settings.annualReturnPct?.toString() ?? '')
+
+  const benchmarkSources = getAvailableBenchmarkSources()
+  const [selectedBenchmarkSource, setSelectedBenchmarkSource] = useState<BenchmarkSource['id']>(
+    getActiveBenchmarkSourceId
+  )
+
   // recordAudit() writes directly to localStorage outside the React context,
   // so context state can be stale when navigating here. Refresh on mount so
   // the audit log reflects actions taken during the current session.
   useEffect(() => { refreshAudit() }, [refreshAudit])
+
+  // Keep raw input strings in sync when settings change externally (e.g. Reset button).
+  useEffect(() => { setBirthYearRaw(settings.birthYear?.toString() ?? '') }, [settings.birthYear])
+  useEffect(() => { setReturnRaw(settings.annualReturnPct?.toString() ?? '') }, [settings.annualReturnPct])
 
   if (!isLoaded) {
     return (
@@ -178,9 +199,10 @@ export default function SettingsPage() {
             min={1920}
             max={new Date().getFullYear() - 10}
             placeholder="e.g. 1990"
-            value={settings.birthYear ?? ''}
+            value={birthYearRaw}
             onChange={(e) => {
               const raw = e.target.value
+              setBirthYearRaw(raw)
               if (raw === '') { update({ birthYear: undefined }); return }
               const yr = parseInt(raw, 10)
               if (yr >= 1920 && yr <= new Date().getFullYear() - 10) update({ birthYear: yr })
@@ -211,9 +233,10 @@ export default function SettingsPage() {
             min={-50}
             max={100}
             placeholder="e.g. 8.5"
-            value={settings.annualReturnPct ?? ''}
+            value={returnRaw}
             onChange={(e) => {
               const raw = e.target.value
+              setReturnRaw(raw)
               if (raw === '') { update({ annualReturnPct: undefined }); return }
               const n = parseFloat(raw)
               if (Number.isFinite(n) && n >= -50 && n <= 100) update({ annualReturnPct: n })
@@ -319,6 +342,38 @@ export default function SettingsPage() {
           </div>
         )}
       </div>
+
+      {/* Benchmark source — shown only when 2+ sources are available (internal use) */}
+      {benchmarkSources.length >= 2 && (
+        <div className="rounded-xl border border-surface-border bg-surface-card px-4">
+          <h2 className="border-b border-surface-border py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
+            Benchmark Data <span className="normal-case font-normal text-gray-600">(internal)</span>
+          </h2>
+          <Row label="Active source" hint="Rank calculations use this benchmark dataset">
+            <div className="flex items-center gap-2">
+              <select
+                value={selectedBenchmarkSource}
+                onChange={(e) => setSelectedBenchmarkSource(e.target.value as BenchmarkSource['id'])}
+                className={SELECT_CLASS}
+              >
+                {benchmarkSources.map((s) => (
+                  <option key={s.id} value={s.id}>{s.label}</option>
+                ))}
+              </select>
+              <button
+                onClick={() => {
+                  setActiveBenchmarkSourceId(selectedBenchmarkSource)
+                  window.location.reload()
+                }}
+                disabled={selectedBenchmarkSource === getActiveBenchmarkSourceId()}
+                className="shrink-0 rounded-lg border border-surface-border px-3 py-2 text-xs text-gray-300 hover:border-brand-700 hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Apply
+              </button>
+            </div>
+          </Row>
+        </div>
+      )}
 
       {/* Reset */}
       <div className="flex items-center justify-between rounded-xl border border-surface-border bg-surface-card px-4 py-3">

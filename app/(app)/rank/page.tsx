@@ -15,6 +15,11 @@ import { RankShareCard } from '@/components/rank/rank-share-card'
 import { LOCAL_USER_ID } from '@/lib/constants/auth'
 import { ROUTES } from '@/lib/constants/routes'
 import { cn } from '@/lib/utils/cn'
+import { BENCHMARK_META } from '@/lib/mock/rank-benchmarks'
+import { percentileBandLabel } from '@/lib/utils/percentile-label'
+import { getRankInsight } from '@/lib/utils/rank-insight'
+import { getRankBadges } from '@/lib/utils/rank-badges'
+import { getRankActions } from '@/lib/utils/rank-actions'
 import type { RankResult } from '@/lib/types/rank'
 
 type RankMode = 'individual' | 'household'
@@ -50,7 +55,6 @@ function PercentileBar({ percentile }: { percentile: number }) {
 
 function RankRow({ result }: { result: RankResult }) {
   const hasPct = result.percentile != null
-  const topPct = hasPct ? 100 - result.percentile! : null
 
   return (
     <div className="border-b border-surface-border py-5 last:border-0">
@@ -59,9 +63,9 @@ function RankRow({ result }: { result: RankResult }) {
           <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
             {result.label}
           </p>
-          {topPct != null ? (
+          {hasPct ? (
             <p className={cn('text-3xl font-bold tracking-tight', percentileColor(result.percentile!))}>
-              Top {topPct}%
+              {percentileBandLabel(result.percentile!)}
             </p>
           ) : (
             <p className="text-2xl font-bold text-gray-600">—</p>
@@ -154,6 +158,18 @@ export default function RankPage() {
     computeReturnRank(settings.annualReturnPct),
   ] : []
 
+  const rankInsight = isFullyLoaded && summary.assetCount > 0
+    ? getRankInsight(ranks)
+    : null
+
+  const rankBadges = isFullyLoaded && summary.assetCount > 0
+    ? getRankBadges(ranks)
+    : []
+
+  const rankActions = isFullyLoaded && summary.assetCount > 0
+    ? getRankActions(ranks)
+    : []
+
   // Rules of Hooks: useEffect must be before any conditional return.
   // Guard inside the effect so it only fires once all data is loaded.
   useEffect(() => {
@@ -173,7 +189,9 @@ export default function RankPage() {
         <div>
           <h1 className="text-xl font-bold text-white">Wealth Rank</h1>
           <p className="mt-0.5 text-sm text-gray-500">
-            How your portfolio compares to reference benchmarks
+            {mode === 'individual'
+              ? 'Your individual portfolio ranked against reference benchmarks'
+              : 'Combined household wealth ranked against reference benchmarks'}
           </p>
         </div>
         <ModeToggle mode={mode} onChange={setMode} />
@@ -219,6 +237,10 @@ export default function RankPage() {
           {summary.assetCount > 0 && (
             <div className="flex flex-wrap gap-4 rounded-xl border border-surface-border bg-surface-card px-5 py-4">
               <div>
+                <p className="text-xs text-gray-500">Comparison</p>
+                <p className="mt-0.5 text-sm font-semibold text-white">Individual</p>
+              </div>
+              <div>
                 <p className="text-xs text-gray-500">Total Assets</p>
                 <p className="mt-0.5 text-sm font-semibold text-white">{compact(summary.totalAssetValue)}</p>
               </div>
@@ -255,12 +277,52 @@ export default function RankPage() {
             </div>
           )}
 
+          {/* Rank insight — shown only when a meaningful gap or profile gap is detected */}
+          {rankInsight && (
+            <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3">
+              <p className="text-xs text-gray-400 leading-relaxed">{rankInsight}</p>
+            </div>
+          )}
+
+          {/* Rank actions — contextual navigation links derived from rank state */}
+          {rankActions.length > 0 && (
+            <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3 flex flex-wrap gap-x-5 gap-y-2">
+              {rankActions.map((action) => (
+                <Link
+                  key={action.label}
+                  href={action.href}
+                  className="text-xs text-brand-400 hover:text-brand-300 transition-colors"
+                >
+                  {action.label} →
+                </Link>
+              ))}
+            </div>
+          )}
+
           {/* Rank rows */}
           {summary.assetCount > 0 && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5">
               {ranks.map((r) => (
                 <RankRow key={r.type} result={r} />
               ))}
+            </div>
+          )}
+
+          {/* Rank badges — earned milestone indicators */}
+          {rankBadges.length > 0 && (
+            <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Milestones</p>
+              <div className="flex flex-wrap gap-2">
+                {rankBadges.map((badge) => (
+                  <div
+                    key={badge.id}
+                    title={badge.description}
+                    className="inline-flex items-center rounded-full border border-surface-border bg-surface-muted px-3 py-1"
+                  >
+                    <span className="text-xs font-medium text-gray-300">{badge.label}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
@@ -319,6 +381,23 @@ export default function RankPage() {
         <p className="text-xs text-gray-600">
           Missing profile fields will show an unavailable state rather than an estimate. These are estimates only and not financial advice.
         </p>
+        <div className="mt-2 border-t border-surface-border pt-2 flex flex-wrap gap-x-4 gap-y-1">
+          <span className="text-[10px] text-gray-600">
+            <span className="text-gray-500">Benchmark: </span>
+            {BENCHMARK_META.sourceLabel}
+          </span>
+          <span className="text-[10px] text-gray-600">
+            <span className="text-gray-500">Version: </span>
+            {BENCHMARK_META.version}
+          </span>
+          <span className="text-[10px] text-gray-600">
+            <span className="text-gray-500">Updated: </span>
+            {BENCHMARK_META.updatedAt}
+          </span>
+          {BENCHMARK_META.notes && (
+            <span className="text-[10px] text-gray-600 w-full">{BENCHMARK_META.notes}</span>
+          )}
+        </div>
       </div>
     </div>
   )
