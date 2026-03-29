@@ -5,7 +5,22 @@ import { Download, Upload, History } from 'lucide-react'
 import { useSettings, DEFAULT_SETTINGS, type CurrencyCode, type AppSettings } from '@/lib/store/settings-store'
 import type { GenderOption } from '@/lib/types/rank'
 import { useAudit } from '@/lib/store/audit-store'
-import { ALL_STORAGE_KEYS } from '@/lib/constants/storage-keys'
+import { STORAGE_KEYS, ALL_STORAGE_KEYS } from '@/lib/constants/storage-keys'
+
+/** Keys whose stored value must be an array. Non-array values are skipped on import. */
+const ARRAY_KEYS: ReadonlySet<string> = new Set([
+  STORAGE_KEYS.assets,
+  STORAGE_KEYS.goals,
+  STORAGE_KEYS.transactions,
+  STORAGE_KEYS.household,
+  STORAGE_KEYS.householdNotes,
+  STORAGE_KEYS.audit,
+])
+
+function isSafeToRestore(key: string, value: unknown): boolean {
+  if (ARRAY_KEYS.has(key) && !Array.isArray(value)) return false
+  return true
+}
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 
 const SELECT_CLASS = 'w-full rounded-lg border border-surface-border bg-surface-muted px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none'
@@ -95,7 +110,7 @@ export default function SettingsPage() {
         let restored = 0
         for (const key of ALL_STORAGE_KEYS) {
           const value = (data as Record<string, unknown>)[key]
-          if (value !== null && value !== undefined) {
+          if (value !== null && value !== undefined && isSafeToRestore(key, value)) {
             window.localStorage.setItem(key, JSON.stringify(value))
             restored++
           }
