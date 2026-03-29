@@ -1,5 +1,11 @@
 import type { BenchmarkBucket, RankResult, RankDetail, GenderOption } from '@/lib/types/rank'
-import { rankBenchmarksAdapter } from '@/lib/adapters/rank-benchmarks-adapter'
+import { rankBenchmarksAdapter, getActiveBenchmarkSourceId } from '@/lib/adapters/rank-benchmarks-adapter'
+import { getBenchmarkCapabilities } from '@/lib/utils/benchmark-capabilities'
+import { capabilityGuardedResult } from '@/lib/utils/benchmark-capability-guard'
+
+// Resolved once at module load — same lifecycle as rankBenchmarksAdapter.
+// SSR-safe: getActiveBenchmarkSourceId() returns 'default' when window is undefined.
+const _caps = getBenchmarkCapabilities(getActiveBenchmarkSourceId())
 
 /**
  * Returns the percentile for the bucket whose range contains `value`.
@@ -45,6 +51,8 @@ function returnBand(b: BenchmarkBucket): string {
 
 /** Compute only the Overall Wealth rank from total asset value. */
 export function computeOverallWealthRank(totalAssetValue: number): RankResult {
+  const guard = capabilityGuardedResult(_caps.supportsWealth, 'overall_wealth', 'Overall Wealth Rank')
+  if (guard) return guard
   const buckets = rankBenchmarksAdapter.getOverallWealthBenchmarks()
   const percentile = findPercentile(buckets, totalAssetValue)
   const bucket = findBucket(buckets, totalAssetValue)
@@ -66,6 +74,8 @@ export function computeOverallWealthRank(totalAssetValue: number): RankResult {
 
 /** Compute Age-Based Wealth rank. Returns informational state if age is missing. */
 export function computeAgeBasedRank(totalAssetValue: number, age?: number): RankResult {
+  const guard = capabilityGuardedResult(_caps.supportsAge, 'age_based', 'Age-Based Rank')
+  if (guard) return guard
   if (age == null) {
     return {
       type: 'age_based',
@@ -110,6 +120,8 @@ export function computeAgeGenderRank(
   age?: number,
   gender?: GenderOption,
 ): RankResult {
+  const guard = capabilityGuardedResult(_caps.supportsAgeGender, 'age_gender', 'Age + Gender Rank')
+  if (guard) return guard
   // Missing fields
   if (age == null && (gender == null || gender === 'undisclosed')) {
     return {
@@ -187,6 +199,8 @@ export function computeAgeGenderRank(
 
 /** Compute Investment Return rank from an estimated annual return %. */
 export function computeReturnRank(annualReturnPct?: number): RankResult {
+  const guard = capabilityGuardedResult(_caps.supportsReturn, 'investment_return', 'Investment Return Rank')
+  if (guard) return guard
   if (annualReturnPct == null) {
     return {
       type: 'investment_return',
