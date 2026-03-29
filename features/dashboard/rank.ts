@@ -1,4 +1,4 @@
-import type { BenchmarkBucket, RankResult, GenderOption } from '@/lib/types/rank'
+import type { BenchmarkBucket, RankResult, RankDetail, GenderOption } from '@/lib/types/rank'
 import { rankBenchmarksAdapter } from '@/lib/adapters/rank-benchmarks-adapter'
 
 function findPercentile(buckets: BenchmarkBucket[], value: number): number {
@@ -8,10 +8,34 @@ function findPercentile(buckets: BenchmarkBucket[], value: number): number {
   return buckets[buckets.length - 1].percentile
 }
 
+function findBucket(buckets: BenchmarkBucket[], value: number): BenchmarkBucket {
+  for (const b of buckets) {
+    if (value >= b.minValue && value < b.maxValue) return b
+  }
+  return buckets[buckets.length - 1]
+}
+
 function filterByAge(buckets: BenchmarkBucket[], age: number): BenchmarkBucket[] {
   return buckets.filter(
     (b) => b.ageRange && age >= b.ageRange[0] && age <= b.ageRange[1]
   )
+}
+
+function fmtWealth(v: number): string {
+  if (v >= 1_000_000) return `$${+(v / 1_000_000).toFixed(1)}M`
+  if (v >= 1_000)     return `$${Math.round(v / 1_000)}K`
+  return `$${Math.round(v)}`
+}
+
+function wealthBand(b: BenchmarkBucket): string {
+  if (b.maxValue === Infinity) return `${fmtWealth(b.minValue)}+`
+  return `${fmtWealth(b.minValue)} – ${fmtWealth(b.maxValue)}`
+}
+
+function returnBand(b: BenchmarkBucket): string {
+  if (b.minValue === -Infinity) return `below ${b.maxValue.toFixed(0)}%`
+  if (b.maxValue === Infinity)  return `${b.minValue.toFixed(0)}%+`
+  return `${b.minValue.toFixed(0)}% – ${b.maxValue.toFixed(0)}%`
 }
 
 export type RankInput = {
@@ -23,7 +47,9 @@ export type RankInput = {
 
 /** Compute only the Overall Wealth rank from total asset value. */
 export function computeOverallWealthRank(totalAssetValue: number): RankResult {
-  const percentile = findPercentile(rankBenchmarksAdapter.getOverallWealthBenchmarks(), totalAssetValue)
+  const buckets = rankBenchmarksAdapter.getOverallWealthBenchmarks()
+  const percentile = findPercentile(buckets, totalAssetValue)
+  const bucket = findBucket(buckets, totalAssetValue)
   const topPct = 100 - percentile
 
   let message: string
@@ -32,12 +58,12 @@ export function computeOverallWealthRank(totalAssetValue: number): RankResult {
   else if (percentile >= 50) message = `Top ${topPct}%. Solid financial foundation building.`
   else message = `Top ${topPct}%. Growing steadily — keep building.`
 
-  return {
-    type: 'overall_wealth',
-    label: 'Overall Wealth Rank',
-    percentile,
-    message,
+  const detail: RankDetail = {
+    comparisonBasis: 'All households, nationally',
+    bandLabel: wealthBand(bucket),
   }
+
+  return { type: 'overall_wealth', label: 'Overall Wealth Rank', percentile, message, detail }
 }
 
 /** Compute Age-Based Wealth rank. Returns informational state if age is missing. */
@@ -63,6 +89,7 @@ export function computeAgeBasedRank(totalAssetValue: number, age?: number): Rank
   }
 
   const percentile = findPercentile(ageBuckets, totalAssetValue)
+  const bucket = findBucket(ageBuckets, totalAssetValue)
   const topPct = 100 - percentile
   const ageRange = ageBuckets[0].ageRange!
 
@@ -71,12 +98,12 @@ export function computeAgeBasedRank(totalAssetValue: number, age?: number): Rank
   else if (percentile >= 50) message = `Top ${topPct}% for your age group (${ageRange[0]}–${ageRange[1]}).`
   else message = `Top ${topPct}% in the ${ageRange[0]}–${ageRange[1]} bracket. Room to grow.`
 
-  return {
-    type: 'age_based',
-    label: 'Age-Based Rank',
-    percentile,
-    message,
+  const detail: RankDetail = {
+    comparisonBasis: `Adults aged ${ageRange[0]}–${ageRange[1]}, nationally`,
+    bandLabel: wealthBand(bucket),
   }
+
+  return { type: 'age_based', label: 'Age-Based Rank', percentile, message, detail }
 }
 
 /** Compute Age + Gender rank. Returns informational state if age or gender is missing/unsupported. */
@@ -133,21 +160,23 @@ export function computeAgeGenderRank(
   }
 
   const percentile = findPercentile(buckets, totalAssetValue)
+  const bucket = findBucket(buckets, totalAssetValue)
   const topPct = 100 - percentile
   const ageRange = buckets[0].ageRange!
   const genderLabel = gender === 'male' ? 'men' : 'women'
+  const genderCapital = gender === 'male' ? 'Men' : 'Women'
 
   let message: string
   if (percentile >= 75) message = `Top ${topPct}% among ${genderLabel} ages ${ageRange[0]}–${ageRange[1]}. Outstanding.`
   else if (percentile >= 50) message = `Top ${topPct}% among ${genderLabel} in the ${ageRange[0]}–${ageRange[1]} group.`
   else message = `Top ${topPct}% among ${genderLabel} ages ${ageRange[0]}–${ageRange[1]}. Building steadily.`
 
-  return {
-    type: 'age_gender',
-    label: 'Age + Gender Rank',
-    percentile,
-    message,
+  const detail: RankDetail = {
+    comparisonBasis: `${genderCapital} aged ${ageRange[0]}–${ageRange[1]}, nationally`,
+    bandLabel: wealthBand(bucket),
   }
+
+  return { type: 'age_gender', label: 'Age + Gender Rank', percentile, message, detail }
 }
 
 /** Compute Investment Return rank from an estimated annual return %. */
@@ -162,7 +191,9 @@ export function computeReturnRank(annualReturnPct?: number): RankResult {
     }
   }
 
-  const percentile = findPercentile(rankBenchmarksAdapter.getReturnBenchmarks(), annualReturnPct)
+  const retBuckets = rankBenchmarksAdapter.getReturnBenchmarks()
+  const percentile = findPercentile(retBuckets, annualReturnPct)
+  const bucket = findBucket(retBuckets, annualReturnPct)
   const topPct = 100 - percentile
   const sign = annualReturnPct >= 0 ? '+' : ''
 
@@ -171,12 +202,12 @@ export function computeReturnRank(annualReturnPct?: number): RankResult {
   else if (percentile >= 50) message = `${sign}${annualReturnPct.toFixed(1)}% return places you in the top ${topPct}%.`
   else message = `${sign}${annualReturnPct.toFixed(1)}% return — top ${topPct}%. Market conditions vary.`
 
-  return {
-    type: 'investment_return',
-    label: 'Investment Return Rank',
-    percentile,
-    message,
+  const detail: RankDetail = {
+    comparisonBasis: 'All investors, by annual return',
+    bandLabel: returnBand(bucket),
   }
+
+  return { type: 'investment_return', label: 'Investment Return Rank', percentile, message, detail }
 }
 
 export function computeRanks(input: RankInput): RankResult[] {

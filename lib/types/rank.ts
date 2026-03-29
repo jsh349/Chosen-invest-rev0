@@ -14,10 +14,19 @@ export type BenchmarkBucket = {
   gender?: GenderOption
 }
 
+export type RankDetail = {
+  /** Human-readable description of who is being compared, e.g. "Adults aged 30–39, nationally" */
+  comparisonBasis: string
+  /** The value range of the matched benchmark band, e.g. "$100K – $250K" or "6% – 10%" */
+  bandLabel: string
+}
+
 export type RankResult = {
   type: RankType
   label: string
   percentile: number | null
   message: string
   missingField?: string
+  /** Present when a benchmark band was matched — omitted when data is missing */
+  detail?: RankDetail
 }
