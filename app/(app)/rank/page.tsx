@@ -32,6 +32,7 @@ import { getRankInputExplanation } from '@/lib/utils/rank-input-explanation'
 import { getRankAllocationInsight } from '@/lib/utils/rank-allocation-insight'
 import { getRankChecklist } from '@/lib/utils/rank-checklist'
 import { getRankNarrativeSummary } from '@/lib/utils/rank-narrative-summary'
+import { getRankExplanationSet } from '@/lib/utils/rank-explanation-priority'
 import { getPrimaryRank } from '@/lib/utils/rank-priority'
 import { getRankReviewSummary } from '@/lib/utils/rank-review-summary'
 import { getRankReviewFingerprint, checkRankReviewDue, dismissRankReview } from '@/lib/utils/rank-review'
@@ -271,6 +272,10 @@ export default function RankPage() {
       })
     : null
 
+  const explanationSet = isFullyLoaded && summary.assetCount > 0
+    ? getRankExplanationSet({ narrativeSummary, rankInsight, nextHint })
+    : { showNarrative: false, showInsight: false, showNextHint: false }
+
   const rankAllocationInsight = isFullyLoaded && summary.assetCount > 0
     ? getRankAllocationInsight(ranks, summary.categoryBreakdown)
     : null
@@ -420,7 +425,7 @@ export default function RankPage() {
           {summary.assetCount > 0 && <PrimaryRankHighlight ranks={ranks} />}
 
           {/* Narrative summary — one or two sentences synthesising available rank signals */}
-          {narrativeSummary && (
+          {explanationSet.showNarrative && narrativeSummary && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3">
               <p className="text-sm text-gray-300 leading-relaxed">{narrativeSummary}</p>
             </div>
@@ -452,7 +457,7 @@ export default function RankPage() {
           )}
 
           {/* Next-step hint — one actionable sentence toward full rank completeness */}
-          {nextHint && (
+          {explanationSet.showNextHint && nextHint && (
             <div className="flex items-center justify-between gap-3 rounded-xl border border-surface-border bg-surface-card px-5 py-3">
               <p className="text-xs text-gray-400 leading-relaxed">{nextHint.text}</p>
               <Link
@@ -465,7 +470,7 @@ export default function RankPage() {
           )}
 
           {/* Rank insight — shown only when a meaningful gap or profile gap is detected */}
-          {rankInsight && (
+          {explanationSet.showInsight && rankInsight && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3">
               <p className="text-xs text-gray-400 leading-relaxed">{rankInsight}</p>
             </div>
