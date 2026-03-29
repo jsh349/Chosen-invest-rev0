@@ -2,9 +2,11 @@
 
 import { forwardRef } from 'react'
 import type { RankResult } from '@/lib/types/rank'
+import { cn } from '@/lib/utils/cn'
 
-// The three ranks shown in the share card — age+gender omitted (optional profile data)
-const SHARE_TYPES = ['overall_wealth', 'age_based', 'investment_return'] as const
+// Overall shown as hero; age + return shown as secondary rows
+const HERO_TYPE      = 'overall_wealth'
+const SECONDARY_TYPES = ['age_based', 'investment_return'] as const
 
 type Props = {
   ranks: RankResult[]
@@ -15,19 +17,11 @@ function topPctLabel(percentile: number): string {
   return top === 0 ? '<1%' : `${top}%`
 }
 
-function ShareRow({ result }: { result: RankResult }) {
-  return (
-    <div className="flex items-center justify-between py-2.5">
-      <span className="text-xs text-gray-400">{result.label}</span>
-      {result.percentile != null ? (
-        <span className="text-sm font-semibold text-white tabular-nums">
-          Top {topPctLabel(result.percentile)}
-        </span>
-      ) : (
-        <span className="text-xs text-gray-600">—</span>
-      )}
-    </div>
-  )
+function percentileColor(percentile: number): string {
+  if (percentile >= 75) return 'text-emerald-400'
+  if (percentile >= 50) return 'text-brand-400'
+  if (percentile >= 30) return 'text-amber-400'
+  return 'text-gray-400'
 }
 
 /**
@@ -37,35 +31,88 @@ function ShareRow({ result }: { result: RankResult }) {
  */
 export const RankShareCard = forwardRef<HTMLDivElement, Props>(
   function RankShareCard({ ranks }, ref) {
-    const displayed = SHARE_TYPES
+    const hero      = ranks.find((r) => r.type === HERO_TYPE) ?? null
+    const secondary = SECONDARY_TYPES
       .map((type) => ranks.find((r) => r.type === type))
       .filter((r): r is RankResult => r != null)
+
+    const availableCount = [hero, ...secondary].filter(
+      (r) => r != null && r.percentile != null,
+    ).length
+    const totalCount = 1 + secondary.length
+    const isPartial  = availableCount > 0 && availableCount < totalCount
 
     const dateStr = new Date().toLocaleDateString('en-US', {
       month: 'short', day: 'numeric', year: 'numeric',
     })
+
+    const hasAnyData = hero != null || secondary.length > 0
 
     return (
       <div
         ref={ref}
         role="region"
         aria-label="Rank Summary"
-        className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-2 min-w-[280px]"
+        className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-3 min-w-[280px]"
       >
+        {/* Header */}
         <div className="flex items-center justify-between">
           <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Rank Summary</p>
           <span className="text-[10px] text-gray-600">{dateStr}</span>
         </div>
 
-        {displayed.length === 0 ? (
+        {!hasAnyData ? (
           <p className="py-3 text-center text-xs text-gray-600">No rank data available.</p>
         ) : (
-          <div className="divide-y divide-surface-border">
-            {displayed.map((r) => <ShareRow key={r.type} result={r} />)}
-          </div>
+          <>
+            {/* Overall wealth — primary field */}
+            {hero && (
+              <div className="rounded-lg bg-surface-muted/50 px-4 py-3">
+                <p className="text-[10px] text-gray-600 uppercase tracking-wide mb-1">{hero.label}</p>
+                {hero.percentile != null ? (
+                  <div className="flex items-baseline gap-2">
+                    <span className={cn('text-2xl font-bold tabular-nums leading-none', percentileColor(hero.percentile))}>
+                      Top {topPctLabel(hero.percentile)}
+                    </span>
+                    <span className="text-xs text-gray-600 tabular-nums">
+                      {hero.percentile}th pct.
+                    </span>
+                  </div>
+                ) : (
+                  <span className="text-sm text-gray-600">—</span>
+                )}
+              </div>
+            )}
+
+            {/* Secondary ranks */}
+            {secondary.length > 0 && (
+              <div className="divide-y divide-surface-border border-t border-surface-border">
+                {secondary.map((r) => (
+                  <div key={r.type} className="flex items-center justify-between py-2">
+                    <span className="text-xs text-gray-500">{r.label}</span>
+                    {r.percentile != null ? (
+                      <span className={cn('text-sm font-semibold tabular-nums', percentileColor(r.percentile))}>
+                        Top {topPctLabel(r.percentile)}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-gray-600">—</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Partial data note */}
+            {isPartial && (
+              <p className="text-[10px] text-gray-600">
+                {availableCount} of {totalCount} ranks available — complete your profile for full results.
+              </p>
+            )}
+          </>
         )}
 
-        <p className="pt-1 text-[10px] text-gray-600 leading-relaxed">
+        {/* Disclaimer */}
+        <p className="pt-1 text-[10px] text-gray-600 leading-relaxed border-t border-surface-border">
           Benchmark-based estimate · not financial advice · Chosen Invest
         </p>
       </div>
