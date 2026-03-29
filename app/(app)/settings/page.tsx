@@ -387,7 +387,7 @@ export default function SettingsPage() {
                   setActiveBenchmarkSourceId(selectedBenchmarkSource)
                   window.location.reload()
                 }}
-                disabled={selectedBenchmarkSource === getActiveBenchmarkSourceId()}
+                disabled={selectedBenchmarkSource === debugSrcId}
                 className="shrink-0 rounded-lg border border-surface-border px-3 py-2 text-xs text-gray-300 hover:border-brand-700 hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Apply

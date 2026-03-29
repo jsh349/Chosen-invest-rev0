@@ -5,14 +5,25 @@ import { capabilityGuardedResult } from '@/lib/utils/benchmark-capability-guard'
 
 // Resolved once at module load — same lifecycle as rankBenchmarksAdapter.
 // SSR-safe: getActiveBenchmarkSourceId() returns 'default' when window is undefined.
+// IMPORTANT: _caps is frozen for the lifetime of this module. The Settings page
+// forces window.location.reload() after changing the active source, which re-initialises
+// the module. If that forced reload is ever removed, _caps will be stale and rank
+// computations will silently use wrong capabilities.
 const _caps = getBenchmarkCapabilities(getActiveBenchmarkSourceId())
 
 /**
  * Returns the percentile for the bucket whose range contains `value`.
  * Bucket matching is inclusive-lower / exclusive-upper: `minValue <= value < maxValue`.
  * Values exceeding all bucket upper bounds fall into the last bucket (open-ended top tier).
+ * Returns 1 (bottom 1%) if buckets is empty — this indicates corrupted benchmark data.
  */
 function findPercentile(buckets: BenchmarkBucket[], value: number): number {
+  if (buckets.length === 0) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('[findPercentile] Called with empty bucket array — benchmark data may be corrupted.')
+    }
+    return 1
+  }
   for (const b of buckets) {
     if (value >= b.minValue && value < b.maxValue) return b.percentile
   }
@@ -20,6 +31,12 @@ function findPercentile(buckets: BenchmarkBucket[], value: number): number {
 }
 
 function findBucket(buckets: BenchmarkBucket[], value: number): BenchmarkBucket {
+  if (buckets.length === 0) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('[findBucket] Called with empty bucket array — benchmark data may be corrupted.')
+    }
+    return { minValue: 0, maxValue: Infinity, percentile: 1 }
+  }
   for (const b of buckets) {
     if (value >= b.minValue && value < b.maxValue) return b
   }

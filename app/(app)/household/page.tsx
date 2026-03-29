@@ -7,7 +7,7 @@ import { useHousehold } from '@/lib/store/household-store'
 import { useGoals } from '@/lib/store/goals-store'
 import { useHouseholdNotes } from '@/lib/store/household-notes-store'
 import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
-import { getGoalStatus, GOAL_STATUS_LABELS, GOAL_STATUS_STYLES } from '@/lib/utils/goal-status'
+import { getGoalStatus, goalProgressPct, GOAL_STATUS_LABELS, GOAL_STATUS_STYLES } from '@/lib/utils/goal-status'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
@@ -275,9 +275,7 @@ export default function HouseholdPage() {
           ) : (
             <div className="divide-y divide-surface-border">
               {sharedGoals.map((goal) => {
-                const pct = goal.targetAmount > 0
-                  ? Math.min(100, (goal.currentAmount / goal.targetAmount) * 100)
-                  : 0
+                const pct = goalProgressPct(goal)
                 const status = getGoalStatus(goal.currentAmount, goal.targetAmount)
                 return (
                   <div key={goal.id} className="px-4 py-3 space-y-2">
