@@ -29,6 +29,7 @@ import { checkBenchmarkChanged, dismissBenchmarkAlert, benchmarkVersionNote, get
 import { getNextRankHint } from '@/lib/utils/rank-next-hint'
 import { getRankInterpretation } from '@/lib/utils/rank-interpretation'
 import { getRankInputExplanation } from '@/lib/utils/rank-input-explanation'
+import { getRankAllocationInsight } from '@/lib/utils/rank-allocation-insight'
 import { getRankNarrativeSummary } from '@/lib/utils/rank-narrative-summary'
 import { getPrimaryRank } from '@/lib/utils/rank-priority'
 import { getRankReviewSummary } from '@/lib/utils/rank-review-summary'
@@ -259,6 +260,10 @@ export default function RankPage() {
       })
     : null
 
+  const rankAllocationInsight = isFullyLoaded && summary.assetCount > 0
+    ? getRankAllocationInsight(ranks, summary.categoryBreakdown)
+    : null
+
   // Rules of Hooks: useEffect must be before any conditional return.
   // Guard inside the effect so it only fires once all data is loaded.
   useEffect(() => {
@@ -447,6 +452,13 @@ export default function RankPage() {
           {rankGoalInsight && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3">
               <p className="text-xs text-gray-400 leading-relaxed">{rankGoalInsight}</p>
+            </div>
+          )}
+
+          {/* Rank–allocation bridge insight */}
+          {rankAllocationInsight && (
+            <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3">
+              <p className="text-xs text-gray-400 leading-relaxed">{rankAllocationInsight}</p>
             </div>
           )}
 
