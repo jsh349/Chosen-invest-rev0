@@ -1,4 +1,5 @@
 import type { RankResult } from '@/lib/types/rank'
+import { indexRanks } from '@/lib/utils/rank-index'
 
 /**
  * Compares available rank outputs and returns one short, deterministic insight
@@ -8,13 +9,10 @@ import type { RankResult } from '@/lib/types/rank'
  * A 20-point percentile gap is used as the "meaningful difference" threshold.
  */
 export function getRankInsight(ranks: RankResult[]): string | null {
-  const overall  = ranks.find((r) => r.type === 'overall_wealth')
-  const ret      = ranks.find((r) => r.type === 'investment_return')
-  const ageBased = ranks.find((r) => r.type === 'age_based')
-  const ageGender = ranks.find((r) => r.type === 'age_gender')
+  const { overall, ret, ageBased, ageGender } = indexRanks(ranks)
 
-  const overallPct = overall?.percentile  ?? null
-  const retPct     = ret?.percentile      ?? null
+  const overallPct = overall?.percentile ?? null
+  const retPct     = ret?.percentile     ?? null
 
   // Rule 1: wealth rank significantly stronger than return rank
   if (overallPct !== null && retPct !== null && overallPct - retPct >= 20) {

@@ -1,5 +1,6 @@
 import type { RankResult } from '@/lib/types/rank'
 import { ROUTES } from '@/lib/constants/routes'
+import { indexRanks } from '@/lib/utils/rank-index'
 
 export type RankAction = {
   label: string
@@ -16,11 +17,9 @@ export type RankAction = {
 export function getRankActions(ranks: RankResult[]): RankAction[] {
   const actions: RankAction[] = []
 
-  const overall   = ranks.find((r) => r.type === 'overall_wealth')
-  const ageBased  = ranks.find((r) => r.type === 'age_based')
-  const ageGender = ranks.find((r) => r.type === 'age_gender')
+  const { overall, ageBased, ageGender } = indexRanks(ranks)
 
-  const overallPct      = overall?.percentile ?? null
+  const overallPct        = overall?.percentile ?? null
   const profileIncomplete = !!(ageBased?.missingField || ageGender?.missingField)
 
   // Rule 1: wealth rank available but profile is incomplete across age / gender ranks
