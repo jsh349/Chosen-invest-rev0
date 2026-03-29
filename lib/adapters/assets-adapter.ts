@@ -22,6 +22,6 @@ export const assetsAdapter: AssetsAdapter = {
   },
 
   async clear() {
-    window.localStorage.removeItem(LS_KEY)
+    writeJSON(LS_KEY, [])
   },
 }

@@ -68,7 +68,7 @@ export function AuditProvider({ children }: { children: ReactNode }) {
   const refresh = useCallback(() => load(), [load])
 
   const clear = useCallback(() => {
-    window.localStorage.removeItem(LS_KEY)
+    writeJSON(LS_KEY, [])
     setEntries([])
   }, [])
 

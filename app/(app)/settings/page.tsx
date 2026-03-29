@@ -53,6 +53,7 @@ function Row({ label, hint, children }: { label: string; hint?: string; children
 }
 
 function handleExport() {
+  if (typeof window === 'undefined') return
   const data: Record<string, unknown> = { exportedAt: new Date().toISOString() }
   for (const key of ALL_STORAGE_KEYS) {
     try {
@@ -111,7 +112,7 @@ export default function SettingsPage() {
         for (const key of ALL_STORAGE_KEYS) {
           const value = (data as Record<string, unknown>)[key]
           if (value !== null && value !== undefined && isSafeToRestore(key, value)) {
-            window.localStorage.setItem(key, JSON.stringify(value))
+            if (typeof window !== 'undefined') window.localStorage.setItem(key, JSON.stringify(value))
             restored++
           }
         }
