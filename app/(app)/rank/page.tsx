@@ -19,6 +19,12 @@ import type { RankResult } from '@/lib/types/rank'
 
 type RankMode = 'individual' | 'household'
 
+function rankCompleteness(availableCount: number): { label: string; color: string } {
+  if (availableCount <= 1) return { label: 'Basic',         color: 'text-gray-400' }
+  if (availableCount <= 2) return { label: 'Partial',       color: 'text-amber-400' }
+  return                          { label: 'More complete', color: 'text-emerald-400' }
+}
+
 function percentileColor(percentile: number): string {
   if (percentile >= 75) return 'text-emerald-400'
   if (percentile >= 50) return 'text-brand-400'
@@ -222,6 +228,12 @@ export default function RankPage() {
                   <p className="mt-0.5 text-sm font-semibold text-white">{userAge}</p>
                 </div>
               )}
+              <div>
+                <p className="text-xs text-gray-500">Profile</p>
+                <p className={cn('mt-0.5 text-sm font-semibold', rankCompleteness(availableCount).color)}>
+                  {rankCompleteness(availableCount).label}
+                </p>
+              </div>
             </div>
           )}
 
