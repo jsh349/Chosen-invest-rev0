@@ -32,6 +32,9 @@ import { getRankInputExplanation } from '@/lib/utils/rank-input-explanation'
 import { getRankAllocationInsight } from '@/lib/utils/rank-allocation-insight'
 import { getRankChecklist } from '@/lib/utils/rank-checklist'
 import { RankDetailExplanationBlock } from '@/components/rank/rank-detail-explanation'
+import { getBenchmarkCapabilities } from '@/lib/utils/benchmark-capabilities'
+import { getBenchmarkHealthStatus } from '@/lib/utils/benchmark-health'
+import { getRankConfidenceNote } from '@/lib/utils/rank-confidence-note'
 import { getRankNarrativeSummary } from '@/lib/utils/rank-narrative-summary'
 import { getPrimaryRank } from '@/lib/utils/rank-priority'
 import { getRankReviewSummary } from '@/lib/utils/rank-review-summary'
@@ -197,6 +200,12 @@ export default function RankPage() {
   // Resolved once at mount for the same reason.
   const activeBenchmarkMeta = useMemo(() => getActiveBenchmarkMeta(), [])
 
+  const benchmarkCaps = useMemo(() => getBenchmarkCapabilities(activeBenchmarkSource), [activeBenchmarkSource])
+  const benchmarkHealth = useMemo(
+    () => getBenchmarkHealthStatus(benchmarkCaps, usingFallbackBenchmark),
+    [benchmarkCaps, usingFallbackBenchmark],
+  )
+
   // Memoized so mode/alert/review state changes don't re-run the full calculation.
   const summary = useMemo(
     () => buildPortfolioSummary(LOCAL_USER_ID, assets),
@@ -274,6 +283,10 @@ export default function RankPage() {
 
   const rankAllocationInsight = isFullyLoaded && summary.assetCount > 0
     ? getRankAllocationInsight(ranks, summary.categoryBreakdown)
+    : null
+
+  const confidenceNote = isFullyLoaded && summary.assetCount > 0
+    ? getRankConfidenceNote({ isUsingFallback: usingFallbackBenchmark, benchmarkHealthStatus: benchmarkHealth.status })
     : null
 
   const rankChecklist = isFullyLoaded && goalsLoaded && summary.assetCount > 0
@@ -395,9 +408,14 @@ export default function RankPage() {
                   {rankCompleteness(availableCount).label}
                 </p>
               </div>
-              {inputExplanation && (
-                <p className="w-full border-t border-surface-border pt-3 text-xs text-gray-500">
-                  {inputExplanation}
+              {(confidenceNote ?? inputExplanation) && (
+                <p className={cn(
+                  'w-full border-t border-surface-border pt-3 text-xs',
+                  confidenceNote
+                    ? confidenceNote.level === 'low' ? 'text-amber-500' : 'text-gray-500'
+                    : 'text-gray-500',
+                )}>
+                  {confidenceNote?.text ?? inputExplanation}
                 </p>
               )}
             </div>
