@@ -36,7 +36,7 @@ import { getRankNarrativeSummary } from '@/lib/utils/rank-narrative-summary'
 import { getRankExplanationSet } from '@/lib/utils/rank-explanation-priority'
 import { getPrimaryRank } from '@/lib/utils/rank-priority'
 import { getRankReviewSummary } from '@/lib/utils/rank-review-summary'
-import { getRankReviewFingerprint, checkRankReviewDue, dismissRankReview } from '@/lib/utils/rank-review'
+import { getRankReviewFingerprint, checkRankReviewDue, markRankReviewSeen } from '@/lib/utils/rank-review'
 import type { RankResult } from '@/lib/types/rank'
 
 type RankMode = 'individual' | 'household'
@@ -313,7 +313,11 @@ export default function RankPage() {
       annualReturnPct:      settings.annualReturnPct,
       benchmarkFingerprint: getBenchmarkFingerprint(),
     })
-    setReviewVisible(checkRankReviewDue(fp))
+    const isDue = checkRankReviewDue(fp)
+    setReviewVisible(isDue)
+    // Auto-mark as seen so the prompt shows once per change, not every visit.
+    // Resets naturally when rank inputs change again (new fingerprint).
+    if (isDue) markRankReviewSeen(fp)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFullyLoaded, summary.totalAssetValue, settings.birthYear, settings.gender, settings.annualReturnPct])
 
@@ -444,17 +448,7 @@ export default function RankPage() {
                 Your rank inputs have changed — review your updated insights.
               </p>
               <button
-                onClick={() => {
-                  const fp = getRankReviewFingerprint({
-                    totalAssetValue:      summary.totalAssetValue,
-                    birthYear:            settings.birthYear,
-                    gender:               settings.gender,
-                    annualReturnPct:      settings.annualReturnPct,
-                    benchmarkFingerprint: getBenchmarkFingerprint(),
-                  })
-                  dismissRankReview(fp)
-                  setReviewVisible(false)
-                }}
+                onClick={() => setReviewVisible(false)}
                 className="shrink-0 text-[10px] text-gray-500 hover:text-gray-300 transition-colors"
               >
                 Dismiss

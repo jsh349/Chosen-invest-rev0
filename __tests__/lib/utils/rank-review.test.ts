@@ -2,6 +2,7 @@ import {
   getRankReviewFingerprint,
   checkRankReviewDue,
   dismissRankReview,
+  markRankReviewSeen,
   type RankReviewInputs,
 } from '@/lib/utils/rank-review'
 
@@ -139,5 +140,34 @@ describe('dismissRankReview', () => {
     const newer = fp({ birthYear: 1990 })
     dismissRankReview(newer)
     expect(localStorageMock.getItem('chosen_rank_review_seen_v1')).toBe(newer)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// markRankReviewSeen
+// ---------------------------------------------------------------------------
+
+describe('markRankReviewSeen', () => {
+  it('writes the fingerprint to storage', () => {
+    const fingerprint = fp()
+    markRankReviewSeen(fingerprint)
+    expect(localStorageMock.getItem('chosen_rank_review_seen_v1')).toBe(fingerprint)
+  })
+
+  it('after markRankReviewSeen, checkRankReviewDue returns false for the same fingerprint', () => {
+    checkRankReviewDue(fp()) // establish baseline with original fp
+    const changed = fp({ birthYear: 1990 })
+    expect(checkRankReviewDue(changed)).toBe(true) // prompt is due
+    markRankReviewSeen(changed)                    // auto-mark as seen
+    expect(checkRankReviewDue(changed)).toBe(false) // prompt suppressed
+  })
+
+  it('checkRankReviewDue returns true again when inputs change after markRankReviewSeen', () => {
+    checkRankReviewDue(fp()) // establish baseline
+    const changed = fp({ birthYear: 1990 })
+    markRankReviewSeen(changed)
+    // Further input change: prompt should reappear
+    const changedAgain = fp({ birthYear: 1995 })
+    expect(checkRankReviewDue(changedAgain)).toBe(true)
   })
 })

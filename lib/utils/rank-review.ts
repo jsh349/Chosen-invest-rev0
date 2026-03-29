@@ -68,3 +68,20 @@ export function dismissRankReview(currentFingerprint: string): void {
   if (typeof window === 'undefined') return
   writeScalar(STORAGE_KEYS.rankReviewSeen, currentFingerprint)
 }
+
+/**
+ * Records that the review prompt has been shown during this session.
+ * Call automatically when the prompt becomes visible — this prevents
+ * the prompt from re-appearing on the next visit unless rank inputs
+ * change again.
+ *
+ * Functionally equivalent to dismissRankReview; the distinct name signals
+ * that this is a system action (prompt seen) rather than a user action
+ * (explicit dismiss).
+ *
+ * SSR-safe: no-op on the server.
+ */
+export function markRankReviewSeen(currentFingerprint: string): void {
+  if (typeof window === 'undefined') return
+  writeScalar(STORAGE_KEYS.rankReviewSeen, currentFingerprint)
+}
