@@ -10,6 +10,7 @@ import {
 } from 'react'
 import type { HouseholdNote } from '@/lib/types/household-note'
 import { householdNotesAdapter } from '@/lib/adapters/household-notes-adapter'
+import { recordAudit } from '@/lib/store/audit-store'
 
 type HouseholdNotesContextType = {
   notes: HouseholdNote[]
@@ -45,10 +46,13 @@ export function HouseholdNotesProvider({ children }: { children: ReactNode }) {
       void householdNotesAdapter.saveAll(updated).catch(console.error)
       return updated
     })
+    recordAudit('Note added', note.title)
   }, [])
 
   const removeNote = useCallback((id: string) => {
     setNotes((prev) => {
+      const target = prev.find((n) => n.id === id)
+      if (target) recordAudit('Note deleted', target.title)
       const updated = prev.filter((n) => n.id !== id)
       void householdNotesAdapter.saveAll(updated).catch(console.error)
       return updated

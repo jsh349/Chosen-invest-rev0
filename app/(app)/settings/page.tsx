@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Download, Upload, History } from 'lucide-react'
 import { useSettings, DEFAULT_SETTINGS, type CurrencyCode, type AppSettings } from '@/lib/store/settings-store'
 import type { GenderOption } from '@/lib/types/rank'
@@ -19,6 +19,7 @@ const ARRAY_KEYS: ReadonlySet<string> = new Set([
 
 function isSafeToRestore(key: string, value: unknown): boolean {
   if (ARRAY_KEYS.has(key) && !Array.isArray(value)) return false
+  if (key === STORAGE_KEYS.settings && (typeof value !== 'object' || value === null || Array.isArray(value))) return false
   return true
 }
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
@@ -89,6 +90,11 @@ export default function SettingsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [importStatus, setImportStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
 
+  // recordAudit() writes directly to localStorage outside the React context,
+  // so context state can be stale when navigating here. Refresh on mount so
+  // the audit log reflects actions taken during the current session.
+  useEffect(() => { refreshAudit() }, [refreshAudit])
+
   if (!isLoaded) {
     return (
       <LoadingSpinner />
@@ -116,7 +122,8 @@ export default function SettingsPage() {
             restored++
           }
         }
-        setImportStatus({ type: 'success', message: `${restored} data section${restored !== 1 ? 's' : ''} restored. Refresh the page to see changes.` })
+        setImportStatus({ type: 'success', message: `${restored} data section${restored !== 1 ? 's' : ''} restored. Reloading…` })
+        setTimeout(() => window.location.reload(), 1200)
       } catch {
         setImportStatus({ type: 'error', message: 'Could not parse file. Make sure it is a valid JSON backup.' })
       }
@@ -193,6 +200,7 @@ export default function SettingsPage() {
             <option value="">— Not set —</option>
             <option value="male">Male</option>
             <option value="female">Female</option>
+            <option value="other">Other</option>
             <option value="undisclosed">Prefer not to say</option>
           </select>
         </Row>

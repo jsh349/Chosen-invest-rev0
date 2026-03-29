@@ -58,7 +58,7 @@ export default function PortfolioListPage() {
   function saveEdit(id: string) {
     if (!draft) return
     const value = parseFloat(draft.value)
-    if (!draft.name.trim() || isNaN(value) || value < 0) return
+    if (!draft.name.trim() || isNaN(value) || value <= 0) return
     updateAsset(id, { name: draft.name.trim(), category: draft.category, value })
     setEditingId(null)
     setDraft(null)

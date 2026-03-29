@@ -78,8 +78,8 @@ export default function DashboardPage() {
     return <EmptyState />
   }
 
-  const advisorCtx = buildAdvisorContext(assets, goals, transactions)
-  const summary = advisorCtx.portfolio
+  const baseCtx = buildAdvisorContext(assets, goals, transactions)
+  const summary = baseCtx.portfolio
   const healthCards = generateHealthCards(summary)
   const trendData = buildMockTrend(summary.totalAssetValue)
   const overallRank = computeOverallWealthRank(summary.totalAssetValue)
@@ -87,14 +87,16 @@ export default function DashboardPage() {
   const ageRank = computeAgeBasedRank(summary.totalAssetValue, userAge)
   const ageGenderRank = computeAgeGenderRank(summary.totalAssetValue, userAge, settings.gender)
   const returnRank = computeReturnRank(settings.annualReturnPct)
-  advisorCtx.rankSummary = {
-    overallPercentile: overallRank.percentile,
-    agePercentile: ageRank.percentile,
-    returnPercentile: returnRank.percentile,
-  }
-  advisorCtx.currencySymbol = getCurrencySymbol(settings.currency)
-  advisorCtx.showCents = settings.showCents
-  const aiAnalysis = generateAISummary(advisorCtx)
+  const aiAnalysis = generateAISummary({
+    ...baseCtx,
+    rankSummary: {
+      overallPercentile: overallRank.percentile,
+      agePercentile: ageRank.percentile,
+      returnPercentile: returnRank.percentile,
+    },
+    currencySymbol: getCurrencySymbol(settings.currency),
+    showCents: settings.showCents,
+  })
 
   const show = (key: DashboardCardKey) => prefs[key]
 
