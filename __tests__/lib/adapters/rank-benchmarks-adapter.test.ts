@@ -7,7 +7,9 @@
  *   - getActiveBenchmarkSourceId()     — localStorage source preference reading
  */
 
-import { rankBenchmarksAdapterFromFile, getActiveBenchmarkSourceId } from '@/lib/adapters/rank-benchmarks-adapter'
+import { rankBenchmarksAdapterFromFile, getActiveBenchmarkSourceId, getActiveBenchmarkMeta } from '@/lib/adapters/rank-benchmarks-adapter'
+import { BENCHMARK_META } from '@/lib/mock/rank-benchmarks'
+import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
 import type { BenchmarkFile } from '@/lib/types/benchmark-import'
 
 // ---------------------------------------------------------------------------
@@ -102,5 +104,34 @@ describe('getActiveBenchmarkSourceId', () => {
   it('returns "default" for an empty string', () => {
     localStorageMock.setItem('chosen_benchmark_source_v1', '')
     expect(getActiveBenchmarkSourceId()).toBe('default')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// getActiveBenchmarkMeta
+// ---------------------------------------------------------------------------
+
+describe('getActiveBenchmarkMeta', () => {
+  it('returns BENCHMARK_META values when source is default', () => {
+    const meta = getActiveBenchmarkMeta()
+    expect(meta.version).toBe(BENCHMARK_META.version)
+    expect(meta.updatedAt).toBe(BENCHMARK_META.updatedAt)
+  })
+
+  it('returns applied record values when a non-default source has an applied record', () => {
+    localStorageMock.setItem(STORAGE_KEYS.benchmarkSource, 'curated')
+    const record = { source: 'Test Survey 2024', vintageYear: 2024, appliedAt: '2024-08-20T09:00:00.000Z' }
+    localStorageMock.setItem(STORAGE_KEYS.benchmarkApplied, JSON.stringify(record))
+    const meta = getActiveBenchmarkMeta()
+    expect(meta.version).toBe('Test Survey 2024 (2024)')
+    expect(meta.updatedAt).toBe('2024-08-20')
+  })
+
+  it('falls back to BENCHMARK_META when non-default source has no applied record', () => {
+    localStorageMock.setItem(STORAGE_KEYS.benchmarkSource, 'curated')
+    // No applied record set
+    const meta = getActiveBenchmarkMeta()
+    expect(meta.version).toBe(BENCHMARK_META.version)
+    expect(meta.updatedAt).toBe(BENCHMARK_META.updatedAt)
   })
 })

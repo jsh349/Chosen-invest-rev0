@@ -1,5 +1,4 @@
-import { BENCHMARK_META } from '@/lib/mock/rank-benchmarks'
-import { getActiveBenchmarkSourceId } from '@/lib/adapters/rank-benchmarks-adapter'
+import { getActiveBenchmarkSourceId, getActiveBenchmarkMeta } from '@/lib/adapters/rank-benchmarks-adapter'
 import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
 import { readScalar, writeScalar } from '@/lib/utils/local-storage'
 
@@ -14,7 +13,7 @@ import { readScalar, writeScalar } from '@/lib/utils/local-storage'
  */
 export function benchmarkVersionNote(snapshots: { savedAt: string }[]): string | null {
   if (snapshots.length === 0) return null
-  const benchmarkDate = new Date(BENCHMARK_META.updatedAt)
+  const benchmarkDate = new Date(getActiveBenchmarkMeta().updatedAt)
   const hasOlderSnapshot = snapshots.some((s) => new Date(s.savedAt) < benchmarkDate)
   if (!hasOlderSnapshot) return null
   return 'Rank comparisons may reflect updated benchmark reference ranges.'
@@ -28,7 +27,7 @@ const LS_KEY = STORAGE_KEYS.benchmarkSeen
  */
 export function getBenchmarkFingerprint(): string {
   const source = getActiveBenchmarkSourceId()
-  return `${BENCHMARK_META.version}::${source}`
+  return `${getActiveBenchmarkMeta().version}::${source}`
 }
 
 /**

@@ -7,8 +7,10 @@ import {
   AGE_BASED_BUCKETS,
   AGE_GENDER_BUCKETS,
   RETURN_BUCKETS,
+  BENCHMARK_META,
 } from '@/lib/mock/rank-benchmarks'
 import { CURATED_BENCHMARK_FILE } from '@/lib/mock/rank-benchmarks-curated'
+import { getLastAppliedBenchmark } from '@/lib/utils/benchmark-refresh'
 
 /** Read-only interface for rank benchmark data. Swap implementation for a real data source later. */
 export type RankBenchmarksAdapter = {
@@ -150,6 +152,31 @@ let _isUsingFallback = false
  */
 export function isUsingFallbackBenchmark(): boolean {
   return _isUsingFallback
+}
+
+/**
+ * Returns the version identifier and reference date for the currently active
+ * benchmark source. Used by change-alert fingerprinting and version notes.
+ *
+ * - default source:  reflects BENCHMARK_META (built-in)
+ * - other sources:   reflects the last applied BenchmarkFile record,
+ *                    falling back to BENCHMARK_META when no record exists yet
+ *
+ * Always returns a valid object — never throws.
+ */
+export function getActiveBenchmarkMeta(): { version: string; updatedAt: string } {
+  const sourceId = getActiveBenchmarkSourceId()
+  if (sourceId === 'default') {
+    return { version: BENCHMARK_META.version, updatedAt: BENCHMARK_META.updatedAt }
+  }
+  const lastApplied = getLastAppliedBenchmark()
+  if (lastApplied) {
+    return {
+      version:   `${lastApplied.source} (${lastApplied.vintageYear})`,
+      updatedAt: lastApplied.appliedAt.slice(0, 10),
+    }
+  }
+  return { version: BENCHMARK_META.version, updatedAt: BENCHMARK_META.updatedAt }
 }
 
 /** Active adapter — resolved from stored preference at module load. */
