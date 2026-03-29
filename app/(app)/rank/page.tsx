@@ -24,6 +24,7 @@ import { getRankBadges } from '@/lib/utils/rank-badges'
 import { getRankActions } from '@/lib/utils/rank-actions'
 import { getRankGoalInsight } from '@/lib/utils/rank-goal-insight'
 import { buildMonthlySummary } from '@/lib/utils/rank-monthly-summary'
+import { checkBenchmarkChanged, dismissBenchmarkAlert } from '@/lib/utils/benchmark-change-alert'
 import type { RankResult } from '@/lib/types/rank'
 
 type RankMode = 'individual' | 'household'
@@ -146,6 +147,7 @@ export default function RankPage() {
   const { snapshots, isLoaded: snapshotsLoaded, saveSnapshot } = useRankSnapshots()
   const { goals, isLoaded: goalsLoaded } = useGoals()
   const [mode, setMode] = useState<RankMode>('individual')
+  const [benchmarkAlertVisible, setBenchmarkAlertVisible] = useState(false)
 
   const isFullyLoaded = assetsLoaded && householdLoaded && settingsLoaded && snapshotsLoaded
   const activeBenchmarkSource = getActiveBenchmarkSourceId()
@@ -190,6 +192,10 @@ export default function RankPage() {
     if (isFullyLoaded && summary.assetCount > 0) saveSnapshot(ranks, summary.totalAssetValue)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFullyLoaded, summary.totalAssetValue, userAge, settings.gender, settings.annualReturnPct])
+
+  useEffect(() => {
+    setBenchmarkAlertVisible(checkBenchmarkChanged())
+  }, [])
 
   if (!isFullyLoaded) return <LoadingSpinner />
 
@@ -441,6 +447,24 @@ export default function RankPage() {
           <p className="text-[10px] text-gray-600">
             Saved locally on each visit when rank values change. Max 10 stored.
           </p>
+        </div>
+      )}
+
+      {/* Benchmark change alert — shown once when version or source changes */}
+      {benchmarkAlertVisible && (
+        <div className="flex items-start justify-between gap-3 rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3">
+          <p className="text-xs text-amber-300 leading-relaxed">
+            Benchmark reference ranges were updated.
+          </p>
+          <button
+            onClick={() => {
+              dismissBenchmarkAlert()
+              setBenchmarkAlertVisible(false)
+            }}
+            className="shrink-0 text-[10px] text-gray-500 hover:text-gray-300 transition-colors"
+          >
+            Dismiss
+          </button>
         </div>
       )}
 
