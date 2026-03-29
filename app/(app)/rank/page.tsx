@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { Settings, Users } from 'lucide-react'
 import { useAssets } from '@/lib/store/assets-store'
@@ -200,12 +200,16 @@ export default function RankPage() {
     ? new Date().getFullYear() - settings.birthYear
     : undefined
 
-  const ranks: RankResult[] = isFullyLoaded ? [
-    computeOverallWealthRank(summary.totalAssetValue),
-    computeAgeBasedRank(summary.totalAssetValue, userAge),
-    computeAgeGenderRank(summary.totalAssetValue, userAge, settings.gender),
-    computeReturnRank(settings.annualReturnPct),
-  ] : []
+  const ranks = useMemo<RankResult[]>(() => {
+    if (!isFullyLoaded) return []
+    return [
+      computeOverallWealthRank(summary.totalAssetValue),
+      computeAgeBasedRank(summary.totalAssetValue, userAge),
+      computeAgeGenderRank(summary.totalAssetValue, userAge, settings.gender),
+      computeReturnRank(settings.annualReturnPct),
+    ]
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFullyLoaded, summary.totalAssetValue, userAge, settings.gender, settings.annualReturnPct])
 
   const rankInsight = isFullyLoaded && summary.assetCount > 0
     ? getRankInsight(ranks)
