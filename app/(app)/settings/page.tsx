@@ -15,6 +15,7 @@ const ARRAY_KEYS: ReadonlySet<string> = new Set([
   STORAGE_KEYS.household,
   STORAGE_KEYS.householdNotes,
   STORAGE_KEYS.audit,
+  STORAGE_KEYS.rankSnapshots,
 ])
 
 function isSafeToRestore(key: string, value: unknown): boolean {

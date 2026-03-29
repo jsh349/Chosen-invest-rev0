@@ -150,8 +150,7 @@ export function generateAISummary(ctx: AdvisorContext): AIAnalysisResult {
   }
   if (actions.length < 2 && topPct > 60) {
     actions.push({ label: 'Review portfolio allocation', href: ROUTES.portfolioList })
-  }
-  if (actions.length < 2) {
+  } else if (actions.length < 2) {
     actions.push({ label: 'View portfolio details', href: ROUTES.portfolioList })
   }
 

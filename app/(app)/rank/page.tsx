@@ -289,7 +289,7 @@ export default function RankPage() {
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3 flex flex-wrap gap-x-5 gap-y-2">
               {rankActions.map((action) => (
                 <Link
-                  key={action.href}
+                  key={action.label}
                   href={action.href}
                   className="text-xs text-brand-400 hover:text-brand-300 transition-colors"
                 >

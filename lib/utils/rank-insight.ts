@@ -30,7 +30,7 @@ export function getRankInsight(ranks: RankResult[]): string | null {
   }
 
   // Rule 4: age rank available but gender comparison missing
-  if (overallPct !== null && ageBased?.percentile !== null && ageGender?.missingField) {
+  if (overallPct !== null && ageBased?.percentile != null && ageGender?.missingField) {
     return 'Age and gender comparison is unavailable. Add gender in Settings for a more specific peer group ranking.'
   }
 
