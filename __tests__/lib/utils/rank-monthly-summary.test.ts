@@ -94,6 +94,28 @@ describe('buildMonthlySummary', () => {
     expect(result!.note).toContain('unavailable')
   })
 
+  // returnDelta
+  it('returnDelta is null when no previous snapshot', () => {
+    const result = buildMonthlySummary([snap({ savedAt: '2026-03-10T00:00:00Z', returnPercentile: 70 })])
+    expect(result!.returnDelta).toBeNull()
+  })
+
+  it('returnDelta computes correctly from two snapshots', () => {
+    const snapshots = [
+      snap({ savedAt: '2026-03-01T00:00:00Z', returnPercentile: 80 }),
+      snap({ savedAt: '2026-02-01T00:00:00Z', returnPercentile: 65 }),
+    ]
+    expect(buildMonthlySummary(snapshots)!.returnDelta).toBe(15)
+  })
+
+  it('returnDelta is null when either returnPercentile is null', () => {
+    const snapshots = [
+      snap({ savedAt: '2026-03-01T00:00:00Z', returnPercentile: null }),
+      snap({ savedAt: '2026-02-01T00:00:00Z', returnPercentile: 65 }),
+    ]
+    expect(buildMonthlySummary(snapshots)!.returnDelta).toBeNull()
+  })
+
   // Plural vs singular point(s)
   it('uses singular "point" when delta === 1', () => {
     const snapshots = [

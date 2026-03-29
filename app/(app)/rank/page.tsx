@@ -354,26 +354,53 @@ export default function RankPage() {
 
       {/* Monthly rank summary — shown when at least one snapshot exists */}
       {monthlySummary && (
-        <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Monthly Summary</p>
-          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-            {monthlySummary.currentOverall !== null && (
-              <p className={cn('text-2xl font-bold tabular-nums', percentileColor(monthlySummary.currentOverall))}>
-                Top {100 - monthlySummary.currentOverall}%
-              </p>
-            )}
-            {monthlySummary.delta !== null && (
-              <span className={cn(
-                'text-sm font-semibold tabular-nums',
-                monthlySummary.delta > 0 ? 'text-emerald-400' :
-                monthlySummary.delta < 0 ? 'text-red-400' :
+        <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Rank Change</p>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+            {/* Overall wealth rank */}
+            <div className="space-y-0.5">
+              <p className="text-[10px] text-gray-600 uppercase tracking-wide">Overall wealth</p>
+              {monthlySummary.currentOverall !== null ? (
+                <p className={cn('text-sm font-semibold tabular-nums', percentileColor(monthlySummary.currentOverall))}>
+                  Top {100 - monthlySummary.currentOverall}%
+                </p>
+              ) : (
+                <p className="text-sm text-gray-600">—</p>
+              )}
+              <p className={cn('text-xs tabular-nums',
+                monthlySummary.delta === null  ? 'text-gray-600' :
+                monthlySummary.delta > 0       ? 'text-emerald-400' :
+                monthlySummary.delta < 0       ? 'text-red-400' :
                 'text-gray-500'
               )}>
-                {monthlySummary.delta > 0 ? '+' : ''}{monthlySummary.delta} pts
-              </span>
-            )}
+                {monthlySummary.delta === null
+                  ? 'No prior snapshot'
+                  : monthlySummary.delta > 0  ? `+${monthlySummary.delta} pts · improved`
+                  : monthlySummary.delta < 0  ? `${monthlySummary.delta} pts · lower`
+                  : 'Unchanged'}
+              </p>
+            </div>
+            {/* Return rank */}
+            <div className="space-y-0.5">
+              <p className="text-[10px] text-gray-600 uppercase tracking-wide">Return rank</p>
+              <p className="text-sm text-gray-500">—</p>
+              <p className={cn('text-xs tabular-nums',
+                monthlySummary.returnDelta === null ? 'text-gray-600' :
+                monthlySummary.returnDelta > 0      ? 'text-emerald-400' :
+                monthlySummary.returnDelta < 0      ? 'text-red-400' :
+                'text-gray-500'
+              )}>
+                {monthlySummary.returnDelta === null
+                  ? 'No return data'
+                  : monthlySummary.returnDelta > 0  ? `+${monthlySummary.returnDelta} pts · improved`
+                  : monthlySummary.returnDelta < 0  ? `${monthlySummary.returnDelta} pts · lower`
+                  : 'Unchanged'}
+              </p>
+            </div>
           </div>
-          <p className="text-xs text-gray-400 leading-relaxed">{monthlySummary.note}</p>
+          <p className="text-xs text-gray-600 leading-relaxed border-t border-surface-border pt-2">
+            {monthlySummary.note}
+          </p>
         </div>
       )}
 

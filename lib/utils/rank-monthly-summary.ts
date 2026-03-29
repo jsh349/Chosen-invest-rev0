@@ -3,8 +3,10 @@ import type { RankSnapshot } from '@/lib/hooks/use-rank-snapshots'
 export type MonthlySummary = {
   /** Latest overall percentile, or null if unavailable */
   currentOverall: number | null
-  /** Percentile change vs comparison snapshot (positive = improved). Null if no comparison. */
+  /** Overall percentile change vs comparison snapshot (positive = improved). Null if no comparison. */
   delta: number | null
+  /** Return percentile change vs comparison snapshot. Null if no comparison or either value missing. */
+  returnDelta: number | null
   /** One-line status note */
   note: string
 }
@@ -35,6 +37,7 @@ export function buildMonthlySummary(snapshots: RankSnapshot[]): MonthlySummary |
     return {
       currentOverall,
       delta: null,
+      returnDelta: null,
       note: 'First recorded visit — check back after your next session for a change indicator.',
     }
   }
@@ -42,6 +45,11 @@ export function buildMonthlySummary(snapshots: RankSnapshot[]): MonthlySummary |
   const delta =
     currentOverall !== null && previous.overallPercentile !== null
       ? currentOverall - previous.overallPercentile
+      : null
+
+  const returnDelta =
+    current.returnPercentile !== null && previous.returnPercentile !== null
+      ? current.returnPercentile - previous.returnPercentile
       : null
 
   let note: string
@@ -55,5 +63,5 @@ export function buildMonthlySummary(snapshots: RankSnapshot[]): MonthlySummary |
     note = 'Overall rank unchanged from last comparison.'
   }
 
-  return { currentOverall, delta, note }
+  return { currentOverall, delta, returnDelta, note }
 }
