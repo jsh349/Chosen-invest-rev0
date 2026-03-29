@@ -1,5 +1,6 @@
 import type { BenchmarkBucket } from '@/lib/types/rank'
 import type { BenchmarkFile, BenchmarkRow } from '@/lib/types/benchmark-import'
+import { normalizeRow } from '@/lib/utils/benchmark-normalize'
 
 /**
  * Validates that an unknown value conforms to BenchmarkFile.
@@ -43,6 +44,11 @@ export function rowToBucket(row: BenchmarkRow): BenchmarkBucket {
 /**
  * Converts a full BenchmarkFile into the four bucket arrays expected by
  * RankBenchmarksAdapter. Call this after validateBenchmarkFile returns null.
+ *
+ * Each row is passed through normalizeRow() before conversion so that minor
+ * shape variations from external sources (e.g. string-encoded numbers, Infinity
+ * bounds) are handled gracefully. Rows that cannot be normalised are dropped.
+ * For well-formed local data normalisation is a no-op and output is identical.
  */
 export function parseBenchmarkFile(file: BenchmarkFile): {
   overallWealth:    BenchmarkBucket[]
@@ -50,10 +56,16 @@ export function parseBenchmarkFile(file: BenchmarkFile): {
   ageGender:        BenchmarkBucket[]
   investmentReturn: BenchmarkBucket[]
 } {
+  const parse = (rows: BenchmarkRow[]): BenchmarkBucket[] =>
+    rows
+      .map(normalizeRow)
+      .filter((r): r is BenchmarkRow => r !== null)
+      .map(rowToBucket)
+
   return {
-    overallWealth:    file.overallWealth.map(rowToBucket),
-    ageBased:         file.ageBased.map(rowToBucket),
-    ageGender:        file.ageGender.map(rowToBucket),
-    investmentReturn: file.investmentReturn.map(rowToBucket),
+    overallWealth:    parse(file.overallWealth),
+    ageBased:         parse(file.ageBased),
+    ageGender:        parse(file.ageGender),
+    investmentReturn: parse(file.investmentReturn),
   }
 }
