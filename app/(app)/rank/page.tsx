@@ -272,13 +272,13 @@ export default function RankPage() {
       })
     : null
 
-  const explanationSet = isFullyLoaded && summary.assetCount > 0
-    ? getRankExplanationSet({ narrativeSummary, rankInsight, nextHint })
-    : { showNarrative: false, showInsight: false, showNextHint: false }
-
   const rankAllocationInsight = isFullyLoaded && summary.assetCount > 0
     ? getRankAllocationInsight(ranks, summary.categoryBreakdown)
     : null
+
+  const explanationSet = isFullyLoaded && summary.assetCount > 0
+    ? getRankExplanationSet({ narrativeSummary, rankInsight, nextHint, rankGoalInsight, rankAllocationInsight })
+    : { showNarrative: false, showInsight: false, showNextHint: false, showGoalInsight: false, showAllocationInsight: false }
 
   const rankChecklist = isFullyLoaded && goalsLoaded && summary.assetCount > 0
     ? getRankChecklist(
@@ -477,14 +477,14 @@ export default function RankPage() {
           )}
 
           {/* Rank–goal bridge insight */}
-          {rankGoalInsight && (
+          {explanationSet.showGoalInsight && rankGoalInsight && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3">
               <p className="text-xs text-gray-400 leading-relaxed">{rankGoalInsight}</p>
             </div>
           )}
 
           {/* Rank–allocation bridge insight */}
-          {rankAllocationInsight && (
+          {explanationSet.showAllocationInsight && rankAllocationInsight && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3">
               <p className="text-xs text-gray-400 leading-relaxed">{rankAllocationInsight}</p>
             </div>
