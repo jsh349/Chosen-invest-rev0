@@ -1,9 +1,16 @@
-import type { BenchmarkBucket } from '@/lib/types/rank'
+import type { BenchmarkBucket, BenchmarkMeta } from '@/lib/types/rank'
 
 /**
  * Mock benchmark data based loosely on US household wealth distributions.
  * These are simplified placeholders — not real statistical data.
  */
+
+export const BENCHMARK_META: BenchmarkMeta = {
+  version:     '1.1.0',
+  sourceLabel: 'Illustrative US household wealth reference (not official data)',
+  updatedAt:   '2025-03-01',
+  notes:       'Covers ages 20–60+, all genders. Values are simplified and for demonstration only.',
+}
 
 /** Overall wealth percentile buckets (all ages, all genders) */
 export const OVERALL_WEALTH_BUCKETS: BenchmarkBucket[] = [

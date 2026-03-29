@@ -15,6 +15,7 @@ import { RankShareCard } from '@/components/rank/rank-share-card'
 import { LOCAL_USER_ID } from '@/lib/constants/auth'
 import { ROUTES } from '@/lib/constants/routes'
 import { cn } from '@/lib/utils/cn'
+import { BENCHMARK_META } from '@/lib/mock/rank-benchmarks'
 import type { RankResult } from '@/lib/types/rank'
 
 type RankMode = 'individual' | 'household'
@@ -319,6 +320,23 @@ export default function RankPage() {
         <p className="text-xs text-gray-600">
           Missing profile fields will show an unavailable state rather than an estimate. These are estimates only and not financial advice.
         </p>
+        <div className="mt-2 border-t border-surface-border pt-2 flex flex-wrap gap-x-4 gap-y-1">
+          <span className="text-[10px] text-gray-600">
+            <span className="text-gray-500">Benchmark: </span>
+            {BENCHMARK_META.sourceLabel}
+          </span>
+          <span className="text-[10px] text-gray-600">
+            <span className="text-gray-500">Version: </span>
+            {BENCHMARK_META.version}
+          </span>
+          <span className="text-[10px] text-gray-600">
+            <span className="text-gray-500">Updated: </span>
+            {BENCHMARK_META.updatedAt}
+          </span>
+          {BENCHMARK_META.notes && (
+            <span className="text-[10px] text-gray-600 w-full">{BENCHMARK_META.notes}</span>
+          )}
+        </div>
       </div>
     </div>
   )

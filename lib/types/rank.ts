@@ -30,3 +30,10 @@ export type RankResult = {
   /** Present when a benchmark band was matched — omitted when data is missing */
   detail?: RankDetail
 }
+
+export type BenchmarkMeta = {
+  version: string
+  sourceLabel: string
+  updatedAt: string   // ISO date string YYYY-MM-DD
+  notes?: string
+}
