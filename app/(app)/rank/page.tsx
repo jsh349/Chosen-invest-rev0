@@ -31,6 +31,7 @@ import { getRankInterpretation } from '@/lib/utils/rank-interpretation'
 import { getRankInputExplanation } from '@/lib/utils/rank-input-explanation'
 import { getRankAllocationInsight } from '@/lib/utils/rank-allocation-insight'
 import { getRankChecklist } from '@/lib/utils/rank-checklist'
+import { RankDetailExplanationBlock } from '@/components/rank/rank-detail-explanation'
 import { getRankNarrativeSummary } from '@/lib/utils/rank-narrative-summary'
 import { getPrimaryRank } from '@/lib/utils/rank-priority'
 import { getRankReviewSummary } from '@/lib/utils/rank-review-summary'
@@ -451,39 +452,13 @@ export default function RankPage() {
             </div>
           )}
 
-          {/* Next-step hint — one actionable sentence toward full rank completeness */}
-          {nextHint && (
-            <div className="flex items-center justify-between gap-3 rounded-xl border border-surface-border bg-surface-card px-5 py-3">
-              <p className="text-xs text-gray-400 leading-relaxed">{nextHint.text}</p>
-              <Link
-                href={nextHint.href}
-                className="shrink-0 text-xs text-brand-400 hover:text-brand-300 transition-colors"
-              >
-                Settings →
-              </Link>
-            </div>
-          )}
-
-          {/* Rank insight — shown only when a meaningful gap or profile gap is detected */}
-          {rankInsight && (
-            <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3">
-              <p className="text-xs text-gray-400 leading-relaxed">{rankInsight}</p>
-            </div>
-          )}
-
-          {/* Rank–goal bridge insight */}
-          {rankGoalInsight && (
-            <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3">
-              <p className="text-xs text-gray-400 leading-relaxed">{rankGoalInsight}</p>
-            </div>
-          )}
-
-          {/* Rank–allocation bridge insight */}
-          {rankAllocationInsight && (
-            <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3">
-              <p className="text-xs text-gray-400 leading-relaxed">{rankAllocationInsight}</p>
-            </div>
-          )}
+          {/* Grouped explanation block — shows at most 2 lines in priority order */}
+          <RankDetailExplanationBlock
+            nextHint={nextHint}
+            rankInsight={rankInsight}
+            rankGoalInsight={rankGoalInsight}
+            rankAllocationInsight={rankAllocationInsight}
+          />
 
           {/* Rank actions — contextual navigation links derived from rank state */}
           {rankActions.length > 0 && (

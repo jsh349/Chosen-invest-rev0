@@ -1,48 +1,40 @@
-# Plan.md — Phase 132: Benchmark Source Precedence Rule
+# Plan.md — Phase 133: Grouped Rank Explanation Block
 
 ## Task Summary
-Extract a deterministic, named precedence order for benchmark source resolution.
-Make getActiveBenchmarkSourceId() validate against this list instead of a hardcoded
-string comparison. Add resolveAdapter() comment documenting the chain.
+Replace four separate identical-looking explanation cards on the rank page
+(nextHint, rankInsight, rankGoalInsight, rankAllocationInsight) with one compact
+grouped block that shows at most 1-2 lines using a deterministic priority.
 
 ## Goal
-Make source selection logic explicit and table-driven so the precedence is
-readable in one place, and unknown stored values are guarded by a shared helper.
+Cleaner visual presentation — one card, one visual rhythm, no content change.
 
 ## Non-Goals
-- No UI redesign
-- No external fetch
-- No new admin tooling
-- No wiring of external source into resolveAdapter (it stays a stub)
-- No visible behavior change
+- No new explanation content
+- No methodology change
+- No AI API
+- No new utility functions
+- No changes to existing explanation generators
 
-## Constraints
-- External source remains not_connected — resolveAdapter() behavior unchanged
-- BenchmarkSource.id (public/UI type) stays 'default' | 'curated' — no UI change
-- All existing tests must pass
+## Priority Rule (deterministic, 2-slot max)
+Slot 1 (primary):   nextHint → rankInsight → rankGoalInsight → rankAllocationInsight
+Slot 2 (secondary): next available after slot 1's pick (only if slot 1 is filled)
 
 ## Affected Files
 ### New
-- `lib/utils/benchmark-source-precedence.ts`
-- `__tests__/lib/utils/benchmark-source-precedence.test.ts`
+- `components/rank/rank-detail-explanation.tsx`
 
 ### Modified
-- `lib/adapters/rank-benchmarks-adapter.ts`
-  - Import KnownBenchmarkSourceId + isKnownSourceId
-  - Replace hardcoded '=== curated' guard in getActiveBenchmarkSourceId() with isKnownSourceId()
-  - Add precedence comment in resolveAdapter()
-
-## Precedence Order
-curated (1st) > external (2nd, stub) > default (last, always available)
+- `app/(app)/rank/page.tsx`
+  - Remove 4 separate explanation cards (lines ~454–486)
+  - Add <RankDetailExplanationBlock> in their place
 
 ## Risks
-- Minimal. getActiveBenchmarkSourceId() behavioral change: unknown stored values
-  still return 'default'; known values ('curated') still return 'curated'.
-  The only new behavior is 'external' would now be returned if stored —
-  but since it's not in the UI, it cannot be stored by the user.
+- Low. Pure display change; same data, same priority, one card instead of four.
+- nextHint link (Settings →) is preserved inside the new component.
 
 ## Validation Steps
-1. All existing tests pass (jest)
-2. getActiveBenchmarkSourceId() returns 'default' for unknown values (unchanged)
-3. getActiveBenchmarkSourceId() returns 'curated' when 'curated' is stored (unchanged)
-4. Rank page renders normally — no visible change
+1. All tests pass (jest)
+2. With no profile inputs: nextHint visible, one Settings link
+3. With all inputs + gap: rankInsight visible (nextHint is null)
+4. With all inputs, no gap: goal or allocation insight visible (if any)
+5. With nothing to show: block renders nothing (no empty card)
