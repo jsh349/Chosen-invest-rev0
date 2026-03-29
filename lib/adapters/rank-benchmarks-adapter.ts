@@ -2,6 +2,7 @@ import type { BenchmarkBucket } from '@/lib/types/rank'
 import type { BenchmarkFile } from '@/lib/types/benchmark-import'
 import { validateBenchmarkFile, parseBenchmarkFile } from '@/lib/utils/benchmark-import'
 import { checkBenchmarkCompatibility } from '@/lib/utils/benchmark-schema-guard'
+import { isKnownSourceId, type KnownBenchmarkSourceId } from '@/lib/utils/benchmark-source-precedence'
 import { runBenchmarkQA } from '@/lib/utils/benchmark-qa'
 import {
   OVERALL_WEALTH_BUCKETS,
@@ -55,12 +56,16 @@ export function getAvailableBenchmarkSources(): BenchmarkSource[] {
   return sources
 }
 
-/** Reads the stored source preference. Falls back to 'default' safely. */
-export function getActiveBenchmarkSourceId(): BenchmarkSource['id'] {
+/**
+ * Reads the stored source preference.
+ * Returns the stored id when it is a recognised KnownBenchmarkSourceId;
+ * falls back to 'default' for unknown, empty, or missing values.
+ */
+export function getActiveBenchmarkSourceId(): KnownBenchmarkSourceId {
   if (typeof window === 'undefined') return 'default'
   try {
     const stored = window.localStorage.getItem(BENCHMARK_SOURCE_LS_KEY)
-    return stored === 'curated' ? 'curated' : 'default'
+    return stored !== null && isKnownSourceId(stored) ? stored : 'default'
   } catch {
     return 'default'
   }
@@ -94,8 +99,13 @@ function buildDefaultAdapter(): RankBenchmarksAdapter {
 /**
  * Resolve the active adapter once at module load.
  * Respects the stored source preference; falls back to built-in defaults
- * when the curated file is absent, invalid, fails QA, or throws during parsing.
+ * when the preferred source is absent, invalid, fails QA, or throws during parsing.
  * Logs a console.warn for each fallback path so issues are visible in devtools.
+ *
+ * Source precedence (see BENCHMARK_SOURCE_PRECEDENCE):
+ *   1. curated  — validated local file
+ *   2. external — live source (not_connected stub; skipped until connected)
+ *   3. default  — built-in local data; always available
  */
 function resolveAdapter(): RankBenchmarksAdapter {
   const pref = getActiveBenchmarkSourceId()
