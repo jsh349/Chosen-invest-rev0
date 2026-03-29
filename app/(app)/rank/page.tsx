@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils/cn'
 import { BENCHMARK_META } from '@/lib/mock/rank-benchmarks'
 import { percentileBandLabel } from '@/lib/utils/percentile-label'
 import { getRankInsight } from '@/lib/utils/rank-insight'
+import { getRankBadges } from '@/lib/utils/rank-badges'
 import type { RankResult } from '@/lib/types/rank'
 
 type RankMode = 'individual' | 'household'
@@ -160,6 +161,10 @@ export default function RankPage() {
     ? getRankInsight(ranks)
     : null
 
+  const rankBadges = isFullyLoaded && summary.assetCount > 0
+    ? getRankBadges(ranks)
+    : []
+
   // Rules of Hooks: useEffect must be before any conditional return.
   // Guard inside the effect so it only fires once all data is loaded.
   useEffect(() => {
@@ -274,6 +279,24 @@ export default function RankPage() {
               {ranks.map((r) => (
                 <RankRow key={r.type} result={r} />
               ))}
+            </div>
+          )}
+
+          {/* Rank badges — earned milestone indicators */}
+          {rankBadges.length > 0 && (
+            <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Milestones</p>
+              <div className="flex flex-wrap gap-2">
+                {rankBadges.map((badge) => (
+                  <div
+                    key={badge.id}
+                    title={badge.description}
+                    className="inline-flex items-center rounded-full border border-surface-border bg-surface-muted px-3 py-1"
+                  >
+                    <span className="text-xs font-medium text-gray-300">{badge.label}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
