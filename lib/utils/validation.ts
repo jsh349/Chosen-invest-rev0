@@ -20,9 +20,11 @@ export function parseNonNegative(value: string): number | null {
   return n
 }
 
-/** Returns true if the string matches YYYY-MM-DD format. */
+/** Returns true if the string is a valid calendar date in YYYY-MM-DD format. */
 export function isDateFormat(value: string): boolean {
-  return /^\d{4}-\d{2}-\d{2}$/.test(value)
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false
+  const d = new Date(value)
+  return !isNaN(d.getTime()) && d.toISOString().startsWith(value)
 }
 
 /** Returns true if the string looks like a basic email (has user@domain.tld). */
