@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { formatCurrency } from '@/lib/utils/currency'
+import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
 import { useGoals } from '@/lib/store/goals-store'
 import { getGoalStatus, GOAL_STATUS_STYLES } from '@/lib/utils/goal-status'
 import { ROUTES } from '@/lib/constants/routes'
@@ -18,6 +18,7 @@ function nearestGoal(goals: Goal[]): Goal {
 
 export function GoalsSummaryCard() {
   const { goals, hasGoals, isLoaded } = useGoals()
+  const { fmt } = useFormatCurrency()
 
   if (!isLoaded) return null
 
@@ -56,11 +57,11 @@ export function GoalsSummaryCard() {
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-lg bg-surface-muted/40 px-3 py-2">
             <p className="text-xs text-gray-500">Total Target</p>
-            <p className="mt-0.5 text-sm font-semibold text-white">{formatCurrency(totalTarget)}</p>
+            <p className="mt-0.5 text-sm font-semibold text-white">{fmt(totalTarget)}</p>
           </div>
           <div className="rounded-lg bg-surface-muted/40 px-3 py-2">
             <p className="text-xs text-gray-500">Saved So Far</p>
-            <p className="mt-0.5 text-sm font-semibold text-white">{formatCurrency(totalCurrent)}</p>
+            <p className="mt-0.5 text-sm font-semibold text-white">{fmt(totalCurrent)}</p>
           </div>
         </div>
 
@@ -82,8 +83,8 @@ export function GoalsSummaryCard() {
             />
           </div>
           <div className="flex justify-between text-xs text-gray-500">
-            <span>{formatCurrency(featured.currentAmount)} saved</span>
-            <span>{formatCurrency(featured.targetAmount)} target</span>
+            <span>{fmt(featured.currentAmount)} saved</span>
+            <span>{fmt(featured.targetAmount)} target</span>
           </div>
         </div>
 

@@ -8,6 +8,8 @@ export function generateAISummary(ctx: AdvisorContext): AIAnalysisResult {
   const netCashFlow = ctx.cashFlow?.net ?? null
   const topCategory = categoryBreakdown[0]
   const topPct = topCategory?.percentage ?? 0
+  const currencySymbol = ctx.currencySymbol ?? '$'
+  const showCents = ctx.showCents ?? false
 
   const lines: string[] = []
   const keyPoints: string[] = []
@@ -40,7 +42,7 @@ export function generateAISummary(ctx: AdvisorContext): AIAnalysisResult {
 
   // Main overview
   lines.push(
-    `Your portfolio holds ${assetCount} asset${assetCount > 1 ? 's' : ''} with a total value of ${formatCompact(totalAssetValue)}.`
+    `Your portfolio holds ${assetCount} asset${assetCount > 1 ? 's' : ''} with a total value of ${formatCompact(totalAssetValue, currencySymbol, showCents)}.`
   )
 
   // Top category commentary

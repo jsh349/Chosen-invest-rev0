@@ -10,7 +10,7 @@ import type { AssetFormEntry } from '@/features/portfolio/types'
 import type { Asset } from '@/lib/types/asset'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { useAssets } from '@/lib/store/assets-store'
-import { formatCurrency } from '@/lib/utils/currency'
+import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
 import { ROUTES } from '@/lib/constants/routes'
 import { LOCAL_USER_ID } from '@/lib/constants/auth'
 
@@ -26,6 +26,7 @@ function assetToFormEntry(asset: Asset): AssetFormEntry {
 export default function PortfolioInputPage() {
   const router = useRouter()
   const { assets, hasCustomAssets, isLoaded, setAssets } = useAssets()
+  const { fmt } = useFormatCurrency()
   const [entries, setEntries] = useState<AssetFormEntry[] | null>(null)
 
   useEffect(() => {
@@ -111,7 +112,7 @@ export default function PortfolioInputPage() {
         {total > 0 && (
           <div className="flex items-center justify-between rounded-lg border border-surface-border bg-surface-card px-4 py-3">
             <span className="text-sm text-gray-400">Total entered</span>
-            <span className="text-base font-bold text-white">{formatCurrency(total)}</span>
+            <span className="text-base font-bold text-white">{fmt(total)}</span>
           </div>
         )}
 

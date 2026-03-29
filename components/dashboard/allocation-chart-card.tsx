@@ -1,7 +1,7 @@
 'use client'
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { formatCurrency } from '@/lib/utils/currency'
+import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
 import type { AllocationSlice } from '@/lib/types/dashboard'
 
 interface AllocationChartCardProps {
@@ -9,6 +9,8 @@ interface AllocationChartCardProps {
 }
 
 export function AllocationChartCard({ slices }: AllocationChartCardProps) {
+  const { fmt } = useFormatCurrency()
+
   if (!slices.length) {
     return (
       <Card>
@@ -45,7 +47,7 @@ export function AllocationChartCard({ slices }: AllocationChartCardProps) {
               <div className="flex items-center gap-3 text-right">
                 <span className="text-gray-500">{slice.percentage.toFixed(1)}%</span>
                 <span className="w-20 font-medium text-white tabular-nums">
-                  {formatCurrency(slice.value)}
+                  {fmt(slice.value)}
                 </span>
               </div>
             </div>

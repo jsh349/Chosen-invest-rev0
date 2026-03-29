@@ -18,6 +18,7 @@ import { TaxOpportunityCard } from '@/components/dashboard/tax-opportunity-card'
 import { CashFlowInsightCard } from '@/components/dashboard/cash-flow-insight-card'
 import { RankOverviewCard } from '@/components/dashboard/rank-overview-card'
 import { computeOverallWealthRank, computeAgeBasedRank, computeAgeGenderRank, computeReturnRank } from '@/features/dashboard/rank'
+import { getCurrencySymbol } from '@/lib/utils/currency'
 import { useAssets } from '@/lib/store/assets-store'
 import { useGoals } from '@/lib/store/goals-store'
 import { useTransactions } from '@/lib/store/transactions-store'
@@ -81,6 +82,8 @@ export default function DashboardPage() {
     agePercentile: ageRank.percentile,
     returnPercentile: returnRank.percentile,
   }
+  advisorCtx.currencySymbol = getCurrencySymbol(settings.currency)
+  advisorCtx.showCents = settings.showCents
   const aiAnalysis = generateAISummary(advisorCtx)
 
   const show = (key: DashboardCardKey) => prefs[key]

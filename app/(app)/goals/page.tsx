@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Trash2, Target, Pencil, Check, X } from 'lucide-react'
 import { useGoals } from '@/lib/store/goals-store'
-import { formatCurrency } from '@/lib/utils/currency'
+import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
@@ -147,6 +147,7 @@ function parseForm(form: FormState): { targetAmount: number; currentAmount: numb
 
 export default function GoalsPage() {
   const { goals, isLoaded, addGoal, updateGoal, removeGoal } = useGoals()
+  const { fmt } = useFormatCurrency()
   const [addForm, setAddForm] = useState<FormState>(EMPTY_FORM)
   const [addError, setAddError] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -294,8 +295,8 @@ export default function GoalsPage() {
                         </div>
                         <div className="space-y-1">
                           <div className="flex justify-between text-xs text-gray-500">
-                            <span>{formatCurrency(goal.currentAmount)} saved</span>
-                            <span>{pct.toFixed(0)}% of {formatCurrency(goal.targetAmount)}</span>
+                            <span>{fmt(goal.currentAmount)} saved</span>
+                            <span>{pct.toFixed(0)}% of {fmt(goal.targetAmount)}</span>
                           </div>
                           <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-muted">
                             <div

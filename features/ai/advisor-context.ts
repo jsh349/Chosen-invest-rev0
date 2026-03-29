@@ -19,6 +19,8 @@ export type AdvisorContext = {
   goalCount: number
   cashFlow: CashFlowSummary | null
   rankSummary?: RankSummary
+  currencySymbol?: string
+  showCents?: boolean
 }
 
 /** Build a normalized context object for the advisor from raw store data. */

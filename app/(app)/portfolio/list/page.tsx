@@ -9,7 +9,7 @@ import { CategorySelect } from '@/components/portfolio/category-select'
 import { useAssets } from '@/lib/store/assets-store'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { CATEGORY_MAP } from '@/lib/constants/asset-categories'
-import { formatCurrency } from '@/lib/utils/currency'
+import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
 import { ROUTES } from '@/lib/constants/routes'
 import { cn } from '@/lib/utils/cn'
 import type { AssetCategory } from '@/lib/types/asset'
@@ -18,6 +18,7 @@ type Draft = { name: string; category: AssetCategory; value: string }
 
 export default function PortfolioListPage() {
   const { assets, hasCustomAssets, updateAsset, removeAsset, isLoaded } = useAssets()
+  const { fmt } = useFormatCurrency()
   const [editingId, setEditingId] = useState<string | null>(null)
   const [draft, setDraft] = useState<Draft | null>(null)
 
@@ -69,7 +70,7 @@ export default function PortfolioListPage() {
         <div>
           <h1 className="text-xl font-bold text-white">Portfolio</h1>
           <p className="mt-0.5 text-sm text-gray-500">
-            {assets.length} assets · Total {formatCurrency(totalValue)}
+            {assets.length} assets · Total {fmt(totalValue)}
           </p>
         </div>
         <Link href={ROUTES.portfolioInput} className={cn(buttonVariants({ size: 'sm' }), 'gap-2')}>
@@ -80,7 +81,7 @@ export default function PortfolioListPage() {
 
       <div className="flex items-center justify-between rounded-xl border border-surface-border bg-surface-card px-5 py-4">
         <span className="text-sm text-gray-400">Total Asset Value</span>
-        <span className="text-xl font-bold text-white">{formatCurrency(totalValue)}</span>
+        <span className="text-xl font-bold text-white">{fmt(totalValue)}</span>
       </div>
 
       <div className="space-y-2">
@@ -142,7 +143,7 @@ export default function PortfolioListPage() {
                 <p className="text-xs text-gray-500">{meta?.label ?? asset.category}</p>
               </div>
               <span className="text-sm font-semibold text-white">
-                {formatCurrency(asset.value)}
+                {fmt(asset.value)}
               </span>
               <div className="flex items-center gap-1">
                 <Button

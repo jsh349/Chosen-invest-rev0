@@ -1,4 +1,7 @@
+'use client'
+
 import { cn } from '@/lib/utils/cn'
+import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
 import type { RankResult } from '@/lib/types/rank'
 
 interface RankOverviewCardProps {
@@ -7,12 +10,6 @@ interface RankOverviewCardProps {
   ageGenderRank: RankResult
   returnRank: RankResult
   totalValue: number
-}
-
-function formatCurrency(value: number): string {
-  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`
-  if (value >= 1_000) return `$${(value / 1_000).toFixed(0)}K`
-  return `$${value.toFixed(0)}`
 }
 
 function PercentileBar({ percentile, tall }: { percentile: number; tall?: boolean }) {
@@ -70,6 +67,7 @@ function RankTile({ result }: { result: RankResult }) {
 
 export function RankOverviewCard({ rank, ageRank, ageGenderRank, returnRank, totalValue }: RankOverviewCardProps) {
   const overallTop = rank.percentile != null ? 100 - rank.percentile : null
+  const { compact } = useFormatCurrency()
 
   return (
     <div className="rounded-xl border border-surface-border bg-surface-card p-6 space-y-6">
@@ -87,7 +85,7 @@ export function RankOverviewCard({ rank, ageRank, ageGenderRank, returnRank, tot
             <p className="text-4xl font-bold text-gray-600">—</p>
           )}
           <p className="text-sm text-gray-500">
-            {formatCurrency(totalValue)} total assets
+            {compact(totalValue)} total assets
           </p>
         </div>
         <div className="w-full sm:w-64 space-y-2">

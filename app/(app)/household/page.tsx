@@ -6,7 +6,7 @@ import { Users, Trash2, Target, StickyNote } from 'lucide-react'
 import { useHousehold } from '@/lib/store/household-store'
 import { useGoals } from '@/lib/store/goals-store'
 import { useHouseholdNotes } from '@/lib/store/household-notes-store'
-import { formatCurrency } from '@/lib/utils/currency'
+import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
 import { getGoalStatus, GOAL_STATUS_STYLES } from '@/lib/utils/goal-status'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
@@ -37,6 +37,7 @@ export default function HouseholdPage() {
   const { members, isLoaded: membersLoaded, addMember, removeMember } = useHousehold()
   const { goals, isLoaded: goalsLoaded } = useGoals()
   const { notes, isLoaded: notesLoaded, addNote, removeNote } = useHouseholdNotes()
+  const { fmt } = useFormatCurrency()
   const [form, setForm] = useState(EMPTY_FORM)
   const [error, setError] = useState('')
   const [noteForm, setNoteForm] = useState({ title: '', message: '' })
@@ -293,8 +294,8 @@ export default function HouseholdPage() {
                       />
                     </div>
                     <div className="flex justify-between text-xs text-gray-500">
-                      <span>{formatCurrency(goal.currentAmount)} saved</span>
-                      <span>{pct.toFixed(0)}% of {formatCurrency(goal.targetAmount)}</span>
+                      <span>{fmt(goal.currentAmount)} saved</span>
+                      <span>{pct.toFixed(0)}% of {fmt(goal.targetAmount)}</span>
                     </div>
                   </div>
                 )

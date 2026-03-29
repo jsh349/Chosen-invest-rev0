@@ -9,7 +9,7 @@ import {
   Legend,
 } from 'recharts'
 import type { AllocationSlice } from '@/lib/types/dashboard'
-import { formatCurrency } from '@/lib/utils/currency'
+import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
 import { formatPercentage } from '@/lib/utils/percentage'
 
 interface AllocationChartProps {
@@ -17,6 +17,7 @@ interface AllocationChartProps {
 }
 
 export function AllocationChart({ data }: AllocationChartProps) {
+  const { fmt } = useFormatCurrency()
   if (!data.length) {
     return (
       <div className="flex h-48 items-center justify-center text-sm text-gray-500">
@@ -50,7 +51,7 @@ export function AllocationChart({ data }: AllocationChartProps) {
               return (
                 <div className="rounded-lg border border-surface-border bg-surface-card px-3 py-2 text-xs shadow-lg">
                   <p className="font-semibold text-white">{s.label}</p>
-                  <p className="text-gray-400">{formatCurrency(s.value)}</p>
+                  <p className="text-gray-400">{fmt(s.value)}</p>
                   <p className="text-gray-400">{formatPercentage(s.percentage)}</p>
                 </div>
               )

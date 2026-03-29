@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { ArrowLeft, Target } from 'lucide-react'
 import { useGoals } from '@/lib/store/goals-store'
 import { getGoalStatus, GOAL_STATUS_STYLES } from '@/lib/utils/goal-status'
-import { formatCurrency } from '@/lib/utils/currency'
+import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils/cn'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
@@ -23,6 +23,7 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
 export default function GoalDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const { goals, isLoaded } = useGoals()
+  const { fmt } = useFormatCurrency()
 
   if (!isLoaded) {
     return (
@@ -85,8 +86,8 @@ export default function GoalDetailPage({ params }: { params: Promise<{ id: strin
             />
           </div>
           <div className="flex justify-between text-xs text-gray-500">
-            <span>{formatCurrency(goal.currentAmount)} saved</span>
-            <span>{formatCurrency(goal.targetAmount)} target</span>
+            <span>{fmt(goal.currentAmount)} saved</span>
+            <span>{fmt(goal.targetAmount)} target</span>
           </div>
         </CardContent>
       </Card>
@@ -99,9 +100,9 @@ export default function GoalDetailPage({ params }: { params: Promise<{ id: strin
         <CardContent className="px-4 py-0">
           <Row label="Goal Name"      value={goal.name} />
           <Row label="Type"           value={typeLabel} />
-          <Row label="Target Amount"  value={formatCurrency(goal.targetAmount)} />
-          <Row label="Saved So Far"   value={formatCurrency(goal.currentAmount)} />
-          <Row label="Remaining"      value={formatCurrency(Math.max(0, goal.targetAmount - goal.currentAmount))} />
+          <Row label="Target Amount"  value={fmt(goal.targetAmount)} />
+          <Row label="Saved So Far"   value={fmt(goal.currentAmount)} />
+          <Row label="Remaining"      value={fmt(Math.max(0, goal.targetAmount - goal.currentAmount))} />
           <Row label="Progress"       value={`${progress.toFixed(1)}%`} />
           {goal.targetDate && (
             <Row label="Target Date"  value={goal.targetDate} />
