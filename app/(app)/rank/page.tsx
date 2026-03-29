@@ -28,6 +28,7 @@ import { buildMilestoneHistory } from '@/lib/utils/rank-milestone-history'
 import { checkBenchmarkChanged, dismissBenchmarkAlert, benchmarkVersionNote, getBenchmarkFingerprint } from '@/lib/utils/benchmark-change-alert'
 import { getNextRankHint } from '@/lib/utils/rank-next-hint'
 import { getRankInterpretation } from '@/lib/utils/rank-interpretation'
+import { getRankInputExplanation } from '@/lib/utils/rank-input-explanation'
 import { getRankNarrativeSummary } from '@/lib/utils/rank-narrative-summary'
 import { getPrimaryRank } from '@/lib/utils/rank-priority'
 import { getRankReviewSummary } from '@/lib/utils/rank-review-summary'
@@ -250,6 +251,14 @@ export default function RankPage() {
       })
     : null
 
+  const inputExplanation = isFullyLoaded && summary.assetCount > 0
+    ? getRankInputExplanation({
+        hasAge:    !!settings.birthYear,
+        hasGender: !!settings.gender,
+        hasReturn: settings.annualReturnPct !== undefined,
+      })
+    : null
+
   // Rules of Hooks: useEffect must be before any conditional return.
   // Guard inside the effect so it only fires once all data is loaded.
   useEffect(() => {
@@ -357,6 +366,11 @@ export default function RankPage() {
                   {rankCompleteness(availableCount).label}
                 </p>
               </div>
+              {inputExplanation && (
+                <p className="w-full border-t border-surface-border pt-3 text-xs text-gray-500">
+                  {inputExplanation}
+                </p>
+              )}
             </div>
           )}
 
