@@ -96,6 +96,11 @@ export default function SettingsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [importStatus, setImportStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
 
+  // Local raw strings so typing partial numbers (e.g. "199") doesn't reset the field.
+  // Synced back from settings when settings change externally (e.g. Reset).
+  const [birthYearRaw, setBirthYearRaw] = useState<string>(settings.birthYear?.toString() ?? '')
+  const [returnRaw, setReturnRaw] = useState<string>(settings.annualReturnPct?.toString() ?? '')
+
   const benchmarkSources = getAvailableBenchmarkSources()
   const [selectedBenchmarkSource, setSelectedBenchmarkSource] = useState<BenchmarkSource['id']>(
     getActiveBenchmarkSourceId
@@ -105,6 +110,10 @@ export default function SettingsPage() {
   // so context state can be stale when navigating here. Refresh on mount so
   // the audit log reflects actions taken during the current session.
   useEffect(() => { refreshAudit() }, [refreshAudit])
+
+  // Keep raw input strings in sync when settings change externally (e.g. Reset button).
+  useEffect(() => { setBirthYearRaw(settings.birthYear?.toString() ?? '') }, [settings.birthYear])
+  useEffect(() => { setReturnRaw(settings.annualReturnPct?.toString() ?? '') }, [settings.annualReturnPct])
 
   if (!isLoaded) {
     return (
@@ -189,9 +198,10 @@ export default function SettingsPage() {
             min={1920}
             max={new Date().getFullYear() - 10}
             placeholder="e.g. 1990"
-            value={settings.birthYear ?? ''}
+            value={birthYearRaw}
             onChange={(e) => {
               const raw = e.target.value
+              setBirthYearRaw(raw)
               if (raw === '') { update({ birthYear: undefined }); return }
               const yr = parseInt(raw, 10)
               if (yr >= 1920 && yr <= new Date().getFullYear() - 10) update({ birthYear: yr })
@@ -222,9 +232,10 @@ export default function SettingsPage() {
             min={-50}
             max={100}
             placeholder="e.g. 8.5"
-            value={settings.annualReturnPct ?? ''}
+            value={returnRaw}
             onChange={(e) => {
               const raw = e.target.value
+              setReturnRaw(raw)
               if (raw === '') { update({ annualReturnPct: undefined }); return }
               const n = parseFloat(raw)
               if (Number.isFinite(n) && n >= -50 && n <= 100) update({ annualReturnPct: n })
