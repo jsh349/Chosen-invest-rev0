@@ -94,6 +94,7 @@ export default function TransactionsPage() {
       case 'date-asc':    return a.date.localeCompare(b.date)
       case 'amount-desc': return Math.abs(b.amount) - Math.abs(a.amount)
       case 'amount-asc':  return Math.abs(a.amount) - Math.abs(b.amount)
+      default:            return 0
     }
   })
 

@@ -116,12 +116,12 @@ function ModeToggle({ mode, onChange }: { mode: RankMode; onChange: (m: RankMode
 export default function RankPage() {
   const { assets, isLoaded: assetsLoaded } = useAssets()
   const { members, isLoaded: householdLoaded } = useHousehold()
-  const { settings } = useSettings()
+  const { settings, isLoaded: settingsLoaded } = useSettings()
   const { compact } = useFormatCurrency()
-  const { snapshots, saveSnapshot } = useRankSnapshots()
+  const { snapshots, isLoaded: snapshotsLoaded, saveSnapshot } = useRankSnapshots()
   const [mode, setMode] = useState<RankMode>('individual')
 
-  if (!assetsLoaded || !householdLoaded) return <LoadingSpinner />
+  if (!assetsLoaded || !householdLoaded || !settingsLoaded || !snapshotsLoaded) return <LoadingSpinner />
 
   const summary = buildPortfolioSummary(LOCAL_USER_ID, assets)
   const userAge = settings.birthYear
@@ -274,7 +274,7 @@ export default function RankPage() {
             </table>
           </div>
           <p className="text-[10px] text-gray-600">
-            Saved locally on each visit when rank values change. Max {snapshots.length <= 10 ? snapshots.length : 10} stored.
+            Saved locally on each visit when rank values change. Max 10 stored.
           </p>
         </div>
       )}

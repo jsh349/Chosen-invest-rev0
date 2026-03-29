@@ -33,8 +33,9 @@ export function recordAudit(action: string, detail: string) {
       timestamp: new Date().toISOString(),
     }
     writeJSON(LS_KEY, [entry, ...existing].slice(0, MAX_ENTRIES))
-  } catch {
+  } catch (e) {
     // never break the app for audit
+    console.warn('[audit] failed to record:', e)
   }
 }
 

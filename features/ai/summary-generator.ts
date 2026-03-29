@@ -1,6 +1,7 @@
 import type { AIAnalysisResult, SuggestedAction } from '@/lib/types/dashboard'
 import type { AdvisorContext } from '@/features/ai/advisor-context'
 import { formatCompact } from '@/lib/utils/currency'
+import { ROUTES } from '@/lib/constants/routes'
 
 export function generateAISummary(ctx: AdvisorContext): AIAnalysisResult {
   const { categoryBreakdown, totalAssetValue, assetCount, userId } = ctx.portfolio
@@ -22,7 +23,7 @@ export function generateAISummary(ctx: AdvisorContext): AIAnalysisResult {
       userId,
       summaryText: lines.join(' '),
       keyPoints: ['Start by adding your assets in the Portfolio section'],
-      suggestedActions: [{ label: 'Add your first asset', href: '/portfolio/input' }],
+      suggestedActions: [{ label: 'Add your first asset', href: ROUTES.portfolioInput }],
       inputSnapshot: { totalValue: 0, assetCount: 0, topCategory: '' },
       generatedAt: new Date().toISOString(),
     }
@@ -34,7 +35,7 @@ export function generateAISummary(ctx: AdvisorContext): AIAnalysisResult {
       userId,
       summaryText: `Your portfolio is entirely in cash. While this provides safety, consider diversifying into investments, retirement, or other asset classes to build long-term growth.`,
       keyPoints: ['100% cash — consider broader asset planning', 'No growth or income assets detected'],
-      suggestedActions: [{ label: 'Edit your assets', href: '/portfolio/input' }],
+      suggestedActions: [{ label: 'Edit your assets', href: ROUTES.portfolioInput }],
       inputSnapshot: { totalValue: totalAssetValue, assetCount, topCategory: topCategory.label },
       generatedAt: new Date().toISOString(),
     }
@@ -129,16 +130,16 @@ export function generateAISummary(ctx: AdvisorContext): AIAnalysisResult {
 
   // Suggested actions — up to 2, highest priority first
   if (!hasGoals) {
-    actions.push({ label: 'Set your first goal', href: '/goals' })
+    actions.push({ label: 'Set your first goal', href: ROUTES.goals })
   }
   if (netCashFlow !== null && netCashFlow < 0) {
-    actions.push({ label: 'Review transactions', href: '/transactions' })
+    actions.push({ label: 'Review transactions', href: ROUTES.transactions })
   }
   if (actions.length < 2 && topPct > 60) {
-    actions.push({ label: 'Review portfolio allocation', href: '/portfolio/list' })
+    actions.push({ label: 'Review portfolio allocation', href: ROUTES.portfolioList })
   }
   if (actions.length < 2) {
-    actions.push({ label: 'View portfolio details', href: '/portfolio/list' })
+    actions.push({ label: 'View portfolio details', href: ROUTES.portfolioList })
   }
 
   return {
