@@ -1,7 +1,8 @@
 import { BENCHMARK_META } from '@/lib/mock/rank-benchmarks'
 import { getActiveBenchmarkSourceId } from '@/lib/adapters/rank-benchmarks-adapter'
+import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
 
-const LS_KEY = 'chosen_benchmark_seen_v1'
+const LS_KEY = STORAGE_KEYS.benchmarkSeen
 
 /**
  * A string that uniquely identifies the active benchmark version and source.

@@ -1,3 +1,7 @@
+// NOTE: GoalStatus values serve double duty as display labels (Title Case with spaces).
+// This differs from other enums in the codebase which use lowercase codes (e.g. AssetCategory).
+// When API integration is added, split into a status code type ('not_started' | 'in_progress' |
+// 'complete') and a separate GOAL_STATUS_LABELS display map to avoid a breaking data-model change.
 export type GoalStatus = 'Not Started' | 'In Progress' | 'Complete'
 
 export function getGoalStatus(currentAmount: number, targetAmount: number): GoalStatus {

@@ -39,10 +39,11 @@ const SELECT_CLASS = 'rounded-lg border border-surface-border bg-surface-muted p
 
 export default function TransactionsPage() {
   const { transactions, isLoaded, addTransaction, removeTransaction } = useTransactions()
-  const { symbol } = useFormatCurrency()
+  const { fmt } = useFormatCurrency()
+  // Uses fmt() so showCents setting is respected (consistent with the rest of the app).
   const formatAmount = (amount: number) => {
-    const abs = Math.abs(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-    return amount >= 0 ? `+${symbol}${abs}` : `-${symbol}${abs}`
+    const formatted = fmt(Math.abs(amount))
+    return amount >= 0 ? `+${formatted}` : `-${formatted}`
   }
   const [form, setForm] = useState(EMPTY_FORM)
   const [error, setError] = useState('')
@@ -170,19 +171,19 @@ export default function TransactionsPage() {
         </CardContent>
       </Card>
 
-      {/* Summary row — always full dataset */}
+      {/* Summary row — all-time totals across all recorded transactions */}
       {transactions.length > 0 && (
         <div className="grid grid-cols-3 gap-3">
           <div className="rounded-xl border border-surface-border bg-surface-card px-4 py-3">
-            <p className="text-xs text-gray-500">Income</p>
+            <p className="text-xs text-gray-500">Income (all time)</p>
             <p className="mt-0.5 text-sm font-semibold text-green-400">{formatAmount(totalIncome)}</p>
           </div>
           <div className="rounded-xl border border-surface-border bg-surface-card px-4 py-3">
-            <p className="text-xs text-gray-500">Expenses</p>
+            <p className="text-xs text-gray-500">Expenses (all time)</p>
             <p className="mt-0.5 text-sm font-semibold text-red-400">{formatAmount(totalExpense)}</p>
           </div>
           <div className="rounded-xl border border-surface-border bg-surface-card px-4 py-3">
-            <p className="text-xs text-gray-500">Net</p>
+            <p className="text-xs text-gray-500">Net (all time)</p>
             <p className={cn('mt-0.5 text-sm font-semibold', net >= 0 ? 'text-green-400' : 'text-red-400')}>
               {formatAmount(net)}
             </p>

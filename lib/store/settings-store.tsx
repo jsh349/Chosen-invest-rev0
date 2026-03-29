@@ -50,7 +50,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const stored = readJSON<Partial<AppSettings>>(LS_KEY, {})
-    if (Object.keys(stored).length > 0) {
+    if (stored && Object.keys(stored).length > 0) {
       setSettings({ ...DEFAULT_SETTINGS, ...stored })
     }
     setIsLoaded(true)

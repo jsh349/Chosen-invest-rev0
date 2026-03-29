@@ -22,7 +22,9 @@ export type RankBenchmarksAdapter = {
 // Source selection — internal, not part of exported user data
 // ---------------------------------------------------------------------------
 
-const BENCHMARK_SOURCE_LS_KEY = 'chosen_benchmark_source_v1'
+import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
+
+const BENCHMARK_SOURCE_LS_KEY = STORAGE_KEYS.benchmarkSource
 
 export type BenchmarkSource = {
   id: 'default' | 'curated'

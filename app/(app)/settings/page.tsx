@@ -6,6 +6,13 @@ import { useSettings, DEFAULT_SETTINGS, type CurrencyCode, type AppSettings } fr
 import type { GenderOption } from '@/lib/types/rank'
 import { useAudit } from '@/lib/store/audit-store'
 import { STORAGE_KEYS, ALL_STORAGE_KEYS } from '@/lib/constants/storage-keys'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
+import {
+  getAvailableBenchmarkSources,
+  getActiveBenchmarkSourceId,
+  setActiveBenchmarkSourceId,
+  type BenchmarkSource,
+} from '@/lib/adapters/rank-benchmarks-adapter'
 
 /** Keys whose stored value must be an array. Non-array values are skipped on import. */
 const ARRAY_KEYS: ReadonlySet<string> = new Set([
@@ -18,18 +25,18 @@ const ARRAY_KEYS: ReadonlySet<string> = new Set([
   STORAGE_KEYS.rankSnapshots,
 ])
 
+/** Keys whose stored value must be a plain string. */
+const STRING_KEYS: ReadonlySet<string> = new Set([
+  STORAGE_KEYS.benchmarkSource,
+  STORAGE_KEYS.benchmarkSeen,
+])
+
 function isSafeToRestore(key: string, value: unknown): boolean {
   if (ARRAY_KEYS.has(key) && !Array.isArray(value)) return false
   if (key === STORAGE_KEYS.settings && (typeof value !== 'object' || value === null || Array.isArray(value))) return false
+  if (STRING_KEYS.has(key) && typeof value !== 'string') return false
   return true
 }
-import { LoadingSpinner } from '@/components/ui/loading-spinner'
-import {
-  getAvailableBenchmarkSources,
-  getActiveBenchmarkSourceId,
-  setActiveBenchmarkSourceId,
-  type BenchmarkSource,
-} from '@/lib/adapters/rank-benchmarks-adapter'
 
 const SELECT_CLASS = 'w-full rounded-lg border border-surface-border bg-surface-muted px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none'
 

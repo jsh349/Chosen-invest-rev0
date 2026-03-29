@@ -64,7 +64,7 @@ export function DashboardPrefsProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const stored = readJSON<Record<string, boolean>>(LS_KEY, {})
-    if (Object.keys(stored).length > 0) {
+    if (stored && Object.keys(stored).length > 0) {
       setPrefs({ ...DEFAULT_PREFS, ...stored })
     }
     setIsLoaded(true)

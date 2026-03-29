@@ -17,7 +17,8 @@ import { LOCAL_USER_ID } from '@/lib/constants/auth'
 // Extends AssetFormEntry locally to carry identity fields for existing assets.
 // _id and _createdAt are preserved through edits and used at submit time so
 // re-saving the form does not replace existing asset IDs or timestamps.
-type FormEntry = AssetFormEntry & { _id?: string; _createdAt?: string }
+// _key is a stable React key (never changes for the lifetime of the row).
+type FormEntry = AssetFormEntry & { _id?: string; _createdAt?: string; _key: string }
 
 function assetToFormEntry(asset: Asset): FormEntry {
   return {
@@ -27,7 +28,12 @@ function assetToFormEntry(asset: Asset): FormEntry {
     currency: asset.currency ?? 'USD',
     _id: asset.id,
     _createdAt: asset.createdAt,
+    _key: asset.id,
   }
+}
+
+function blankEntry(): FormEntry {
+  return { ...blankFormEntry(), _key: crypto.randomUUID() }
 }
 
 export default function PortfolioInputPage() {
@@ -41,7 +47,7 @@ export default function PortfolioInputPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!isLoaded) return
-    setEntries(hasCustomAssets ? assets.map(assetToFormEntry) : [blankFormEntry()])
+    setEntries(hasCustomAssets ? assets.map(assetToFormEntry) : [blankEntry()])
   }, [isLoaded])
 
   if (!isLoaded || entries === null) {
@@ -62,7 +68,7 @@ export default function PortfolioInputPage() {
   }
 
   function handleAdd() {
-    setEntries((prev) => (prev ? [...prev, blankFormEntry()] : [blankFormEntry()]))
+    setEntries((prev) => (prev ? [...prev, blankEntry()] : [blankEntry()]))
   }
 
   function handleRemove(index: number) {
@@ -102,7 +108,7 @@ export default function PortfolioInputPage() {
       <form onSubmit={handleSubmit} className="space-y-4">
         {entries.map((entry, i) => (
           <AssetRow
-            key={i}
+            key={entry._key}
             index={i}
             entry={entry}
             onChange={handleChange}

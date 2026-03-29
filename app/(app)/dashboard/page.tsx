@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { PlusCircle, BarChart2, SlidersHorizontal, Trophy } from 'lucide-react'
 import { DashboardOverview } from '@/components/dashboard/dashboard-overview'
@@ -65,10 +65,39 @@ export default function DashboardPage() {
   const { goals, isLoaded: goalsLoaded } = useGoals()
   const { transactions, isLoaded: txLoaded } = useTransactions()
   const { prefs, isLoaded: prefsLoaded, toggle } = useDashboardPrefs()
-  const { settings } = useSettings()
+  const { settings, isLoaded: settingsLoaded } = useSettings()
   const [showPrefs, setShowPrefs] = useState(false)
 
-  if (!isLoaded || !prefsLoaded || !goalsLoaded || !txLoaded) {
+  // All hooks must run unconditionally before any early return (Rules of Hooks).
+  // These computations are safe with empty arrays while data is loading.
+  const baseCtx = useMemo(
+    () => buildAdvisorContext(assets, goals, transactions),
+    [assets, goals, transactions]
+  )
+  const summary = baseCtx.portfolio
+  const healthCards = useMemo(() => generateHealthCards(summary), [summary])
+  const trendData = useMemo(() => buildMockTrend(summary.totalAssetValue), [summary.totalAssetValue])
+  const userAge = settings.birthYear ? new Date().getFullYear() - settings.birthYear : undefined
+  const overallRank = useMemo(() => computeOverallWealthRank(summary.totalAssetValue), [summary.totalAssetValue])
+  const ageRank = useMemo(() => computeAgeBasedRank(summary.totalAssetValue, userAge), [summary.totalAssetValue, userAge])
+  const ageGenderRank = useMemo(() => computeAgeGenderRank(summary.totalAssetValue, userAge, settings.gender), [summary.totalAssetValue, userAge, settings.gender])
+  const returnRank = useMemo(() => computeReturnRank(settings.annualReturnPct), [settings.annualReturnPct])
+  const aiAnalysis = useMemo(
+    () => generateAISummary({
+      ...baseCtx,
+      rankSummary: {
+        overallPercentile: overallRank.percentile,
+        agePercentile: ageRank.percentile,
+        returnPercentile: returnRank.percentile,
+      },
+      currencySymbol: getCurrencySymbol(settings.currency),
+      showCents: settings.showCents,
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [baseCtx, overallRank.percentile, ageRank.percentile, returnRank.percentile, settings.currency, settings.showCents]
+  )
+
+  if (!isLoaded || !prefsLoaded || !goalsLoaded || !txLoaded || !settingsLoaded) {
     return (
       <LoadingSpinner />
     )
@@ -77,26 +106,6 @@ export default function DashboardPage() {
   if (!hasCustomAssets) {
     return <EmptyState />
   }
-
-  const baseCtx = buildAdvisorContext(assets, goals, transactions)
-  const summary = baseCtx.portfolio
-  const healthCards = generateHealthCards(summary)
-  const trendData = buildMockTrend(summary.totalAssetValue)
-  const overallRank = computeOverallWealthRank(summary.totalAssetValue)
-  const userAge = settings.birthYear ? new Date().getFullYear() - settings.birthYear : undefined
-  const ageRank = computeAgeBasedRank(summary.totalAssetValue, userAge)
-  const ageGenderRank = computeAgeGenderRank(summary.totalAssetValue, userAge, settings.gender)
-  const returnRank = computeReturnRank(settings.annualReturnPct)
-  const aiAnalysis = generateAISummary({
-    ...baseCtx,
-    rankSummary: {
-      overallPercentile: overallRank.percentile,
-      agePercentile: ageRank.percentile,
-      returnPercentile: returnRank.percentile,
-    },
-    currencySymbol: getCurrencySymbol(settings.currency),
-    showCents: settings.showCents,
-  })
 
   const show = (key: DashboardCardKey) => prefs[key]
 
