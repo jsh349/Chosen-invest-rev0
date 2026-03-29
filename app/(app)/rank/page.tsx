@@ -155,12 +155,13 @@ export default function RankPage() {
   const availableCount = ranks.filter((r) => r.percentile != null).length
   const hasHouseholdMembers = members.length > 0
 
-  // Save snapshot once per meaningful visit (deduplicated inside the hook)
+  // Save snapshot when rank inputs change: asset value, age, gender, or return.
+  // Deduplication inside the hook prevents storing identical consecutive snapshots.
   // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     if (summary.assetCount > 0) saveSnapshot(ranks, summary.totalAssetValue)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [summary.totalAssetValue, userAge, settings.gender, settings.annualReturnPct])
 
   return (
     <div className="space-y-6">
