@@ -208,6 +208,12 @@ export default function RankPage() {
     [settings.birthYear]
   )
 
+  // Derived once — used by all rank utility calls that accept a profile flags object.
+  // Single definition prevents silent drift if derivation logic needs to change.
+  const hasAge    = !!settings.birthYear
+  const hasGender = !!settings.gender
+  const hasReturn = settings.annualReturnPct !== undefined
+
   const ranks = useMemo<RankResult[]>(() => {
     if (!isFullyLoaded) return []
     return [
@@ -250,27 +256,15 @@ export default function RankPage() {
     : null
 
   const rankReviewSummary = isFullyLoaded && summary.assetCount > 0
-    ? getRankReviewSummary(ranks, {
-        hasAge:    !!settings.birthYear,
-        hasGender: !!settings.gender,
-        hasReturn: settings.annualReturnPct !== undefined,
-      })
+    ? getRankReviewSummary(ranks, { hasAge, hasGender, hasReturn })
     : null
 
   const nextHint = isFullyLoaded && summary.assetCount > 0
-    ? getNextRankHint({
-        hasAge:    !!settings.birthYear,
-        hasGender: !!settings.gender,
-        hasReturn: settings.annualReturnPct !== undefined,
-      })
+    ? getNextRankHint({ hasAge, hasGender, hasReturn })
     : null
 
   const inputExplanation = isFullyLoaded && summary.assetCount > 0
-    ? getRankInputExplanation({
-        hasAge:    !!settings.birthYear,
-        hasGender: !!settings.gender,
-        hasReturn: settings.annualReturnPct !== undefined,
-      })
+    ? getRankInputExplanation({ hasAge, hasGender, hasReturn })
     : null
 
   const rankAllocationInsight = isFullyLoaded && summary.assetCount > 0
@@ -282,15 +276,7 @@ export default function RankPage() {
     : { showNarrative: false, showInsight: false, showNextHint: false, showGoalInsight: false, showAllocationInsight: false }
 
   const rankChecklist = isFullyLoaded && goalsLoaded && summary.assetCount > 0
-    ? getRankChecklist(
-        {
-          hasAge:    !!settings.birthYear,
-          hasGender: !!settings.gender,
-          hasReturn: settings.annualReturnPct !== undefined,
-          hasGoals:  goals.length > 0,
-        },
-        ranks,
-      )
+    ? getRankChecklist({ hasAge, hasGender, hasReturn, hasGoals: goals.length > 0 }, ranks)
     : []
 
   // Rules of Hooks: useEffect must be before any conditional return.
