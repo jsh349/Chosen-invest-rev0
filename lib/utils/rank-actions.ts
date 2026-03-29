@@ -9,27 +9,46 @@ export type RankAction = {
 
 /**
  * Returns up to two contextual action links derived from rank outputs.
- * Rules are evaluated in order; duplicates are avoided by capping at 2.
+ * Rules are evaluated in priority order; result is capped at 2.
  *
- * Intentionally does NOT duplicate the per-row "Set X in Settings" links
- * already shown inside each RankRow — these are higher-level navigations.
+ * @param hasGoals  Pass true when the user already has at least one goal set.
+ *                  Prevents the "Set a financial goal" action from showing
+ *                  when it is no longer relevant.
  */
-export function getRankActions(ranks: RankResult[]): RankAction[] {
+export function getRankActions(
+  ranks: RankResult[],
+  { hasGoals = false }: { hasGoals?: boolean } = {},
+): RankAction[] {
   const actions: RankAction[] = []
 
-  const { overall, ageBased, ageGender } = indexRanks(ranks)
+  const { overall, ageBased, ageGender, ret } = indexRanks(ranks)
 
   const overallPct        = overall?.percentile ?? null
   const profileIncomplete = !!(ageBased?.missingField || ageGender?.missingField)
+  const returnMissing     = !!(ret?.missingField)
 
-  // Rule 1: wealth rank available but profile is incomplete across age / gender ranks
+  // Rule 1: profile incomplete (age / gender) → complete in Settings
   if (overallPct !== null && profileIncomplete) {
     actions.push({ label: 'Complete profile for full ranking', href: ROUTES.settings })
   }
 
-  // Rule 2: wealth rank below the 75th percentile → suggest reviewing portfolio
-  if (overallPct !== null && overallPct < 75) {
+  // Rule 2: wealth rank below the 75th percentile → review portfolio
+  if (actions.length < 2 && overallPct !== null && overallPct < 75) {
     actions.push({ label: 'Review portfolio composition', href: ROUTES.portfolioList })
+  }
+
+  // Rule 3: return estimate missing and not already linking to Settings
+  if (
+    actions.length < 2 &&
+    returnMissing &&
+    !actions.some((a) => a.href === ROUTES.settings)
+  ) {
+    actions.push({ label: 'Add return estimate for full ranking', href: ROUTES.settings })
+  }
+
+  // Rule 4: overall rank available but no goals set
+  if (actions.length < 2 && overallPct !== null && !hasGoals) {
+    actions.push({ label: 'Set a financial goal', href: ROUTES.goals })
   }
 
   return actions.slice(0, 2)

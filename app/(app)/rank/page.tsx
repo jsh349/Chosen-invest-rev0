@@ -171,8 +171,8 @@ export default function RankPage() {
     ? getRankBadges(ranks)
     : []
 
-  const rankActions = isFullyLoaded && summary.assetCount > 0
-    ? getRankActions(ranks)
+  const rankActions = isFullyLoaded && goalsLoaded && summary.assetCount > 0
+    ? getRankActions(ranks, { hasGoals: goals.length > 0 })
     : []
 
   const rankGoalInsight = isFullyLoaded && goalsLoaded && summary.assetCount > 0
