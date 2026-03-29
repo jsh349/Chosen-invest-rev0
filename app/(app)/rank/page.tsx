@@ -24,6 +24,7 @@ import { getRankBadges } from '@/lib/utils/rank-badges'
 import { getRankActions } from '@/lib/utils/rank-actions'
 import { getRankGoalInsight } from '@/lib/utils/rank-goal-insight'
 import { buildMonthlySummary } from '@/lib/utils/rank-monthly-summary'
+import { buildMilestoneHistory } from '@/lib/utils/rank-milestone-history'
 import { checkBenchmarkChanged, dismissBenchmarkAlert } from '@/lib/utils/benchmark-change-alert'
 import type { RankResult } from '@/lib/types/rank'
 
@@ -172,6 +173,10 @@ export default function RankPage() {
 
   const rankBadges = isFullyLoaded && summary.assetCount > 0
     ? getRankBadges(ranks)
+    : []
+
+  const milestoneHistory = isFullyLoaded && snapshotsLoaded
+    ? buildMilestoneHistory(snapshots)
     : []
 
   const rankActions = isFullyLoaded && goalsLoaded && summary.assetCount > 0
@@ -335,21 +340,32 @@ export default function RankPage() {
             </div>
           )}
 
-          {/* Rank badges — earned milestone indicators */}
-          {rankBadges.length > 0 && (
+          {/* Rank milestone history — compact list of first-recorded badges */}
+          {snapshotsLoaded && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-3">
               <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Milestones</p>
-              <div className="flex flex-wrap gap-2">
-                {rankBadges.map((badge) => (
-                  <div
-                    key={badge.id}
-                    title={badge.description}
-                    className="inline-flex items-center rounded-full border border-surface-border bg-surface-muted px-3 py-1"
-                  >
-                    <span className="text-xs font-medium text-gray-300">{badge.label}</span>
-                  </div>
-                ))}
-              </div>
+              {milestoneHistory.length === 0 ? (
+                <p className="text-xs text-gray-600">
+                  No milestones recorded yet. Milestones appear here after rank data is saved across visits.
+                </p>
+              ) : (
+                <ul className="divide-y divide-surface-border">
+                  {milestoneHistory.map((entry) => (
+                    <li key={entry.id} className="flex items-start justify-between gap-4 py-2.5 first:pt-0 last:pb-0">
+                      <div className="min-w-0 space-y-0.5">
+                        <p className="text-xs font-medium text-gray-300">{entry.label}</p>
+                        <p className="text-[11px] text-gray-600 leading-relaxed">{entry.description}</p>
+                      </div>
+                      <time
+                        dateTime={entry.firstSeenAt}
+                        className="shrink-0 text-[11px] tabular-nums text-gray-600"
+                      >
+                        {new Date(entry.firstSeenAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </time>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           )}
 
