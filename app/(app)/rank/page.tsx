@@ -189,7 +189,9 @@ export default function RankPage() {
         <div>
           <h1 className="text-xl font-bold text-white">Wealth Rank</h1>
           <p className="mt-0.5 text-sm text-gray-500">
-            How your portfolio compares to reference benchmarks
+            {mode === 'individual'
+              ? 'Your individual portfolio ranked against reference benchmarks'
+              : 'Combined household wealth ranked against reference benchmarks'}
           </p>
         </div>
         <ModeToggle mode={mode} onChange={setMode} />
@@ -234,6 +236,10 @@ export default function RankPage() {
           {/* Summary strip */}
           {summary.assetCount > 0 && (
             <div className="flex flex-wrap gap-4 rounded-xl border border-surface-border bg-surface-card px-5 py-4">
+              <div>
+                <p className="text-xs text-gray-500">Comparison</p>
+                <p className="mt-0.5 text-sm font-semibold text-white">Individual</p>
+              </div>
               <div>
                 <p className="text-xs text-gray-500">Total Assets</p>
                 <p className="mt-0.5 text-sm font-semibold text-white">{compact(summary.totalAssetValue)}</p>
