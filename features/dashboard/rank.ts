@@ -53,13 +53,13 @@ export function computeOverallWealthRank(totalAssetValue: number): RankResult {
   const topPct = 100 - percentile
 
   let message: string
-  if (percentile >= 90) message = `Top ${topPct}% nationally. Exceptional wealth position.`
-  else if (percentile >= 70) message = `Top ${topPct}%. Above-average wealth accumulation.`
-  else if (percentile >= 50) message = `Top ${topPct}%. Solid financial foundation building.`
-  else message = `Top ${topPct}%. Growing steadily — keep building.`
+  if (percentile >= 90) message = `Top ${topPct}% nationally — in the highest benchmark range.`
+  else if (percentile >= 70) message = `Top ${topPct}% nationally — above average across all households.`
+  else if (percentile >= 50) message = `Top ${topPct}% nationally — above the median benchmark.`
+  else message = `Top ${topPct}% nationally — below the median benchmark.`
 
   const detail: RankDetail = {
-    comparisonBasis: 'All households, nationally',
+    comparisonBasis: 'All households (national estimate)',
     bandLabel: wealthBand(bucket),
   }
 
@@ -94,12 +94,12 @@ export function computeAgeBasedRank(totalAssetValue: number, age?: number): Rank
   const ageRange = ageBuckets[0].ageRange!
 
   let message: string
-  if (percentile >= 75) message = `Top ${topPct}% among ages ${ageRange[0]}–${ageRange[1]}. Excellent position.`
-  else if (percentile >= 50) message = `Top ${topPct}% for your age group (${ageRange[0]}–${ageRange[1]}).`
-  else message = `Top ${topPct}% in the ${ageRange[0]}–${ageRange[1]} bracket. Room to grow.`
+  if (percentile >= 75) message = `Top ${topPct}% among adults aged ${ageRange[0]}–${ageRange[1]} — above average for this age group.`
+  else if (percentile >= 50) message = `Top ${topPct}% among adults aged ${ageRange[0]}–${ageRange[1]} — around the median for this age group.`
+  else message = `Top ${topPct}% among adults aged ${ageRange[0]}–${ageRange[1]} — below the median for this age group.`
 
   const detail: RankDetail = {
-    comparisonBasis: `Adults aged ${ageRange[0]}–${ageRange[1]}, nationally`,
+    comparisonBasis: `Adults aged ${ageRange[0]}–${ageRange[1]} (national estimate)`,
     bandLabel: wealthBand(bucket),
   }
 
@@ -136,7 +136,7 @@ export function computeAgeGenderRank(
       type: 'age_gender',
       label: 'Age + Gender Rank',
       percentile: null,
-      message: 'Set your gender in Settings to see this ranking. This is optional.',
+      message: 'Set your gender in Settings to see this ranking.',
       missingField: 'gender',
     }
   }
@@ -155,7 +155,7 @@ export function computeAgeGenderRank(
       type: 'age_gender',
       label: 'Age + Gender Rank',
       percentile: null,
-      message: `No benchmark data for ${gender}, age ${age}. More buckets coming soon.`,
+      message: `No benchmark data available for this age and gender combination.`,
     }
   }
 
@@ -167,12 +167,12 @@ export function computeAgeGenderRank(
   const genderCapital = gender === 'male' ? 'Men' : 'Women'
 
   let message: string
-  if (percentile >= 75) message = `Top ${topPct}% among ${genderLabel} ages ${ageRange[0]}–${ageRange[1]}. Outstanding.`
-  else if (percentile >= 50) message = `Top ${topPct}% among ${genderLabel} in the ${ageRange[0]}–${ageRange[1]} group.`
-  else message = `Top ${topPct}% among ${genderLabel} ages ${ageRange[0]}–${ageRange[1]}. Building steadily.`
+  if (percentile >= 75) message = `Top ${topPct}% among ${genderLabel} aged ${ageRange[0]}–${ageRange[1]} — above average for this group.`
+  else if (percentile >= 50) message = `Top ${topPct}% among ${genderLabel} aged ${ageRange[0]}–${ageRange[1]} — around the median for this group.`
+  else message = `Top ${topPct}% among ${genderLabel} aged ${ageRange[0]}–${ageRange[1]} — below the median for this group.`
 
   const detail: RankDetail = {
-    comparisonBasis: `${genderCapital} aged ${ageRange[0]}–${ageRange[1]}, nationally`,
+    comparisonBasis: `${genderCapital} aged ${ageRange[0]}–${ageRange[1]} (national estimate)`,
     bandLabel: wealthBand(bucket),
   }
 
@@ -199,11 +199,11 @@ export function computeReturnRank(annualReturnPct?: number): RankResult {
 
   let message: string
   if (percentile >= 80) message = `${sign}${annualReturnPct.toFixed(1)}% annual return — top ${topPct}% of investors.`
-  else if (percentile >= 50) message = `${sign}${annualReturnPct.toFixed(1)}% return places you in the top ${topPct}%.`
+  else if (percentile >= 50) message = `${sign}${annualReturnPct.toFixed(1)}% annual return — top ${topPct}% of investors.`
   else message = `${sign}${annualReturnPct.toFixed(1)}% return — top ${topPct}%. Market conditions vary.`
 
   const detail: RankDetail = {
-    comparisonBasis: 'All investors, by annual return',
+    comparisonBasis: 'All investors (by estimated annual return)',
     bandLabel: returnBand(bucket),
   }
 

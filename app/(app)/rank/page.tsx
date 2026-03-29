@@ -169,7 +169,7 @@ export default function RankPage() {
         <div>
           <h1 className="text-xl font-bold text-white">Wealth Rank</h1>
           <p className="mt-0.5 text-sm text-gray-500">
-            How your portfolio compares to reference benchmark ranges
+            How your portfolio compares to reference benchmarks
           </p>
         </div>
         <ModeToggle mode={mode} onChange={setMode} />
@@ -313,7 +313,7 @@ export default function RankPage() {
           Results depend on your total asset value and any profile inputs you have set (birth year, gender, estimated return).
         </p>
         <p className="text-xs text-gray-600">
-          Missing profile fields will show an unavailable state rather than an estimate. Not financial advice.
+          Missing profile fields will show an unavailable state rather than an estimate. These are estimates only and not financial advice.
         </p>
       </div>
     </div>

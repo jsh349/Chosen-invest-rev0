@@ -112,9 +112,9 @@ export function generateAISummary(ctx: AdvisorContext): AIAnalysisResult {
     let rankSentence: string | null = null
     if (rs.overallPercentile != null && rs.returnPercentile != null) {
       if (rs.returnPercentile >= rs.overallPercentile + 15) {
-        rankSentence = 'Your investment return benchmark appears stronger than your overall wealth standing — good momentum.'
+        rankSentence = 'Your investment return percentile is stronger than your overall wealth percentile — consider reviewing your allocation structure.'
       } else if (rs.returnPercentile <= rs.overallPercentile - 15) {
-        rankSentence = 'Your investment return benchmark trails your overall wealth percentile. Consider reviewing your portfolio strategy.'
+        rankSentence = 'Your investment return percentile trails your overall wealth percentile. Consider reviewing your portfolio allocation.'
       }
     }
     if (rankSentence === null && rs.agePercentile != null && rs.agePercentile >= 75) {
