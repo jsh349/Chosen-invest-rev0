@@ -19,6 +19,7 @@ import { BENCHMARK_META } from '@/lib/mock/rank-benchmarks'
 import { percentileBandLabel } from '@/lib/utils/percentile-label'
 import { getRankInsight } from '@/lib/utils/rank-insight'
 import { getRankBadges } from '@/lib/utils/rank-badges'
+import { getRankActions } from '@/lib/utils/rank-actions'
 import type { RankResult } from '@/lib/types/rank'
 
 type RankMode = 'individual' | 'household'
@@ -165,6 +166,10 @@ export default function RankPage() {
     ? getRankBadges(ranks)
     : []
 
+  const rankActions = isFullyLoaded && summary.assetCount > 0
+    ? getRankActions(ranks)
+    : []
+
   // Rules of Hooks: useEffect must be before any conditional return.
   // Guard inside the effect so it only fires once all data is loaded.
   useEffect(() => {
@@ -270,6 +275,21 @@ export default function RankPage() {
           {rankInsight && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3">
               <p className="text-xs text-gray-400 leading-relaxed">{rankInsight}</p>
+            </div>
+          )}
+
+          {/* Rank actions — contextual navigation links derived from rank state */}
+          {rankActions.length > 0 && (
+            <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3 flex flex-wrap gap-x-5 gap-y-2">
+              {rankActions.map((action) => (
+                <Link
+                  key={action.href}
+                  href={action.href}
+                  className="text-xs text-brand-400 hover:text-brand-300 transition-colors"
+                >
+                  {action.label} →
+                </Link>
+              ))}
             </div>
           )}
 
