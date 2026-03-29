@@ -135,6 +135,19 @@ export function generateAISummary(ctx: AdvisorContext): AIAnalysisResult {
   if (netCashFlow !== null && netCashFlow < 0) {
     actions.push({ label: 'Review transactions', href: ROUTES.transactions })
   }
+  // Rank-aware actions — inserted before generic fallbacks
+  if (actions.length < 2 && rs) {
+    const op = rs.overallPercentile
+    const rp = rs.returnPercentile
+    // Strong wealth but weak return → portfolio not working efficiently
+    if (op != null && rp != null && op >= 70 && rp < 50) {
+      actions.push({ label: 'Review portfolio efficiency', href: ROUTES.portfolioList })
+    }
+    // Return clearly outpaces wealth → may be underleveraging savings rate
+    if (actions.length < 2 && op != null && rp != null && rp >= op + 15) {
+      actions.push({ label: 'Review savings allocation', href: ROUTES.portfolioList })
+    }
+  }
   if (actions.length < 2 && topPct > 60) {
     actions.push({ label: 'Review portfolio allocation', href: ROUTES.portfolioList })
   }
