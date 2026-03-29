@@ -30,6 +30,7 @@ import { getNextRankHint } from '@/lib/utils/rank-next-hint'
 import { getRankInterpretation } from '@/lib/utils/rank-interpretation'
 import { getRankInputExplanation } from '@/lib/utils/rank-input-explanation'
 import { getRankAllocationInsight } from '@/lib/utils/rank-allocation-insight'
+import { getRankChecklist } from '@/lib/utils/rank-checklist'
 import { getRankNarrativeSummary } from '@/lib/utils/rank-narrative-summary'
 import { getPrimaryRank } from '@/lib/utils/rank-priority'
 import { getRankReviewSummary } from '@/lib/utils/rank-review-summary'
@@ -264,6 +265,18 @@ export default function RankPage() {
     ? getRankAllocationInsight(ranks, summary.categoryBreakdown)
     : null
 
+  const rankChecklist = isFullyLoaded && goalsLoaded && summary.assetCount > 0
+    ? getRankChecklist(
+        {
+          hasAge:    !!settings.birthYear,
+          hasGender: !!settings.gender,
+          hasReturn: settings.annualReturnPct !== undefined,
+          hasGoals:  goals.length > 0,
+        },
+        ranks,
+      )
+    : []
+
   // Rules of Hooks: useEffect must be before any conditional return.
   // Guard inside the effect so it only fires once all data is loaded.
   useEffect(() => {
@@ -474,6 +487,26 @@ export default function RankPage() {
                   {action.label} →
                 </Link>
               ))}
+            </div>
+          )}
+
+          {/* Rank checklist — up to 4 prioritised actions to improve rank quality */}
+          {rankChecklist.length > 0 && (
+            <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Improve Your Rank</p>
+              <ul className="space-y-2">
+                {rankChecklist.map((item) => (
+                  <li key={item.href + item.text}>
+                    <Link
+                      href={item.href}
+                      className="flex items-center gap-2 text-xs text-gray-400 hover:text-gray-200 transition-colors group"
+                    >
+                      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500 group-hover:bg-brand-400" />
+                      {item.text}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
 
