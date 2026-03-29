@@ -38,11 +38,14 @@ export function getAvailableBenchmarkSources(): BenchmarkSource[] {
   const sources: BenchmarkSource[] = [
     { id: 'default', label: 'Built-in (US reference)' },
   ]
-  if (CURATED_BENCHMARK_FILE !== null && !validateBenchmarkFile(CURATED_BENCHMARK_FILE)) {
-    sources.push({
-      id: 'curated',
-      label: `Curated — ${CURATED_BENCHMARK_FILE.source} (${CURATED_BENCHMARK_FILE.vintageYear})`,
-    })
+  if (CURATED_BENCHMARK_FILE !== null) {
+    const validationError = validateBenchmarkFile(CURATED_BENCHMARK_FILE)
+    if (!validationError) {
+      sources.push({
+        id: 'curated',
+        label: `Curated — ${CURATED_BENCHMARK_FILE.source} (${CURATED_BENCHMARK_FILE.vintageYear})`,
+      })
+    }
   }
   return sources
 }

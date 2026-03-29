@@ -24,6 +24,8 @@ export function buildMonthlySummary(snapshots: RankSnapshot[]): MonthlySummary |
   if (snapshots.length === 0) return null
 
   const current      = snapshots[0]
+  // Assumes savedAt is an ISO 8601 string (e.g. "2026-03-20T12:00:00Z"). useRankSnapshots
+  // guarantees this via new Date().toISOString(). Any external snapshot source must match.
   const currentMonth = current.savedAt.slice(0, 7)   // "YYYY-MM"
 
   // Prefer a snapshot from a prior calendar month; otherwise use next available

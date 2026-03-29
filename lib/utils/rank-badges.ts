@@ -1,4 +1,5 @@
 import type { RankResult } from '@/lib/types/rank'
+import { indexRanks } from '@/lib/utils/rank-index'
 
 export type RankBadge = {
   id: string
@@ -15,9 +16,10 @@ export type RankBadge = {
 export function getRankBadges(ranks: RankResult[]): RankBadge[] {
   const earned: RankBadge[] = []
 
-  const overall = ranks.find((r) => r.type === 'overall_wealth')?.percentile ?? null
-  const age     = ranks.find((r) => r.type === 'age_based')?.percentile      ?? null
-  const ret     = ranks.find((r) => r.type === 'investment_return')?.percentile ?? null
+  const { overall: overallResult, ageBased, ret: retResult } = indexRanks(ranks)
+  const overall = overallResult?.percentile ?? null
+  const age     = ageBased?.percentile      ?? null
+  const ret     = retResult?.percentile     ?? null
 
   // Overall wealth — highest tier only
   if (overall !== null) {
