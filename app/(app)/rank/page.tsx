@@ -28,6 +28,7 @@ import { buildMilestoneHistory } from '@/lib/utils/rank-milestone-history'
 import { checkBenchmarkChanged, dismissBenchmarkAlert, benchmarkVersionNote, getBenchmarkFingerprint } from '@/lib/utils/benchmark-change-alert'
 import { getNextRankHint } from '@/lib/utils/rank-next-hint'
 import { getRankInterpretation } from '@/lib/utils/rank-interpretation'
+import { getRankNarrativeSummary } from '@/lib/utils/rank-narrative-summary'
 import { getRankReviewFingerprint, checkRankReviewDue, dismissRankReview } from '@/lib/utils/rank-review'
 import type { RankResult } from '@/lib/types/rank'
 
@@ -200,6 +201,10 @@ export default function RankPage() {
 
   const versionNote = snapshotsLoaded ? benchmarkVersionNote(snapshots) : null
 
+  const narrativeSummary = isFullyLoaded && summary.assetCount > 0
+    ? getRankNarrativeSummary(ranks)
+    : null
+
   const nextHint = isFullyLoaded && summary.assetCount > 0
     ? getNextRankHint({
         hasAge:    !!settings.birthYear,
@@ -329,6 +334,13 @@ export default function RankPage() {
               >
                 Add assets →
               </Link>
+            </div>
+          )}
+
+          {/* Narrative summary — one or two sentences synthesising available rank signals */}
+          {narrativeSummary && (
+            <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3">
+              <p className="text-sm text-gray-300 leading-relaxed">{narrativeSummary}</p>
             </div>
           )}
 
