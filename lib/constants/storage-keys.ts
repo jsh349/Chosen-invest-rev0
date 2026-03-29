@@ -13,6 +13,10 @@ export const STORAGE_KEYS = {
   benchmarkSource:  'chosen_benchmark_source_v1',
   /** Last-seen benchmark fingerprint for change alerts. Scalar string. */
   benchmarkSeen:    'chosen_benchmark_seen_v1',
+  /** Staged BenchmarkFile awaiting application on next load. JSON object or absent. */
+  benchmarkPending: 'chosen_benchmark_pending_v1',
+  /** Metadata of the last successfully applied benchmark. JSON object or absent. */
+  benchmarkApplied: 'chosen_benchmark_applied_v1',
 } as const
 
 export type StorageKey = typeof STORAGE_KEYS[keyof typeof STORAGE_KEYS]
