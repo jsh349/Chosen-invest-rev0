@@ -29,6 +29,7 @@ import { checkBenchmarkChanged, dismissBenchmarkAlert, benchmarkVersionNote, get
 import { getNextRankHint } from '@/lib/utils/rank-next-hint'
 import { getRankInterpretation } from '@/lib/utils/rank-interpretation'
 import { getRankNarrativeSummary } from '@/lib/utils/rank-narrative-summary'
+import { getPrimaryRank } from '@/lib/utils/rank-priority'
 import { getRankReviewFingerprint, checkRankReviewDue, dismissRankReview } from '@/lib/utils/rank-review'
 import type { RankResult } from '@/lib/types/rank'
 
@@ -121,6 +122,32 @@ function RankRow({ result }: { result: RankResult }) {
           <Settings className="h-3 w-3" />
           Set {result.missingField} in Settings
         </Link>
+      )}
+    </div>
+  )
+}
+
+/**
+ * Compact highlight for the highest-priority rank with a real percentile.
+ * Shows the band label prominently + one supporting interpretation line.
+ * Returns null when no rank is available.
+ */
+function PrimaryRankHighlight({ ranks }: { ranks: RankResult[] }) {
+  const primary = getPrimaryRank(ranks)
+  if (!primary) return null
+  return (
+    <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-1.5">
+      <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+        {primary.label}
+      </p>
+      <p className={cn('text-4xl font-bold tracking-tight', percentileColor(primary.percentile!))}>
+        {percentileBandLabel(primary.percentile!)}
+      </p>
+      <p className="text-xs text-gray-500 leading-relaxed">
+        {getRankInterpretation(primary.percentile!)}
+      </p>
+      {primary.detail && (
+        <p className="text-[11px] text-gray-600">{primary.detail.comparisonBasis}</p>
       )}
     </div>
   )
@@ -336,6 +363,9 @@ export default function RankPage() {
               </Link>
             </div>
           )}
+
+          {/* Primary rank highlight — most relevant available rank, prominently displayed */}
+          {summary.assetCount > 0 && <PrimaryRankHighlight ranks={ranks} />}
 
           {/* Narrative summary — one or two sentences synthesising available rank signals */}
           {narrativeSummary && (
