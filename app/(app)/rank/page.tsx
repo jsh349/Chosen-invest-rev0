@@ -138,30 +138,33 @@ export default function RankPage() {
   const { snapshots, isLoaded: snapshotsLoaded, saveSnapshot } = useRankSnapshots()
   const [mode, setMode] = useState<RankMode>('individual')
 
-  if (!assetsLoaded || !householdLoaded || !settingsLoaded || !snapshotsLoaded) return <LoadingSpinner />
+  const isFullyLoaded = assetsLoaded && householdLoaded && settingsLoaded && snapshotsLoaded
 
+  // Compute early (safe with defaults) so useEffect can be placed before the loading guard.
+  // buildPortfolioSummary is safe to call with an empty array while loading.
   const summary = buildPortfolioSummary(LOCAL_USER_ID, assets)
   const userAge = settings.birthYear
     ? new Date().getFullYear() - settings.birthYear
     : undefined
 
-  const ranks: RankResult[] = [
+  const ranks: RankResult[] = isFullyLoaded ? [
     computeOverallWealthRank(summary.totalAssetValue),
     computeAgeBasedRank(summary.totalAssetValue, userAge),
     computeAgeGenderRank(summary.totalAssetValue, userAge, settings.gender),
     computeReturnRank(settings.annualReturnPct),
-  ]
+  ] : []
+
+  // Rules of Hooks: useEffect must be before any conditional return.
+  // Guard inside the effect so it only fires once all data is loaded.
+  useEffect(() => {
+    if (isFullyLoaded && summary.assetCount > 0) saveSnapshot(ranks, summary.totalAssetValue)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFullyLoaded, summary.totalAssetValue, userAge, settings.gender, settings.annualReturnPct])
+
+  if (!isFullyLoaded) return <LoadingSpinner />
 
   const availableCount = ranks.filter((r) => r.percentile != null).length
   const hasHouseholdMembers = members.length > 0
-
-  // Save snapshot when rank inputs change: asset value, age, gender, or return.
-  // Deduplication inside the hook prevents storing identical consecutive snapshots.
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  useEffect(() => {
-    if (summary.assetCount > 0) saveSnapshot(ranks, summary.totalAssetValue)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [summary.totalAssetValue, userAge, settings.gender, settings.annualReturnPct])
 
   return (
     <div className="space-y-6">
