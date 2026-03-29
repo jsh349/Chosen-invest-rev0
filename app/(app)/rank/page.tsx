@@ -17,7 +17,7 @@ import { LOCAL_USER_ID } from '@/lib/constants/auth'
 import { ROUTES } from '@/lib/constants/routes'
 import { cn } from '@/lib/utils/cn'
 import { BENCHMARK_META } from '@/lib/mock/rank-benchmarks'
-import { getActiveBenchmarkSourceId } from '@/lib/adapters/rank-benchmarks-adapter'
+import { getActiveBenchmarkSourceId, isUsingFallbackBenchmark } from '@/lib/adapters/rank-benchmarks-adapter'
 import { percentileBandLabel } from '@/lib/utils/percentile-label'
 import { getRankInsight } from '@/lib/utils/rank-insight'
 import { getRankBadges } from '@/lib/utils/rank-badges'
@@ -188,6 +188,7 @@ export default function RankPage() {
 
   const isFullyLoaded = assetsLoaded && householdLoaded && settingsLoaded && snapshotsLoaded
   const activeBenchmarkSource = getActiveBenchmarkSourceId()
+  const usingFallbackBenchmark = isUsingFallbackBenchmark()
 
   // Compute early (safe with defaults) so useEffect can be placed before the loading guard.
   // buildPortfolioSummary is safe to call with an empty array while loading.
@@ -674,10 +675,17 @@ export default function RankPage() {
           </span>
           <span className="text-[10px] text-gray-600">
             <span className="text-gray-500">Active source: </span>
-            {activeBenchmarkSource === 'curated' ? 'Curated dataset' : 'Built-in (default)'}
+            {usingFallbackBenchmark
+              ? 'Built-in (default) — curated source could not be loaded'
+              : activeBenchmarkSource === 'curated' ? 'Curated dataset' : 'Built-in (default)'}
           </span>
           {BENCHMARK_META.notes && (
             <span className="text-[10px] text-gray-600 w-full">{BENCHMARK_META.notes}</span>
+          )}
+          {usingFallbackBenchmark && (
+            <span className="text-[10px] text-amber-500/70 w-full">
+              Results are based on the built-in reference dataset. Check the benchmark source in Settings.
+            </span>
           )}
         </div>
       </div>

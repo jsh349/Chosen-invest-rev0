@@ -123,9 +123,33 @@ function resolveAdapter(): RankBenchmarksAdapter {
         }
       }
     }
+    // Curated was requested but could not be loaded — flag the fallback
+    _isUsingFallback = true
   }
 
   return buildDefaultAdapter()
+}
+
+// ---------------------------------------------------------------------------
+// Fallback indicator
+// ---------------------------------------------------------------------------
+
+/**
+ * Set to true when the user's preferred source ('curated') could not be loaded
+ * and the adapter fell back to built-in defaults.
+ * Remains false when the default source is the intentional preference.
+ */
+let _isUsingFallback = false
+
+/**
+ * Returns true when the active adapter is using built-in default benchmark data
+ * despite the user having selected the 'curated' source.
+ *
+ * Useful for displaying a transparency note in the rank UI.
+ * Always returns false on the server (SSR-safe).
+ */
+export function isUsingFallbackBenchmark(): boolean {
+  return _isUsingFallback
 }
 
 /** Active adapter — resolved from stored preference at module load. */
