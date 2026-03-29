@@ -11,8 +11,12 @@ import {
   getAvailableBenchmarkSources,
   getActiveBenchmarkSourceId,
   setActiveBenchmarkSourceId,
+  isUsingFallbackBenchmark,
   type BenchmarkSource,
 } from '@/lib/adapters/rank-benchmarks-adapter'
+import { getBenchmarkCapabilities } from '@/lib/utils/benchmark-capabilities'
+import { BENCHMARK_META } from '@/lib/mock/rank-benchmarks'
+import { readBenchmarkRefreshState } from '@/lib/utils/benchmark-refresh'
 
 /** Keys whose stored value must be an array. Non-array values are skipped on import. */
 const ARRAY_KEYS: ReadonlySet<string> = new Set([
@@ -167,6 +171,11 @@ export default function SettingsPage() {
     }
     reader.readAsText(file)
   }
+
+  const debugSrcId    = getActiveBenchmarkSourceId()
+  const debugCaps     = getBenchmarkCapabilities(debugSrcId)
+  const debugFallback = isUsingFallbackBenchmark()
+  const debugRefresh  = readBenchmarkRefreshState()
 
   return (
     <div className="space-y-6">
@@ -386,6 +395,38 @@ export default function SettingsPage() {
           </Row>
         </div>
       )}
+
+      {/* Benchmark diagnostics — internal-only, collapsed by default */}
+      <details className="rounded-xl border border-surface-border bg-surface-card px-4 py-3">
+        <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wide text-gray-600 select-none">
+          Benchmark Diagnostics <span className="normal-case font-normal text-gray-700">(internal)</span>
+        </summary>
+        <div className="mt-3 space-y-1.5 font-mono text-[11px] text-gray-500">
+          <p><span className="inline-block w-32 text-gray-600">Active source</span>{debugSrcId}</p>
+          <p><span className="inline-block w-32 text-gray-600">Fallback active</span>{debugFallback ? 'yes' : 'no'}</p>
+          <p><span className="inline-block w-32 text-gray-600">Fallback-only</span>{debugCaps.isFallbackOnly ? 'yes' : 'no'}</p>
+          <p><span className="inline-block w-32 text-gray-600">Capabilities</span>
+            wealth {debugCaps.supportsWealth ? '✓' : '✗'} &nbsp;
+            age {debugCaps.supportsAge ? '✓' : '✗'} &nbsp;
+            age+gender {debugCaps.supportsAgeGender ? '✓' : '✗'} &nbsp;
+            return {debugCaps.supportsReturn ? '✓' : '✗'}
+          </p>
+          <p><span className="inline-block w-32 text-gray-600">Meta version</span>{BENCHMARK_META.version}</p>
+          <p><span className="inline-block w-32 text-gray-600">Meta updated</span>{BENCHMARK_META.updatedAt}</p>
+          {debugRefresh.lastApplied ? (
+            <p>
+              <span className="inline-block w-32 text-gray-600">Last applied</span>
+              {debugRefresh.lastApplied.source} ({debugRefresh.lastApplied.vintageYear})
+              {' — '}{new Date(debugRefresh.lastApplied.appliedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+            </p>
+          ) : (
+            <p><span className="inline-block w-32 text-gray-600">Last applied</span>—</p>
+          )}
+          {debugRefresh.hasPending && (
+            <p><span className="inline-block w-32 text-gray-600">Pending</span>{debugRefresh.pendingSource ?? '—'}</p>
+          )}
+        </div>
+      </details>
 
       {/* Reset */}
       <div className="flex items-center justify-between rounded-xl border border-surface-border bg-surface-card px-4 py-3">
