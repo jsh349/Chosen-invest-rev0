@@ -2,6 +2,7 @@ import type { AIAnalysisResult, SuggestedAction } from '@/lib/types/dashboard'
 import type { AdvisorContext } from '@/features/ai/advisor-context'
 import { formatCompact } from '@/lib/utils/currency'
 import { ROUTES } from '@/lib/constants/routes'
+import { RANK_GAP_THRESHOLD } from '@/lib/utils/rank-insight'
 
 export function generateAISummary(ctx: AdvisorContext): AIAnalysisResult {
   const { categoryBreakdown, totalAssetValue, assetCount, userId } = ctx.portfolio
@@ -111,9 +112,9 @@ export function generateAISummary(ctx: AdvisorContext): AIAnalysisResult {
     // Pick the single most informative rank sentence (priority: return gap > age standing)
     let rankSentence: string | null = null
     if (rs.overallPercentile != null && rs.returnPercentile != null) {
-      if (rs.returnPercentile >= rs.overallPercentile + 15) {
+      if (rs.returnPercentile >= rs.overallPercentile + RANK_GAP_THRESHOLD) {
         rankSentence = 'Your investment return percentile is stronger than your overall wealth percentile — consider reviewing your allocation structure.'
-      } else if (rs.returnPercentile <= rs.overallPercentile - 15) {
+      } else if (rs.returnPercentile <= rs.overallPercentile - RANK_GAP_THRESHOLD) {
         rankSentence = 'Your investment return percentile trails your overall wealth percentile. Consider reviewing your portfolio allocation.'
       }
     }
@@ -144,7 +145,7 @@ export function generateAISummary(ctx: AdvisorContext): AIAnalysisResult {
       actions.push({ label: 'Review portfolio efficiency', href: ROUTES.portfolioList })
     }
     // Return clearly outpaces wealth → may be underleveraging savings rate
-    if (actions.length < 2 && op != null && rp != null && rp >= op + 15) {
+    if (actions.length < 2 && op != null && rp != null && rp >= op + RANK_GAP_THRESHOLD) {
       actions.push({ label: 'Review savings allocation', href: ROUTES.portfolioList })
     }
   }

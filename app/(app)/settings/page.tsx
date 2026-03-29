@@ -29,11 +29,20 @@ const ARRAY_KEYS: ReadonlySet<string> = new Set([
 const STRING_KEYS: ReadonlySet<string> = new Set([
   STORAGE_KEYS.benchmarkSource,
   STORAGE_KEYS.benchmarkSeen,
+  STORAGE_KEYS.rankReviewSeen,
+])
+
+/** Keys whose stored value must be a plain object (not array, not null). */
+const OBJECT_KEYS: ReadonlySet<string> = new Set([
+  STORAGE_KEYS.settings,
+  STORAGE_KEYS.dashboardPrefs,
+  STORAGE_KEYS.benchmarkPending,
+  STORAGE_KEYS.benchmarkApplied,
 ])
 
 function isSafeToRestore(key: string, value: unknown): boolean {
   if (ARRAY_KEYS.has(key) && !Array.isArray(value)) return false
-  if (key === STORAGE_KEYS.settings && (typeof value !== 'object' || value === null || Array.isArray(value))) return false
+  if (OBJECT_KEYS.has(key) && (typeof value !== 'object' || value === null || Array.isArray(value))) return false
   if (STRING_KEYS.has(key) && typeof value !== 'string') return false
   return true
 }
@@ -73,7 +82,9 @@ function handleExport() {
   for (const key of ALL_STORAGE_KEYS) {
     try {
       const raw = window.localStorage.getItem(key)
-      data[key] = raw ? JSON.parse(raw) : null
+      if (raw === null) { data[key] = null; continue }
+      // Scalar string keys are stored as raw strings — no JSON layer
+      data[key] = STRING_KEYS.has(key) ? raw : JSON.parse(raw)
     } catch {
       data[key] = null
     }
@@ -146,7 +157,10 @@ export default function SettingsPage() {
         for (const key of ALL_STORAGE_KEYS) {
           const value = (data as Record<string, unknown>)[key]
           if (value !== null && value !== undefined && isSafeToRestore(key, value)) {
-            if (typeof window !== 'undefined') window.localStorage.setItem(key, JSON.stringify(value))
+            if (typeof window !== 'undefined') {
+              // Scalar string keys are stored as raw strings — no JSON layer
+              window.localStorage.setItem(key, STRING_KEYS.has(key) ? (value as string) : JSON.stringify(value))
+            }
             restored++
           }
         }

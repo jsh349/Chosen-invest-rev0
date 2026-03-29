@@ -1,6 +1,11 @@
 import type { BenchmarkBucket, RankResult, RankDetail, GenderOption } from '@/lib/types/rank'
 import { rankBenchmarksAdapter } from '@/lib/adapters/rank-benchmarks-adapter'
 
+/**
+ * Returns the percentile for the bucket whose range contains `value`.
+ * Bucket matching is inclusive-lower / exclusive-upper: `minValue <= value < maxValue`.
+ * Values exceeding all bucket upper bounds fall into the last bucket (open-ended top tier).
+ */
 function findPercentile(buckets: BenchmarkBucket[], value: number): number {
   for (const b of buckets) {
     if (value >= b.minValue && value < b.maxValue) return b.percentile
@@ -124,13 +129,21 @@ export function computeAgeGenderRank(
       missingField: 'age',
     }
   }
-  if (gender == null || gender === 'undisclosed' || gender === 'other') {
+  if (gender == null || gender === 'undisclosed') {
     return {
       type: 'age_gender',
       label: 'Age + Gender Rank',
       percentile: null,
       message: 'Set your gender in Settings to see this ranking.',
       missingField: 'gender',
+    }
+  }
+  if (gender === 'other') {
+    return {
+      type: 'age_gender',
+      label: 'Age + Gender Rank',
+      percentile: null,
+      message: 'Age + gender ranking is available for male/female benchmarks only.',
     }
   }
 

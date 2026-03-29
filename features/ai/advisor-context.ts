@@ -5,6 +5,7 @@ import type { PortfolioSummary } from '@/lib/types/dashboard'
 import type { RankResult } from '@/lib/types/rank'
 import { buildPortfolioSummary } from '@/features/dashboard/helpers'
 import { computeCashFlow, type CashFlowSummary } from '@/lib/utils/transaction-summary'
+import { currentYearMonth } from '@/lib/utils/current-month'
 import { LOCAL_USER_ID } from '@/lib/constants/auth'
 
 export type RankSummary = {
@@ -29,7 +30,7 @@ export function buildAdvisorContext(
   goals: Goal[],
   transactions: Transaction[],
 ): AdvisorContext {
-  const ym = new Date().toISOString().slice(0, 7) // "YYYY-MM"
+  const ym = currentYearMonth() // "YYYY-MM" in local time
   const monthlyTx = transactions.filter((t) => t.date.startsWith(ym))
   return {
     portfolio: buildPortfolioSummary(LOCAL_USER_ID, assets),
