@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { Download, Upload, History } from 'lucide-react'
-import { useSettings, DEFAULT_SETTINGS, type CurrencyCode, type AppSettings } from '@/lib/store/settings-store'
+import { useSettings, DEFAULT_SETTINGS, type CurrencyCode } from '@/lib/store/settings-store'
 import type { GenderOption } from '@/lib/types/rank'
 import { useAudit } from '@/lib/store/audit-store'
 import { STORAGE_KEYS, ALL_STORAGE_KEYS } from '@/lib/constants/storage-keys'
@@ -55,13 +55,6 @@ const CURRENCIES: { value: CurrencyCode; label: string }[] = [
   { value: 'GBP', label: 'GBP — British Pound (£)' },
   { value: 'JPY', label: 'JPY — Japanese Yen (¥)'  },
   { value: 'KRW', label: 'KRW — Korean Won (₩)'    },
-]
-
-const LANDING_OPTIONS: { value: AppSettings['defaultLanding']; label: string }[] = [
-  { value: 'dashboard',    label: 'Dashboard'    },
-  { value: 'portfolio',    label: 'Portfolio'    },
-  { value: 'goals',        label: 'Goals'        },
-  { value: 'transactions', label: 'Transactions' },
 ]
 
 function Row({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
@@ -119,6 +112,8 @@ export default function SettingsPage() {
   // Synced back from settings when settings change externally (e.g. Reset).
   const [birthYearRaw, setBirthYearRaw] = useState<string>(settings.birthYear?.toString() ?? '')
   const [returnRaw, setReturnRaw] = useState<string>(settings.annualReturnPct?.toString() ?? '')
+  const [birthYearError, setBirthYearError] = useState('')
+  const [returnError, setReturnError] = useState('')
 
   const benchmarkSources = getAvailableBenchmarkSources()
   const [selectedBenchmarkSource, setSelectedBenchmarkSource] = useState<BenchmarkSource['id']>(
@@ -131,8 +126,8 @@ export default function SettingsPage() {
   useEffect(() => { refreshAudit() }, [refreshAudit])
 
   // Keep raw input strings in sync when settings change externally (e.g. Reset button).
-  useEffect(() => { setBirthYearRaw(settings.birthYear?.toString() ?? '') }, [settings.birthYear])
-  useEffect(() => { setReturnRaw(settings.annualReturnPct?.toString() ?? '') }, [settings.annualReturnPct])
+  useEffect(() => { setBirthYearRaw(settings.birthYear?.toString() ?? ''); setBirthYearError('') }, [settings.birthYear])
+  useEffect(() => { setReturnRaw(settings.annualReturnPct?.toString() ?? ''); setReturnError('') }, [settings.annualReturnPct])
 
   if (!isLoaded) {
     return (
@@ -224,12 +219,18 @@ export default function SettingsPage() {
             onChange={(e) => {
               const raw = e.target.value
               setBirthYearRaw(raw)
-              if (raw === '') { update({ birthYear: undefined }); return }
+              if (raw === '') { update({ birthYear: undefined }); setBirthYearError(''); return }
               const yr = parseInt(raw, 10)
-              if (yr >= 1920 && yr <= new Date().getFullYear() - 10) update({ birthYear: yr })
+              if (yr >= 1920 && yr <= new Date().getFullYear() - 10) {
+                update({ birthYear: yr })
+                setBirthYearError('')
+              } else {
+                setBirthYearError(`Enter a year between 1920 and ${new Date().getFullYear() - 10}.`)
+              }
             }}
             className={SELECT_CLASS}
           />
+          {birthYearError && <p className="mt-1 text-xs text-red-400">{birthYearError}</p>}
         </Row>
         <Row label="Gender" hint="Used for age + gender wealth ranking (optional)">
           <select
@@ -258,28 +259,18 @@ export default function SettingsPage() {
             onChange={(e) => {
               const raw = e.target.value
               setReturnRaw(raw)
-              if (raw === '') { update({ annualReturnPct: undefined }); return }
+              if (raw === '') { update({ annualReturnPct: undefined }); setReturnError(''); return }
               const n = parseFloat(raw)
-              if (Number.isFinite(n) && n >= -50 && n <= 100) update({ annualReturnPct: n })
+              if (Number.isFinite(n) && n >= -50 && n <= 100) {
+                update({ annualReturnPct: n })
+                setReturnError('')
+              } else {
+                setReturnError('Enter a value between −50 and 100.')
+              }
             }}
             className={SELECT_CLASS}
           />
-        </Row>
-      </div>
-
-      {/* Navigation */}
-      <div className="rounded-xl border border-surface-border bg-surface-card px-4">
-        <h2 className="border-b border-surface-border py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
-          Navigation
-        </h2>
-        <Row label="Default landing page" hint="Where to go after signing in">
-          <select
-            value={settings.defaultLanding}
-            onChange={(e) => update({ defaultLanding: e.target.value as AppSettings['defaultLanding'] })}
-            className={SELECT_CLASS}
-          >
-            {LANDING_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-          </select>
+          {returnError && <p className="mt-1 text-xs text-red-400">{returnError}</p>}
         </Row>
       </div>
 

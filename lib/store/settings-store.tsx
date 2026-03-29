@@ -20,16 +20,14 @@ export type CurrencyCode = 'USD' | 'EUR' | 'GBP' | 'JPY' | 'KRW'
 export type AppSettings = {
   currency:         CurrencyCode
   showCents:        boolean
-  defaultLanding:   'dashboard' | 'portfolio' | 'goals' | 'transactions'
   birthYear?:       number
   gender?:          GenderOption
   annualReturnPct?: number
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
-  currency:       'USD',
-  showCents:      true,
-  defaultLanding: 'dashboard',
+  currency:  'USD',
+  showCents: true,
 }
 
 type SettingsContextType = {

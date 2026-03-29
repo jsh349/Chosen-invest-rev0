@@ -37,7 +37,12 @@ export function getBenchmarkFingerprint(): string {
  */
 export function checkBenchmarkChanged(): boolean {
   if (typeof window === 'undefined') return false
-  return readScalar(LS_KEY) !== getBenchmarkFingerprint()
+  const stored = readScalar(LS_KEY)
+  if (stored === null) {
+    writeScalar(LS_KEY, getBenchmarkFingerprint())
+    return false
+  }
+  return stored !== getBenchmarkFingerprint()
 }
 
 /**

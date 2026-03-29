@@ -7,7 +7,7 @@ import { useHousehold } from '@/lib/store/household-store'
 import { useGoals } from '@/lib/store/goals-store'
 import { useHouseholdNotes } from '@/lib/store/household-notes-store'
 import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
-import { getGoalStatus, GOAL_STATUS_STYLES } from '@/lib/utils/goal-status'
+import { getGoalStatus, GOAL_STATUS_LABELS, GOAL_STATUS_STYLES } from '@/lib/utils/goal-status'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
@@ -284,7 +284,7 @@ export default function HouseholdPage() {
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-sm font-medium text-white truncate">{goal.name}</span>
                       <span className={cn('shrink-0 rounded-full px-2 py-0.5 text-xs font-medium', GOAL_STATUS_STYLES[status])}>
-                        {status}
+                        {GOAL_STATUS_LABELS[status]}
                       </span>
                     </div>
                     <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-muted">

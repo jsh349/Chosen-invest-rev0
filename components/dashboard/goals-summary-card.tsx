@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
 import { useGoals } from '@/lib/store/goals-store'
-import { getGoalStatus, GOAL_STATUS_STYLES } from '@/lib/utils/goal-status'
+import { getGoalStatus, GOAL_STATUS_LABELS, GOAL_STATUS_STYLES } from '@/lib/utils/goal-status'
 import { ROUTES } from '@/lib/constants/routes'
 import { cn } from '@/lib/utils/cn'
 import type { Goal } from '@/lib/types/goal'
@@ -77,7 +77,7 @@ export function GoalsSummaryCard() {
             <div className="flex items-center gap-1.5 min-w-0">
               <span className="font-medium text-gray-300 truncate">{featured.name}</span>
               <span className={cn('shrink-0 rounded-full px-2 py-0.5 text-xs font-medium', GOAL_STATUS_STYLES[getGoalStatus(featured.currentAmount, featured.targetAmount)])}>
-                {getGoalStatus(featured.currentAmount, featured.targetAmount)}
+                {GOAL_STATUS_LABELS[getGoalStatus(featured.currentAmount, featured.targetAmount)]}
               </span>
             </div>
             <span className="shrink-0 text-gray-500 ml-2">{progress.toFixed(0)}%</span>

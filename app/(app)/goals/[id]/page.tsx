@@ -4,7 +4,7 @@ import { use } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Target } from 'lucide-react'
 import { useGoals } from '@/lib/store/goals-store'
-import { getGoalStatus, GOAL_STATUS_STYLES } from '@/lib/utils/goal-status'
+import { getGoalStatus, GOAL_STATUS_LABELS, GOAL_STATUS_STYLES } from '@/lib/utils/goal-status'
 import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils/cn'
@@ -68,7 +68,7 @@ export default function GoalDetailPage({ params }: { params: Promise<{ id: strin
           <p className="mt-0.5 text-sm text-gray-500">{typeLabel}</p>
         </div>
         <span className={cn('shrink-0 rounded-full px-2.5 py-1 text-xs font-medium', GOAL_STATUS_STYLES[status])}>
-          {status}
+          {GOAL_STATUS_LABELS[status]}
         </span>
       </div>
 
@@ -111,7 +111,7 @@ export default function GoalDetailPage({ params }: { params: Promise<{ id: strin
             label="Status"
             value={
               <span className={cn('rounded-full px-2 py-0.5 text-xs font-medium', GOAL_STATUS_STYLES[status])}>
-                {status}
+                {GOAL_STATUS_LABELS[status]}
               </span>
             }
           />

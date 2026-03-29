@@ -56,7 +56,7 @@ export function getAvailableBenchmarkSources(): BenchmarkSource[] {
 export function getActiveBenchmarkSourceId(): BenchmarkSource['id'] {
   if (typeof window === 'undefined') return 'default'
   try {
-    const stored = localStorage.getItem(BENCHMARK_SOURCE_LS_KEY)
+    const stored = window.localStorage.getItem(BENCHMARK_SOURCE_LS_KEY)
     return stored === 'curated' ? 'curated' : 'default'
   } catch {
     return 'default'
@@ -68,9 +68,9 @@ export function setActiveBenchmarkSourceId(id: BenchmarkSource['id']): void {
   if (typeof window === 'undefined') return
   try {
     if (id === 'default') {
-      localStorage.removeItem(BENCHMARK_SOURCE_LS_KEY)
+      window.localStorage.removeItem(BENCHMARK_SOURCE_LS_KEY)
     } else {
-      localStorage.setItem(BENCHMARK_SOURCE_LS_KEY, id)
+      window.localStorage.setItem(BENCHMARK_SOURCE_LS_KEY, id)
     }
   } catch { /* ignore quota / security errors */ }
 }

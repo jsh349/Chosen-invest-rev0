@@ -64,7 +64,7 @@ export function stagePendingBenchmark(file: BenchmarkFile): void {
 export function getPendingBenchmark(): BenchmarkFile | null {
   if (typeof window === 'undefined') return null
   try {
-    const raw = localStorage.getItem(STORAGE_KEYS.benchmarkPending)
+    const raw = window.localStorage.getItem(STORAGE_KEYS.benchmarkPending)
     if (!raw) return null
     const parsed: unknown = JSON.parse(raw)
     return validateBenchmarkFile(parsed) === null ? (parsed as BenchmarkFile) : null
@@ -107,7 +107,7 @@ export function recordAppliedBenchmark(file: BenchmarkFile): void {
 export function getLastAppliedBenchmark(): BenchmarkAppliedRecord | null {
   if (typeof window === 'undefined') return null
   try {
-    const raw = localStorage.getItem(STORAGE_KEYS.benchmarkApplied)
+    const raw = window.localStorage.getItem(STORAGE_KEYS.benchmarkApplied)
     if (!raw) return null
     const parsed = JSON.parse(raw) as Record<string, unknown>
     if (

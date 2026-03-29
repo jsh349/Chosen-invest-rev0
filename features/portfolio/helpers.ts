@@ -11,7 +11,7 @@ export function formEntryToAsset(
     userId,
     name: entry.name.trim(),
     category: entry.category,
-    value: parseFloat(entry.value) || 0,
+    value: parseFloat(entry.value),
     currency: entry.currency || 'USD',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
