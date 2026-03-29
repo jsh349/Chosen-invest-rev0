@@ -10,6 +10,7 @@ export const ROUTES = {
   transactions:   '/transactions',
   household:      '/household',
   taxOpportunity: '/tax-opportunity',
+  rank:           '/rank',
   analysis:       '/analysis',
   ai:             '/ai',
   settings:       '/settings',
