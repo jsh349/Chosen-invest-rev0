@@ -25,7 +25,7 @@ import { getRankActions } from '@/lib/utils/rank-actions'
 import { getRankGoalInsight } from '@/lib/utils/rank-goal-insight'
 import { buildMonthlySummary } from '@/lib/utils/rank-monthly-summary'
 import { buildMilestoneHistory } from '@/lib/utils/rank-milestone-history'
-import { checkBenchmarkChanged, dismissBenchmarkAlert } from '@/lib/utils/benchmark-change-alert'
+import { checkBenchmarkChanged, dismissBenchmarkAlert, benchmarkVersionNote } from '@/lib/utils/benchmark-change-alert'
 import type { RankResult } from '@/lib/types/rank'
 
 type RankMode = 'individual' | 'household'
@@ -190,6 +190,8 @@ export default function RankPage() {
   const monthlySummary = isFullyLoaded && snapshotsLoaded
     ? buildMonthlySummary(snapshots)
     : null
+
+  const versionNote = snapshotsLoaded ? benchmarkVersionNote(snapshots) : null
 
   // Rules of Hooks: useEffect must be before any conditional return.
   // Guard inside the effect so it only fires once all data is loaded.
@@ -423,6 +425,9 @@ export default function RankPage() {
           <p className="text-xs text-gray-600 leading-relaxed border-t border-surface-border pt-2">
             {monthlySummary.note}
           </p>
+          {versionNote && (
+            <p className="text-[10px] text-amber-500/70 leading-relaxed">{versionNote}</p>
+          )}
         </div>
       )}
 
