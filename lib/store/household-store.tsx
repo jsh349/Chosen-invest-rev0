@@ -42,7 +42,7 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
   const addMember = useCallback((member: HouseholdMember) => {
     setMembers((prev) => {
       const updated = [...prev, member]
-      void householdAdapter.saveAll(updated)
+      void householdAdapter.saveAll(updated).catch(console.error)
       return updated
     })
   }, [])
@@ -50,7 +50,7 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
   const removeMember = useCallback((id: string) => {
     setMembers((prev) => {
       const updated = prev.filter((m) => m.id !== id)
-      void householdAdapter.saveAll(updated)
+      void householdAdapter.saveAll(updated).catch(console.error)
       return updated
     })
   }, [])

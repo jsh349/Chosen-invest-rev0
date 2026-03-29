@@ -7,11 +7,7 @@ import { ROUTES } from '@/lib/constants/routes'
 import { cn } from '@/lib/utils/cn'
 import type { TransactionCategory } from '@/lib/types/transaction'
 import { computeCashFlow } from '@/lib/utils/transaction-summary'
-
-function formatAmount(amount: number) {
-  const abs = Math.abs(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-  return amount >= 0 ? `+$${abs}` : `-$${abs}`
-}
+import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
 
 function currentYearMonth() {
   const d = new Date()
@@ -20,6 +16,11 @@ function currentYearMonth() {
 
 export function TransactionSummaryCard() {
   const { transactions, isLoaded } = useTransactions()
+  const { symbol } = useFormatCurrency()
+  const formatAmount = (amount: number) => {
+    const abs = Math.abs(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    return amount >= 0 ? `+${symbol}${abs}` : `-${symbol}${abs}`
+  }
 
   if (!isLoaded) return null
 
@@ -83,7 +84,7 @@ export function TransactionSummaryCard() {
             <span className="text-gray-500">Top spending category</span>
             <span className="font-medium text-gray-300">
               {topCategory[0]}&nbsp;
-              <span className="text-gray-500">(${topCategory[1].toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</span>
+              <span className="text-gray-500">({symbol}{topCategory[1].toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</span>
             </span>
           </div>
         )}

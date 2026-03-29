@@ -7,10 +7,7 @@ import { useTransactions } from '@/lib/store/transactions-store'
 import { ROUTES } from '@/lib/constants/routes'
 import { cn } from '@/lib/utils/cn'
 import { computeCashFlow } from '@/lib/utils/transaction-summary'
-
-function formatUSD(value: number) {
-  return Math.abs(value).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })
-}
+import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
 
 type Insight = {
   icon: React.ReactNode
@@ -19,7 +16,7 @@ type Insight = {
   color: string
 }
 
-function deriveInsight(income: number, expenses: number, net: number, count: number): Insight {
+function deriveInsight(income: number, expenses: number, net: number, count: number, fmt: (n: number) => string): Insight {
   if (count === 0) {
     return {
       icon:       <Minus className="h-4 w-4" />,
@@ -33,7 +30,7 @@ function deriveInsight(income: number, expenses: number, net: number, count: num
     return {
       icon:       <TrendingDown className="h-4 w-4" />,
       headline:   'Only expenses recorded — no income logged yet.',
-      supporting: `Total spending: ${formatUSD(expenses)}`,
+      supporting: `Total spending: ${fmt(Math.abs(expenses))}`,
       color:      'text-red-400',
     }
   }
@@ -44,7 +41,7 @@ function deriveInsight(income: number, expenses: number, net: number, count: num
     return {
       icon:       <TrendingDown className="h-4 w-4" />,
       headline:   'Spending exceeds income this period.',
-      supporting: `Net: -${formatUSD(Math.abs(net))} · Spend ratio: ${(spendRatio * 100).toFixed(0)}% of income`,
+      supporting: `Net: -${fmt(Math.abs(net))} · Spend ratio: ${(spendRatio * 100).toFixed(0)}% of income`,
       color:      'text-red-400',
     }
   }
@@ -53,7 +50,7 @@ function deriveInsight(income: number, expenses: number, net: number, count: num
     return {
       icon:       <TrendingDown className="h-4 w-4" />,
       headline:   'Cash flow is positive, but spending is unusually high.',
-      supporting: `${(spendRatio * 100).toFixed(0)}% of income spent · Net surplus: ${formatUSD(net)}`,
+      supporting: `${(spendRatio * 100).toFixed(0)}% of income spent · Net surplus: ${fmt(net)}`,
       color:      'text-yellow-400',
     }
   }
@@ -61,18 +58,19 @@ function deriveInsight(income: number, expenses: number, net: number, count: num
   return {
     icon:       <TrendingUp className="h-4 w-4" />,
     headline:   'Cash flow is positive.',
-    supporting: `Net surplus: ${formatUSD(net)} · Spend ratio: ${(spendRatio * 100).toFixed(0)}% of income`,
+    supporting: `Net surplus: ${fmt(net)} · Spend ratio: ${(spendRatio * 100).toFixed(0)}% of income`,
     color:      'text-green-400',
   }
 }
 
 export function CashFlowInsightCard() {
   const { transactions, isLoaded } = useTransactions()
+  const { fmt } = useFormatCurrency()
 
   if (!isLoaded) return null
 
   const { income, expenses, net } = computeCashFlow(transactions)
-  const insight  = deriveInsight(income, expenses, net, transactions.length)
+  const insight  = deriveInsight(income, expenses, net, transactions.length, fmt)
 
   return (
     <Card>

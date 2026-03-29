@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { ROUTES } from '@/lib/constants/routes'
 import type { Asset } from '@/lib/types/asset'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
+import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
 
 const TAXABLE_CATEGORIES = new Set(['stock', 'etf', 'crypto'])
 
@@ -20,7 +21,7 @@ type TaxDetail = {
   nextReview: string
 }
 
-function evaluateTaxDetail(assets: Asset[]): TaxDetail {
+function evaluateTaxDetail(assets: Asset[], fmt: (n: number) => string): TaxDetail {
   const taxableAssets = assets.filter((a) => TAXABLE_CATEGORIES.has(a.category))
 
   if (taxableAssets.length === 0) {
@@ -42,7 +43,7 @@ function evaluateTaxDetail(assets: Asset[]): TaxDetail {
     .join(', ')
 
   const totalTaxableValue = taxableAssets.reduce((s, a) => s + a.value, 0)
-  const formattedValue = totalTaxableValue.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })
+  const formattedValue = fmt(totalTaxableValue)
 
   return {
     status:      'review',
@@ -68,6 +69,7 @@ function CautionItem({ text }: { text: string }) {
 
 export default function TaxOpportunityPage() {
   const { assets, isLoaded } = useAssets()
+  const { fmt } = useFormatCurrency()
 
   if (!isLoaded) {
     return (
@@ -75,7 +77,7 @@ export default function TaxOpportunityPage() {
     )
   }
 
-  const detail = evaluateTaxDetail(assets)
+  const detail = evaluateTaxDetail(assets, fmt)
 
   return (
     <div className="space-y-6">

@@ -11,6 +11,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
 import type { TransactionCategory } from '@/lib/types/transaction'
+import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
 
 const CATEGORIES: TransactionCategory[] = [
   'Income', 'Housing', 'Groceries', 'Utilities', 'Subscriptions',
@@ -34,15 +35,15 @@ const EMPTY_FORM = {
   category:    'Other' as TransactionCategory,
 }
 
-function formatAmount(amount: number) {
-  const abs = Math.abs(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-  return amount >= 0 ? `+$${abs}` : `-$${abs}`
-}
-
 const SELECT_CLASS = 'rounded-lg border border-surface-border bg-surface-muted px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none'
 
 export default function TransactionsPage() {
   const { transactions, isLoaded, addTransaction, removeTransaction } = useTransactions()
+  const { symbol } = useFormatCurrency()
+  const formatAmount = (amount: number) => {
+    const abs = Math.abs(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    return amount >= 0 ? `+${symbol}${abs}` : `-${symbol}${abs}`
+  }
   const [form, setForm] = useState(EMPTY_FORM)
   const [error, setError] = useState('')
   const [filterCategory, setFilterCategory] = useState<TransactionCategory | 'All'>('All')

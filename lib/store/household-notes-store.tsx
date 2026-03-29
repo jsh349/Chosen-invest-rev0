@@ -42,7 +42,7 @@ export function HouseholdNotesProvider({ children }: { children: ReactNode }) {
   const addNote = useCallback((note: HouseholdNote) => {
     setNotes((prev) => {
       const updated = [note, ...prev]
-      void householdNotesAdapter.saveAll(updated)
+      void householdNotesAdapter.saveAll(updated).catch(console.error)
       return updated
     })
   }, [])
@@ -50,7 +50,7 @@ export function HouseholdNotesProvider({ children }: { children: ReactNode }) {
   const removeNote = useCallback((id: string) => {
     setNotes((prev) => {
       const updated = prev.filter((n) => n.id !== id)
-      void householdNotesAdapter.saveAll(updated)
+      void householdNotesAdapter.saveAll(updated).catch(console.error)
       return updated
     })
   }, [])
