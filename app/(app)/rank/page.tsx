@@ -26,6 +26,7 @@ import { getRankGoalInsight } from '@/lib/utils/rank-goal-insight'
 import { buildMonthlySummary } from '@/lib/utils/rank-monthly-summary'
 import { buildMilestoneHistory } from '@/lib/utils/rank-milestone-history'
 import { checkBenchmarkChanged, dismissBenchmarkAlert, benchmarkVersionNote } from '@/lib/utils/benchmark-change-alert'
+import { getNextRankHint } from '@/lib/utils/rank-next-hint'
 import type { RankResult } from '@/lib/types/rank'
 
 type RankMode = 'individual' | 'household'
@@ -193,6 +194,14 @@ export default function RankPage() {
 
   const versionNote = snapshotsLoaded ? benchmarkVersionNote(snapshots) : null
 
+  const nextHint = isFullyLoaded && summary.assetCount > 0
+    ? getNextRankHint({
+        hasAge:    !!settings.birthYear,
+        hasGender: !!settings.gender,
+        hasReturn: settings.annualReturnPct !== undefined,
+      })
+    : null
+
   // Rules of Hooks: useEffect must be before any conditional return.
   // Guard inside the effect so it only fires once all data is loaded.
   useEffect(() => {
@@ -300,6 +309,19 @@ export default function RankPage() {
                 className="mt-4 inline-block text-xs text-brand-400 hover:text-brand-300 transition-colors"
               >
                 Add assets →
+              </Link>
+            </div>
+          )}
+
+          {/* Next-step hint — one actionable sentence toward full rank completeness */}
+          {nextHint && (
+            <div className="flex items-center justify-between gap-3 rounded-xl border border-surface-border bg-surface-card px-5 py-3">
+              <p className="text-xs text-gray-400 leading-relaxed">{nextHint.text}</p>
+              <Link
+                href={nextHint.href}
+                className="shrink-0 text-xs text-brand-400 hover:text-brand-300 transition-colors"
+              >
+                Settings →
               </Link>
             </div>
           )}
