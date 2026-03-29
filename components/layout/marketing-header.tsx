@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
 import { Container } from '@/components/ui/container'
 import { ROUTES } from '@/lib/constants/routes'
 
@@ -14,12 +14,12 @@ export function MarketingHeader() {
             </span>
           </Link>
           <nav className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href={ROUTES.login}>Sign In</Link>
-            </Button>
-            <Button size="sm" asChild>
-              <Link href={ROUTES.login}>Get Started</Link>
-            </Button>
+            <Link href={ROUTES.login} className={buttonVariants({ variant: 'ghost', size: 'sm' })}>
+              Sign In
+            </Link>
+            <Link href={ROUTES.login} className={buttonVariants({ size: 'sm' })}>
+              Get Started
+            </Link>
           </nav>
         </div>
       </Container>

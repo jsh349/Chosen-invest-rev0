@@ -27,11 +27,17 @@ export function buildPortfolioSummary(
     })
     .sort((a, b) => b.value - a.value)
 
+  const largest = assets.reduce<Asset | null>(
+    (top, a) => (a.value > (top?.value ?? -1) ? a : top),
+    null
+  )
+
   return {
     userId,
     totalAssetValue,
     assetCount: assets.length,
     categoryBreakdown,
+    largestAsset: largest ? { name: largest.name, value: largest.value } : null,
     generatedAt: new Date().toISOString(),
   }
 }

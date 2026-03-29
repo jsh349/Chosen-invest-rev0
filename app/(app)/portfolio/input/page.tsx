@@ -1,30 +1,60 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, ChevronRight } from 'lucide-react'
 import { AssetRow } from '@/components/portfolio/asset-row'
 import { Button } from '@/components/ui/button'
 import { blankFormEntry, formEntryToAsset } from '@/features/portfolio/helpers'
 import type { AssetFormEntry } from '@/features/portfolio/types'
+import type { Asset } from '@/lib/types/asset'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { useAssets } from '@/lib/store/assets-store'
-import { formatCurrency } from '@/lib/utils/currency'
+import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
 import { ROUTES } from '@/lib/constants/routes'
+import { LOCAL_USER_ID } from '@/lib/constants/auth'
 
-let idCounter = Date.now()
-function nextId() {
-  return `asset_${(++idCounter).toString(36)}`
+// Extends AssetFormEntry locally to carry identity fields for existing assets.
+// _id and _createdAt are preserved through edits and used at submit time so
+// re-saving the form does not replace existing asset IDs or timestamps.
+type FormEntry = AssetFormEntry & { _id?: string; _createdAt?: string }
+
+function assetToFormEntry(asset: Asset): FormEntry {
+  return {
+    name: asset.name,
+    category: asset.category,
+    value: asset.value.toString(),
+    currency: asset.currency ?? 'USD',
+    _id: asset.id,
+    _createdAt: asset.createdAt,
+  }
 }
 
 export default function PortfolioInputPage() {
   const router = useRouter()
-  const { setAssets } = useAssets()
-  const [entries, setEntries] = useState<AssetFormEntry[]>([blankFormEntry()])
+  const { assets, hasCustomAssets, isLoaded, setAssets } = useAssets()
+  const { fmt } = useFormatCurrency()
+  const [entries, setEntries] = useState<FormEntry[] | null>(null)
+
+  // isLoaded is the intentional one-shot trigger. Adding assets/hasCustomAssets
+  // would reset the form and lose in-progress edits whenever the store updates.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!isLoaded) return
+    setEntries(hasCustomAssets ? assets.map(assetToFormEntry) : [blankFormEntry()])
+  }, [isLoaded])
+
+  if (!isLoaded || entries === null) {
+    return (
+      <LoadingSpinner />
+    )
+  }
 
   const total = entries.reduce((sum, e) => sum + (parseFloat(e.value) || 0), 0)
 
   function handleChange(index: number, field: keyof AssetFormEntry, value: string) {
     setEntries((prev) => {
+      if (!prev) return prev
       const updated = [...prev]
       updated[index] = { ...updated[index], [field]: value }
       return updated
@@ -32,15 +62,16 @@ export default function PortfolioInputPage() {
   }
 
   function handleAdd() {
-    setEntries((prev) => [...prev, blankFormEntry()])
+    setEntries((prev) => (prev ? [...prev, blankFormEntry()] : [blankFormEntry()]))
   }
 
   function handleRemove(index: number) {
-    setEntries((prev) => prev.filter((_, i) => i !== index))
+    setEntries((prev) => (prev ? prev.filter((_, i) => i !== index) : prev))
   }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!entries) return
     const validEntries = entries.filter(
       (en) => en.name.trim() && parseFloat(en.value) > 0
     )
@@ -48,17 +79,21 @@ export default function PortfolioInputPage() {
       router.push(ROUTES.dashboard)
       return
     }
-    const assets = validEntries.map((en) =>
-      formEntryToAsset(en, 'local_user', nextId())
-    )
-    setAssets(assets)
+    const now = new Date().toISOString()
+    const newAssets = validEntries.map((en) => ({
+      ...formEntryToAsset(en, LOCAL_USER_ID, en._id ?? crypto.randomUUID()),
+      createdAt: en._createdAt ?? now,
+    }))
+    setAssets(newAssets)
     router.push(ROUTES.dashboard)
   }
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-white">Add Your Assets</h1>
+        <h1 className="text-xl font-bold text-white">
+          {hasCustomAssets ? 'Edit Your Assets' : 'Add Your Assets'}
+        </h1>
         <p className="mt-0.5 text-sm text-gray-500">
           Enter each asset manually. Your data stays in your browser.
         </p>
@@ -86,11 +121,10 @@ export default function PortfolioInputPage() {
           Add Another Asset
         </Button>
 
-        {/* Running total */}
         {total > 0 && (
           <div className="flex items-center justify-between rounded-lg border border-surface-border bg-surface-card px-4 py-3">
             <span className="text-sm text-gray-400">Total entered</span>
-            <span className="text-base font-bold text-white">{formatCurrency(total)}</span>
+            <span className="text-base font-bold text-white">{fmt(total)}</span>
           </div>
         )}
 
@@ -100,10 +134,10 @@ export default function PortfolioInputPage() {
             variant="ghost"
             onClick={() => router.push(ROUTES.dashboard)}
           >
-            Skip for now
+            Cancel
           </Button>
           <Button type="submit">
-            View My Dashboard
+            Save &amp; View Dashboard
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>

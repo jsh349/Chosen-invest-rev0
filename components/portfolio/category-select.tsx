@@ -1,3 +1,5 @@
+'use client'
+
 import { ASSET_CATEGORIES } from '@/lib/constants/asset-categories'
 import type { AssetCategory } from '@/lib/types/asset'
 import { cn } from '@/lib/utils/cn'

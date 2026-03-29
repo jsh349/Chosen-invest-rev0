@@ -13,13 +13,20 @@ export type PortfolioSummary = {
   totalAssetValue: number
   assetCount: number
   categoryBreakdown: AllocationSlice[]
+  largestAsset: { name: string; value: number } | null
   generatedAt: string
+}
+
+export type SuggestedAction = {
+  label: string
+  href: string
 }
 
 export type AIAnalysisResult = {
   userId: string
   summaryText: string
   keyPoints: string[]
+  suggestedActions: SuggestedAction[]
   inputSnapshot: {
     totalValue: number
     assetCount: number

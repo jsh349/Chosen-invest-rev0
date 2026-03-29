@@ -11,6 +11,10 @@ export const MOCK_AI_ANALYSIS: AIAnalysisResult = {
     'Crypto is under 5% — manageable risk',
     'Cash coverage could be broader',
   ],
+  suggestedActions: [
+    { label: 'Increase cash reserves to 10%', href: '/portfolio/input' },
+    { label: 'Review real estate concentration', href: '/portfolio/input' },
+  ],
   inputSnapshot: {
     totalValue: 495000,
     assetCount: 6,

@@ -1,5 +1,7 @@
+'use client'
+
 import type { PortfolioSummary } from '@/lib/types/dashboard'
-import { formatCurrency } from '@/lib/utils/currency'
+import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
 import { Card } from '@/components/ui/card'
 
 interface DashboardOverviewProps {
@@ -7,15 +9,16 @@ interface DashboardOverviewProps {
 }
 
 export function DashboardOverview({ summary }: DashboardOverviewProps) {
-  const { totalAssetValue, assetCount, categoryBreakdown } = summary
+  const { totalAssetValue, assetCount, categoryBreakdown, largestAsset } = summary
   const topCategory = categoryBreakdown[0]
+  const { fmt } = useFormatCurrency()
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
       <Card className="flex flex-col gap-1">
         <p className="text-xs uppercase tracking-wide text-gray-500">Total Assets</p>
         <p className="text-2xl font-bold text-white">
-          {formatCurrency(totalAssetValue)}
+          {fmt(totalAssetValue)}
         </p>
         <p className="text-xs text-gray-500">Across {assetCount} positions</p>
       </Card>
@@ -35,6 +38,16 @@ export function DashboardOverview({ summary }: DashboardOverviewProps) {
         </p>
         <p className="text-xs text-gray-500">
           {topCategory ? `${topCategory.percentage.toFixed(0)}% of portfolio` : 'No data yet'}
+        </p>
+      </Card>
+
+      <Card className="flex flex-col gap-1">
+        <p className="text-xs uppercase tracking-wide text-gray-500">Largest Asset</p>
+        <p className="truncate text-2xl font-bold text-white">
+          {largestAsset ? fmt(largestAsset.value) : '—'}
+        </p>
+        <p className="truncate text-xs text-gray-500">
+          {largestAsset?.name ?? 'No data yet'}
         </p>
       </Card>
     </div>

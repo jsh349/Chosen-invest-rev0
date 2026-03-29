@@ -9,14 +9,15 @@ import {
   type ReactNode,
 } from 'react'
 import type { Asset } from '@/lib/types/asset'
-
-const LS_KEY = 'chosen_assets_v1'
+import { recordAudit } from '@/lib/store/audit-store'
+import { assetsAdapter } from '@/lib/adapters/assets-adapter'
 
 type AssetsContextType = {
   assets: Asset[]
   hasCustomAssets: boolean
   setAssets: (assets: Asset[]) => void
   addAsset: (asset: Asset) => void
+  updateAsset: (id: string, patch: Partial<Pick<Asset, 'name' | 'category' | 'value'>>) => void
   removeAsset: (id: string) => void
   clearAssets: () => void
   isLoaded: boolean
@@ -27,6 +28,7 @@ const AssetsContext = createContext<AssetsContextType>({
   hasCustomAssets: false,
   setAssets: () => {},
   addAsset: () => {},
+  updateAsset: () => {},
   removeAsset: () => {},
   clearAssets: () => {},
   isLoaded: false,
@@ -37,38 +39,56 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(LS_KEY)
-      if (stored) setAssetsState(JSON.parse(stored))
-    } catch {
-      // ignore parse errors
-    }
-    setIsLoaded(true)
+    let cancelled = false
+    assetsAdapter.getAll().then((stored) => {
+      if (cancelled) return
+      if (stored.length > 0) setAssetsState(stored)
+      setIsLoaded(true)
+    })
+    return () => { cancelled = true }
   }, [])
 
   const setAssets = useCallback((newAssets: Asset[]) => {
-    localStorage.setItem(LS_KEY, JSON.stringify(newAssets))
+    void assetsAdapter.saveAll(newAssets).catch(console.error)
     setAssetsState(newAssets)
   }, [])
 
   const addAsset = useCallback((asset: Asset) => {
     setAssetsState((prev) => {
       const updated = [...prev, asset]
-      localStorage.setItem(LS_KEY, JSON.stringify(updated))
+      void assetsAdapter.saveAll(updated).catch(console.error)
       return updated
     })
+    recordAudit('Asset added', asset.name)
   }, [])
+
+  const updateAsset = useCallback(
+    (id: string, patch: Partial<Pick<Asset, 'name' | 'category' | 'value'>>) => {
+      setAssetsState((prev) => {
+        const target = prev.find((a) => a.id === id)
+        const updated = prev.map((a) =>
+          a.id === id ? { ...a, ...patch, updatedAt: new Date().toISOString() } : a
+        )
+        void assetsAdapter.saveAll(updated).catch(console.error)
+        if (target) recordAudit('Asset edited', patch.name ?? target.name)
+        return updated
+      })
+    },
+    []
+  )
 
   const removeAsset = useCallback((id: string) => {
     setAssetsState((prev) => {
+      const target = prev.find((a) => a.id === id)
+      if (target) recordAudit('Asset deleted', target.name)
       const updated = prev.filter((a) => a.id !== id)
-      localStorage.setItem(LS_KEY, JSON.stringify(updated))
+      void assetsAdapter.saveAll(updated).catch(console.error)
       return updated
     })
   }, [])
 
   const clearAssets = useCallback(() => {
-    localStorage.removeItem(LS_KEY)
+    void assetsAdapter.clear().catch(console.error)
     setAssetsState([])
   }, [])
 
@@ -79,6 +99,7 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
         hasCustomAssets: assets.length > 0,
         setAssets,
         addAsset,
+        updateAsset,
         removeAsset,
         clearAssets,
         isLoaded,

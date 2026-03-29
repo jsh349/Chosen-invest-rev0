@@ -1,8 +1,9 @@
 import Link from 'next/link'
 import { ArrowRight, BarChart2, Brain, ShieldCheck } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
 import { Container } from '@/components/ui/container'
 import { ROUTES } from '@/lib/constants/routes'
+import { cn } from '@/lib/utils/cn'
 
 const FEATURES = [
   {
@@ -56,15 +57,13 @@ export default function LandingPage() {
             </p>
 
             <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-              <Button size="lg" asChild>
-                <Link href={ROUTES.login}>
-                  Get Started Free
-                  <ArrowRight className="ml-1 h-4 w-4" />
-                </Link>
-              </Button>
-              <Button variant="outline" size="lg" asChild>
-                <Link href={ROUTES.login}>Sign In</Link>
-              </Button>
+              <Link href={ROUTES.login} className={cn(buttonVariants({ size: 'lg' }), 'gap-1')}>
+                Get Started Free
+                <ArrowRight className="ml-1 h-4 w-4" />
+              </Link>
+              <Link href={ROUTES.login} className={buttonVariants({ variant: 'outline', size: 'lg' })}>
+                Sign In
+              </Link>
             </div>
           </div>
         </Container>
@@ -111,12 +110,10 @@ export default function LandingPage() {
               Enter your assets manually in minutes. No bank link required.
               See your full financial picture immediately.
             </p>
-            <Button size="lg" asChild>
-              <Link href={ROUTES.login}>
-                Open Your Dashboard
-                <ArrowRight className="ml-1 h-4 w-4" />
-              </Link>
-            </Button>
+            <Link href={ROUTES.login} className={cn(buttonVariants({ size: 'lg' }), 'gap-1')}>
+              Open Your Dashboard
+              <ArrowRight className="ml-1 h-4 w-4" />
+            </Link>
           </div>
         </Container>
       </section>

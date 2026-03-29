@@ -9,6 +9,10 @@ import {
   BarChart2,
   Sparkles,
   Settings,
+  Target,
+  ArrowLeftRight,
+  Users,
+  Trophy,
 } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { ROUTES } from '@/lib/constants/routes'
@@ -16,6 +20,10 @@ import { ROUTES } from '@/lib/constants/routes'
 const NAV_ITEMS = [
   { label: 'Dashboard',  href: ROUTES.dashboard,      Icon: LayoutDashboard },
   { label: 'Portfolio',  href: ROUTES.portfolioList,   Icon: Briefcase       },
+  { label: 'Goals',        href: ROUTES.goals,          Icon: Target          },
+  { label: 'Transactions', href: ROUTES.transactions,   Icon: ArrowLeftRight  },
+  { label: 'Household',   href: ROUTES.household,       Icon: Users           },
+  { label: 'Rank',       href: ROUTES.rank,             Icon: Trophy          },
   { label: 'Market',     href: ROUTES.market,          Icon: TrendingUp      },
   { label: 'Analysis',   href: ROUTES.analysis,        Icon: BarChart2       },
   { label: 'AI Advisor', href: ROUTES.ai,              Icon: Sparkles        },

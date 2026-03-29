@@ -9,7 +9,7 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { formatCompact } from '@/lib/utils/currency'
+import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
 import type { TrendPoint } from '@/lib/mock/trend'
 
 interface NetWorthTrendCardProps {
@@ -18,6 +18,8 @@ interface NetWorthTrendCardProps {
 }
 
 export function NetWorthTrendCard({ data, isMock }: NetWorthTrendCardProps) {
+  const { compact } = useFormatCurrency()
+
   return (
     <Card>
       <CardHeader>
@@ -42,7 +44,7 @@ export function NetWorthTrendCard({ data, isMock }: NetWorthTrendCardProps) {
               tickLine={false}
             />
             <YAxis
-              tickFormatter={(v) => formatCompact(v)}
+              tickFormatter={(v) => compact(v)}
               tick={{ fill: '#6b7280', fontSize: 11 }}
               axisLine={false}
               tickLine={false}
@@ -54,7 +56,7 @@ export function NetWorthTrendCard({ data, isMock }: NetWorthTrendCardProps) {
                 return (
                   <div className="rounded-lg border border-surface-border bg-surface-card px-3 py-2 text-xs shadow-lg">
                     <p className="font-semibold text-white">{label}</p>
-                    <p className="text-gray-400">{formatCompact(payload[0].value as number)}</p>
+                    <p className="text-gray-400">{compact(payload[0].value as number)}</p>
                   </div>
                 )
               }}

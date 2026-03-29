@@ -1,3 +1,5 @@
+import Link from 'next/link'
+import { ArrowRight } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import type { AIAnalysisResult } from '@/lib/types/dashboard'
 
@@ -26,6 +28,22 @@ export function AISummaryCard({ analysis }: AISummaryCardProps) {
               </li>
             ))}
           </ul>
+        )}
+
+        {analysis.suggestedActions.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Suggested Actions</p>
+            {analysis.suggestedActions.map((action) => (
+              <Link
+                key={action.label}
+                href={action.href}
+                className="flex items-center justify-between rounded-lg border border-surface-border bg-surface-muted/40 px-3 py-2 text-xs text-gray-300 hover:border-brand-700 hover:text-white transition-colors"
+              >
+                {action.label}
+                <ArrowRight className="h-3 w-3 shrink-0 text-gray-500" />
+              </Link>
+            ))}
+          </div>
         )}
 
         <p className="text-xs text-gray-600">

@@ -1,0 +1,344 @@
+[
+  {
+    "step": 1,
+    "action": "Landing page initial load",
+    "url": "http://localhost:3001/",
+    "screenshot": "step-01-landing-page-initial-load.png",
+    "headings": [
+      "Understand your money.\nAct with confidence.",
+      "Built for financial clarity",
+      "Clear Portfolio View",
+      "AI-Guided Insight",
+      "Financial Health Signals",
+      "Start with what you have"
+    ],
+    "visibleText": "ChosenInvest\nSign In\nGet Started\nAI-powered financial clarity\nUnderstand your money.\nAct with confidence.\n\nChosenInvest is a professional asset operating dashboard that turns your portfolio into clear, actionable intelligence — guided by AI, designed for real decisions.\n\nGet Started Free\nSign In\nBui",
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "pageErrors": [],
+    "observations": [
+      "ChosenInvest branding",
+      "Hero headline visible",
+      "Get Started Free and Sign In CTAs",
+      "3 feature cards",
+      "No search input — dashboard app"
+    ],
+    "issues": []
+  },
+  {
+    "step": 2,
+    "action": "Login page via Sign In click",
+    "url": "http://localhost:3001/login",
+    "screenshot": "step-02-login-page-via-sign-in-click.png",
+    "headings": [
+      "Sign in"
+    ],
+    "visibleText": "ChosenInvest\nSign in\n\nAccess your financial dashboard\n\nContinue with Google\n\nBy continuing, you agree to our terms of service.\n\nChosenInvest is for informational purposes only.\nNot financial advice.",
+    "consoleErrors": [],
+    "pageErrors": [],
+    "observations": [
+      "URL changed to /login",
+      "Sign in with Google button visible",
+      "No email/password fields"
+    ],
+    "issues": []
+  },
+  {
+    "step": 3,
+    "action": "Dashboard with seeded portfolio",
+    "url": "http://localhost:3001/dashboard",
+    "screenshot": "step-03-dashboard-with-seeded-portfolio.png",
+    "headings": [
+      "Dashboard",
+      "ALLOCATION",
+      "AI SUMMARY",
+      "NET WORTH TREND",
+      "FINANCIAL HEALTH",
+      "GOALS"
+    ],
+    "visibleText": "ChosenInvest\nDashboard\nPortfolio\nGoals\nTransactions\nHousehold\nRank\nMarket\nAnalysis\nAI Advisor\nSettings\n\nMVP · Phase 2\n\nPlaywright User\nDashboard\n\nYour portfolio overview and financial health signals\n\nCustomize\nEdit Assets\n\nTOTAL ASSETS\n\n$48,500\n\nAcross 4 positions\n\nASSET COUNT\n\n4\n\n4 categories\n\nTOP ",
+    "consoleErrors": [
+      "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /portfolio/list"
+    ],
+    "pageErrors": [],
+    "observations": [
+      "Sidebar nav visible",
+      "Dashboard heading",
+      "Total asset value ~48500",
+      "Rank overview card",
+      "Allocation chart",
+      "AI Summary",
+      "Financial health cards"
+    ],
+    "issues": []
+  },
+  {
+    "step": 4,
+    "action": "Portfolio list page",
+    "url": "http://localhost:3001/portfolio/list",
+    "screenshot": "step-04-portfolio-list-page.png",
+    "headings": [
+      "Portfolio"
+    ],
+    "visibleText": "ChosenInvest\nDashboard\nPortfolio\nGoals\nTransactions\nHousehold\nRank\nMarket\nAnalysis\nAI Advisor\nSettings\n\nMVP · Phase 2\n\nPlaywright User\nPortfolio\n\n4 assets · Total $48,500\n\nAdd Assets\nTotal Asset Value\n$48,500\n\nApple Shares\n\nStocks\n\n$15,000\n\nSavings Account\n\nCash & Savings\n\n$8,000\n\n401k Fund\n\nRetirem",
+    "consoleErrors": [],
+    "pageErrors": [],
+    "observations": [
+      "Asset list with 4 seeded entries",
+      "Name + category + value per card",
+      "Total shown"
+    ],
+    "issues": []
+  },
+  {
+    "step": 5,
+    "action": "Portfolio input form edit mode",
+    "url": "http://localhost:3001/portfolio/input",
+    "screenshot": "step-05-portfolio-input-form-edit-mode.png",
+    "headings": [
+      "Edit Your Assets"
+    ],
+    "visibleText": "ChosenInvest\nDashboard\nPortfolio\nGoals\nTransactions\nHousehold\nRank\nMarket\nAnalysis\nAI Advisor\nSettings\n\nMVP · Phase 2\n\nPlaywright User\nEdit Your Assets\n\nEnter each asset manually. Your data stays in your browser.\n\nASSET 1\n\nAsset Name\nCategory\nCash & Savings\nStocks\nETFs / Funds\nCrypto\nRetirement\nReal",
+    "consoleErrors": [],
+    "pageErrors": [],
+    "observations": [
+      "Edit Your Assets heading",
+      "Each asset row editable",
+      "Add Another Asset button"
+    ],
+    "issues": []
+  },
+  {
+    "step": 6,
+    "action": "Typed TSLA into asset name field",
+    "url": "http://localhost:3001/portfolio/input",
+    "screenshot": "step-06-typed-tsla-into-asset-name-field.png",
+    "headings": [
+      "Edit Your Assets"
+    ],
+    "visibleText": "ChosenInvest\nDashboard\nPortfolio\nGoals\nTransactions\nHousehold\nRank\nMarket\nAnalysis\nAI Advisor\nSettings\n\nMVP · Phase 2\n\nPlaywright User\nEdit Your Assets\n\nEnter each asset manually. Your data stays in your browser.\n\nASSET 1\n\nAsset Name\nCategory\nCash & Savings\nStocks\nETFs / Funds\nCrypto\nRetirement\nReal",
+    "consoleErrors": [],
+    "pageErrors": [],
+    "observations": [
+      "First asset name field now shows: TSLA",
+      "Real-time total updates",
+      "No error on partial entry"
+    ],
+    "issues": []
+  },
+  {
+    "step": 7,
+    "action": "Cancel returns to Dashboard no save",
+    "url": "http://localhost:3001/dashboard",
+    "screenshot": "step-07-cancel-returns-to-dashboard-no-save.png",
+    "headings": [
+      "Dashboard",
+      "ALLOCATION",
+      "AI SUMMARY",
+      "NET WORTH TREND",
+      "FINANCIAL HEALTH",
+      "GOALS"
+    ],
+    "visibleText": "ChosenInvest\nDashboard\nPortfolio\nGoals\nTransactions\nHousehold\nRank\nMarket\nAnalysis\nAI Advisor\nSettings\n\nMVP · Phase 2\n\nPlaywright User\nDashboard\n\nYour portfolio overview and financial health signals\n\nCustomize\nEdit Assets\n\nTOTAL ASSETS\n\n$48,500\n\nAcross 4 positions\n\nASSET COUNT\n\n4\n\n4 categories\n\nTOP ",
+    "consoleErrors": [
+      "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /portfolio/list"
+    ],
+    "pageErrors": [],
+    "observations": [
+      "Cancel navigated back to /dashboard",
+      "TSLA not saved"
+    ],
+    "issues": []
+  },
+  {
+    "step": 8,
+    "action": "Rank page Individual mode",
+    "url": "http://localhost:3001/rank",
+    "screenshot": "step-08-rank-page-individual-mode.png",
+    "headings": [
+      "Wealth Rank"
+    ],
+    "visibleText": "ChosenInvest\nDashboard\nPortfolio\nGoals\nTransactions\nHousehold\nRank\nMarket\nAnalysis\nAI Advisor\nSettings\n\nMVP · Phase 2\n\nPlaywright User\nWealth Rank\n\nHow your portfolio compares to reference benchmarks\n\nIndividual\nHousehold\n\nTotal Assets\n\n$49K\n\nRanks Available\n\n4 / 4\n\nAge Used\n\n36\n\nProfile\n\nMore compl",
+    "consoleErrors": [],
+    "pageErrors": [],
+    "observations": [
+      "Wealth Rank heading",
+      "Mode toggle Individual/Household",
+      "Summary strip: Total Assets, Ranks Available, Age Used, Profile",
+      "All 4 rank rows with Top X% display",
+      "Percentile bars",
+      "Basis and Band matched details",
+      "Rank Summary share card",
+      "How this works section"
+    ],
+    "issues": []
+  },
+  {
+    "step": 9,
+    "action": "Rank page Household mode toggle",
+    "url": "http://localhost:3001/rank",
+    "screenshot": "step-09-rank-page-household-mode-toggle.png",
+    "headings": [
+      "Wealth Rank"
+    ],
+    "visibleText": "ChosenInvest\nDashboard\nPortfolio\nGoals\nTransactions\nHousehold\nRank\nMarket\nAnalysis\nAI Advisor\nSettings\n\nMVP · Phase 2\n\nPlaywright User\nWealth Rank\n\nHow your portfolio compares to reference benchmarks\n\nIndividual\nHousehold\n\nHousehold Rank\n\nNo household members have been added yet.\n\nSet up household →",
+    "consoleErrors": [],
+    "pageErrors": [],
+    "observations": [
+      "Household Rank panel visible",
+      "No members seeded — shows setup prompt",
+      "Individual rank rows hidden"
+    ],
+    "issues": []
+  },
+  {
+    "step": 10,
+    "action": "Rank page back to Individual mode",
+    "url": "http://localhost:3001/rank",
+    "screenshot": "step-10-rank-page-back-to-individual-mode.png",
+    "headings": [
+      "Wealth Rank"
+    ],
+    "visibleText": "ChosenInvest\nDashboard\nPortfolio\nGoals\nTransactions\nHousehold\nRank\nMarket\nAnalysis\nAI Advisor\nSettings\n\nMVP · Phase 2\n\nPlaywright User\nWealth Rank\n\nHow your portfolio compares to reference benchmarks\n\nIndividual\nHousehold\n\nTotal Assets\n\n$49K\n\nRanks Available\n\n4 / 4\n\nAge Used\n\n36\n\nProfile\n\nMore compl",
+    "consoleErrors": [],
+    "pageErrors": [],
+    "observations": [
+      "All 4 rank rows reappear",
+      "No page reload — instant client toggle"
+    ],
+    "issues": []
+  },
+  {
+    "step": 11,
+    "action": "Goals page",
+    "url": "http://localhost:3001/goals",
+    "screenshot": "step-11-goals-page.png",
+    "headings": [
+      "Goals",
+      "ADD NEW GOAL",
+      "2 GOALS"
+    ],
+    "visibleText": "ChosenInvest\nDashboard\nPortfolio\nGoals\nTransactions\nHousehold\nRank\nMarket\nAnalysis\nAI Advisor\nSettings\n\nMVP · Phase 2\n\nPlaywright User\nGoals\n\nSet and track your financial goals\n\nADD NEW GOAL\nGoal Name *\nType *\nSavings\nInvestment\nRetirement\nPurchase\nDebt Payoff\nOther\nTarget Amount *\nSaved So Far\nTarg",
+    "consoleErrors": [],
+    "pageErrors": [],
+    "observations": [
+      "Add New Goal form",
+      "Two seeded goals: Emergency Fund + House Down Payment",
+      "Progress bars per goal",
+      "Edit/Delete actions per goal"
+    ],
+    "issues": []
+  },
+  {
+    "step": 12,
+    "action": "Transactions page",
+    "url": "http://localhost:3001/transactions",
+    "screenshot": "step-12-transactions-page.png",
+    "headings": [
+      "Transactions",
+      "ADD TRANSACTION",
+      "HISTORY"
+    ],
+    "visibleText": "ChosenInvest\nDashboard\nPortfolio\nGoals\nTransactions\nHousehold\nRank\nMarket\nAnalysis\nAI Advisor\nSettings\n\nMVP · Phase 2\n\nPlaywright User\nTransactions\n\nManually track your income and expenses\n\nADD TRANSACTION\nDate *\nCategory *\nIncome\nHousing\nGroceries\nUtilities\nSubscriptions\nTransport\nTravel\nFamily\nTax",
+    "consoleErrors": [],
+    "pageErrors": [],
+    "observations": [
+      "Add Transaction form",
+      "Summary strip: Income Expenses Net",
+      "Transaction history with filter/sort",
+      "3 seeded entries"
+    ],
+    "issues": []
+  },
+  {
+    "step": 13,
+    "action": "Household page",
+    "url": "http://localhost:3001/household",
+    "screenshot": "step-13-household-page.png",
+    "headings": [
+      "Household",
+      "ADD MEMBER",
+      "REVIEW NOTES",
+      "SHARED GOALS"
+    ],
+    "visibleText": "ChosenInvest\nDashboard\nPortfolio\nGoals\nTransactions\nHousehold\nRank\nMarket\nAnalysis\nAI Advisor\nSettings\n\nMVP · Phase 2\n\nPlaywright User\nHousehold\n\nManage shared finances with your family or partner\n\nADD MEMBER\nLocal mock — no invitations sent\nName *\nEmail *\nRole *\nAdmin — Full access\nPartner — Can ad",
+    "consoleErrors": [],
+    "pageErrors": [],
+    "observations": [
+      "Household heading",
+      "Empty state or member form"
+    ],
+    "issues": []
+  },
+  {
+    "step": 14,
+    "action": "Settings page",
+    "url": "http://localhost:3001/settings",
+    "screenshot": "step-14-settings-page.png",
+    "headings": [
+      "Settings",
+      "DISPLAY",
+      "PROFILE",
+      "NAVIGATION",
+      "DATA",
+      "RECENT ACTIVITY"
+    ],
+    "visibleText": "ChosenInvest\nDashboard\nPortfolio\nGoals\nTransactions\nHousehold\nRank\nMarket\nAnalysis\nAI Advisor\nSettings\n\nMVP · Phase 2\n\nPlaywright User\nSettings\n\nLocal preferences — saved in your browser\n\nDISPLAY\n\nCurrency\n\nUsed for amount formatting across the app\n\nUSD — US Dollar ($)\nEUR — Euro (€)\nGBP — British P",
+    "consoleErrors": [],
+    "pageErrors": [],
+    "observations": [
+      "Currency selector",
+      "Birth year field",
+      "Gender selector",
+      "Annual return field",
+      "Data export/import section"
+    ],
+    "issues": []
+  },
+  {
+    "step": 15,
+    "action": "Tax Opportunity page",
+    "url": "http://localhost:3001/tax-opportunity",
+    "screenshot": "step-15-tax-opportunity-page.png",
+    "headings": [
+      "Tax Opportunity",
+      "CURRENT STATUS",
+      "IMPORTANT CAUTIONS",
+      "NEXT REVIEW SUGGESTION"
+    ],
+    "visibleText": "ChosenInvest\nDashboard\nPortfolio\nGoals\nTransactions\nHousehold\nRank\nMarket\nAnalysis\nAI Advisor\nSettings\n\nMVP · Phase 2\n\nPlaywright User\nBack to Dashboard\nTax Opportunity\n\nAdvisory summary — informational only\n\nCURRENT STATUS\nTax review opportunity identified\n\nYou hold 2 taxable investment assets (Sto",
+    "consoleErrors": [],
+    "pageErrors": [],
+    "observations": [
+      "Tax harvest analysis based on assets",
+      "Read-only page — no submission"
+    ],
+    "issues": []
+  },
+  {
+    "step": 16,
+    "action": "Return to Dashboard end of exploration",
+    "url": "http://localhost:3001/dashboard",
+    "screenshot": "step-16-return-to-dashboard-end-of-exploration.png",
+    "headings": [
+      "Dashboard",
+      "ALLOCATION",
+      "AI SUMMARY",
+      "NET WORTH TREND",
+      "FINANCIAL HEALTH",
+      "GOALS"
+    ],
+    "visibleText": "ChosenInvest\nDashboard\nPortfolio\nGoals\nTransactions\nHousehold\nRank\nMarket\nAnalysis\nAI Advisor\nSettings\n\nMVP · Phase 2\n\nPlaywright User\nDashboard\n\nYour portfolio overview and financial health signals\n\nCustomize\nEdit Assets\n\nTOTAL ASSETS\n\n$48,500\n\nAcross 4 positions\n\nASSET COUNT\n\n4\n\n4 categories\n\nTOP ",
+    "consoleErrors": [
+      "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /portfolio/list"
+    ],
+    "pageErrors": [],
+    "observations": [
+      "Dashboard clean",
+      "No residual errors",
+      "Data still intact"
+    ],
+    "issues": []
+  }
+]
