@@ -1,10 +1,5 @@
 import type { BenchmarkBucket, RankResult, GenderOption } from '@/lib/types/rank'
-import {
-  OVERALL_WEALTH_BUCKETS,
-  AGE_BASED_BUCKETS,
-  AGE_GENDER_BUCKETS,
-  RETURN_BUCKETS,
-} from '@/lib/mock/rank-benchmarks'
+import { rankBenchmarksAdapter } from '@/lib/adapters/rank-benchmarks-adapter'
 
 function findPercentile(buckets: BenchmarkBucket[], value: number): number {
   for (const b of buckets) {
@@ -28,7 +23,7 @@ export type RankInput = {
 
 /** Compute only the Overall Wealth rank from total asset value. */
 export function computeOverallWealthRank(totalAssetValue: number): RankResult {
-  const percentile = findPercentile(OVERALL_WEALTH_BUCKETS, totalAssetValue)
+  const percentile = findPercentile(rankBenchmarksAdapter.getOverallWealthBenchmarks(), totalAssetValue)
   const topPct = 100 - percentile
 
   let message: string
@@ -57,7 +52,7 @@ export function computeAgeBasedRank(totalAssetValue: number, age?: number): Rank
     }
   }
 
-  const ageBuckets = filterByAge(AGE_BASED_BUCKETS, age)
+  const ageBuckets = filterByAge(rankBenchmarksAdapter.getAgeBenchmarks(), age)
   if (ageBuckets.length === 0) {
     return {
       type: 'age_based',
@@ -120,7 +115,7 @@ export function computeAgeGenderRank(
   }
 
   // Filter by age + gender
-  const buckets = AGE_GENDER_BUCKETS.filter(
+  const buckets = rankBenchmarksAdapter.getAgeGenderBenchmarks().filter(
     (b) =>
       b.ageRange &&
       age >= b.ageRange[0] &&
@@ -167,7 +162,7 @@ export function computeReturnRank(annualReturnPct?: number): RankResult {
     }
   }
 
-  const percentile = findPercentile(RETURN_BUCKETS, annualReturnPct)
+  const percentile = findPercentile(rankBenchmarksAdapter.getReturnBenchmarks(), annualReturnPct)
   const topPct = 100 - percentile
   const sign = annualReturnPct >= 0 ? '+' : ''
 
@@ -193,7 +188,7 @@ export function computeRanks(input: RankInput): RankResult[] {
 
   // 2. Age-Based
   if (age != null) {
-    const ageBuckets = filterByAge(AGE_BASED_BUCKETS, age)
+    const ageBuckets = filterByAge(rankBenchmarksAdapter.getAgeBenchmarks(), age)
     if (ageBuckets.length > 0) {
       const pct = findPercentile(ageBuckets, totalAssetValue)
       results.push({
@@ -222,7 +217,7 @@ export function computeRanks(input: RankInput): RankResult[] {
 
   // 3. Age + Gender
   if (age != null && gender != null && gender !== 'other') {
-    const agBuckets = AGE_GENDER_BUCKETS.filter(
+    const agBuckets = rankBenchmarksAdapter.getAgeGenderBenchmarks().filter(
       (b) =>
         b.ageRange &&
         age >= b.ageRange[0] &&
@@ -263,7 +258,7 @@ export function computeRanks(input: RankInput): RankResult[] {
 
   // 4. Investment Return
   if (annualReturnPct != null) {
-    const pct = findPercentile(RETURN_BUCKETS, annualReturnPct)
+    const pct = findPercentile(rankBenchmarksAdapter.getReturnBenchmarks(), annualReturnPct)
     results.push({
       type: 'investment_return',
       label: 'Investment Return Rank',
