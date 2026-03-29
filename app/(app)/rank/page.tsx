@@ -30,6 +30,7 @@ import { getNextRankHint } from '@/lib/utils/rank-next-hint'
 import { getRankInterpretation } from '@/lib/utils/rank-interpretation'
 import { getRankNarrativeSummary } from '@/lib/utils/rank-narrative-summary'
 import { getPrimaryRank } from '@/lib/utils/rank-priority'
+import { getRankReviewSummary } from '@/lib/utils/rank-review-summary'
 import { getRankReviewFingerprint, checkRankReviewDue, dismissRankReview } from '@/lib/utils/rank-review'
 import type { RankResult } from '@/lib/types/rank'
 
@@ -230,6 +231,14 @@ export default function RankPage() {
 
   const narrativeSummary = isFullyLoaded && summary.assetCount > 0
     ? getRankNarrativeSummary(ranks)
+    : null
+
+  const rankReviewSummary = isFullyLoaded && summary.assetCount > 0
+    ? getRankReviewSummary(ranks, {
+        hasAge:    !!settings.birthYear,
+        hasGender: !!settings.gender,
+        hasReturn: settings.annualReturnPct !== undefined,
+      })
     : null
 
   const nextHint = isFullyLoaded && summary.assetCount > 0
@@ -438,6 +447,29 @@ export default function RankPage() {
                   {action.label} →
                 </Link>
               ))}
+            </div>
+          )}
+
+          {/* Advisor review summary — structured 3-item status for profile / wealth / return */}
+          {rankReviewSummary && (
+            <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Review Summary</p>
+              <ul className="space-y-2.5">
+                {rankReviewSummary.map((item) => (
+                  <li key={item.topic} className="flex items-start gap-2.5">
+                    <span className={cn(
+                      'mt-1 h-2 w-2 shrink-0 rounded-full',
+                      item.status === 'ok'      ? 'bg-emerald-500' :
+                      item.status === 'review'  ? 'bg-amber-400' :
+                                                  'bg-gray-500'
+                    )} />
+                    <p className="text-xs leading-relaxed">
+                      <span className="font-medium text-gray-300">{item.label}</span>
+                      <span className="text-gray-500"> — {item.note}</span>
+                    </p>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
 
