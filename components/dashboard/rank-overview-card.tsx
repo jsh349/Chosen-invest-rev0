@@ -1,7 +1,9 @@
 'use client'
 
+import Link from 'next/link'
 import { cn } from '@/lib/utils/cn'
 import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
+import { ROUTES } from '@/lib/constants/routes'
 import type { RankResult } from '@/lib/types/rank'
 
 interface RankOverviewCardProps {
@@ -113,9 +115,17 @@ export function RankOverviewCard({ rank, ageRank, ageGenderRank, returnRank, tot
       </div>
 
       {/* Footer */}
-      <p className="text-[10px] text-gray-600 text-center">
-        Based on reference benchmarks. These are estimates only and not financial advice.
-      </p>
+      <div className="flex items-center justify-between gap-4">
+        <p className="text-[10px] text-gray-600">
+          Based on reference benchmarks. These are estimates only and not financial advice.
+        </p>
+        <Link
+          href={ROUTES.rank}
+          className="shrink-0 text-xs text-brand-400 hover:text-brand-300 transition-colors"
+        >
+          Full breakdown →
+        </Link>
+      </div>
     </div>
   )
 }
