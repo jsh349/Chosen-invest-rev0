@@ -25,6 +25,7 @@ export type RankBenchmarksAdapter = {
 // ---------------------------------------------------------------------------
 
 import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
+import { recordBenchmarkSourceSwitch } from '@/lib/utils/benchmark-source-history'
 
 const BENCHMARK_SOURCE_LS_KEY = STORAGE_KEYS.benchmarkSource
 
@@ -69,11 +70,13 @@ export function getActiveBenchmarkSourceId(): BenchmarkSource['id'] {
 export function setActiveBenchmarkSourceId(id: BenchmarkSource['id']): void {
   if (typeof window === 'undefined') return
   try {
+    const prevId = getActiveBenchmarkSourceId()
     if (id === 'default') {
       window.localStorage.removeItem(BENCHMARK_SOURCE_LS_KEY)
     } else {
       window.localStorage.setItem(BENCHMARK_SOURCE_LS_KEY, id)
     }
+    recordBenchmarkSourceSwitch(prevId, id)
   } catch { /* ignore quota / security errors */ }
 }
 

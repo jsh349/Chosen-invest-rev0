@@ -18,6 +18,7 @@ import { getBenchmarkCapabilities } from '@/lib/utils/benchmark-capabilities'
 import { getBenchmarkHealthStatus } from '@/lib/utils/benchmark-health'
 import { BENCHMARK_META } from '@/lib/mock/rank-benchmarks'
 import { readBenchmarkRefreshState } from '@/lib/utils/benchmark-refresh'
+import { getBenchmarkSourceHistory } from '@/lib/utils/benchmark-source-history'
 
 /** Keys whose stored value must be an array. Non-array values are skipped on import. */
 const ARRAY_KEYS: ReadonlySet<string> = new Set([
@@ -172,11 +173,12 @@ export default function SettingsPage() {
     reader.readAsText(file)
   }
 
-  const debugSrcId    = getActiveBenchmarkSourceId()
-  const debugCaps     = getBenchmarkCapabilities(debugSrcId)
-  const debugFallback = isUsingFallbackBenchmark()
-  const debugRefresh  = readBenchmarkRefreshState()
-  const debugHealth   = getBenchmarkHealthStatus(debugCaps, debugFallback)
+  const debugSrcId      = getActiveBenchmarkSourceId()
+  const debugCaps       = getBenchmarkCapabilities(debugSrcId)
+  const debugFallback   = isUsingFallbackBenchmark()
+  const debugRefresh    = readBenchmarkRefreshState()
+  const debugHealth     = getBenchmarkHealthStatus(debugCaps, debugFallback)
+  const lastSrcSwitch   = getBenchmarkSourceHistory()[0] ?? null
 
   return (
     <div className="space-y-6">
@@ -438,6 +440,12 @@ export default function SettingsPage() {
           {debugRefresh.hasPending && (
             <p><span className="inline-block w-32 text-gray-600">Pending</span>{debugRefresh.pendingSource ?? '—'}</p>
           )}
+          <p>
+            <span className="inline-block w-32 text-gray-600">Last switch</span>
+            {lastSrcSwitch
+              ? `${lastSrcSwitch.from} → ${lastSrcSwitch.to} (${new Date(lastSrcSwitch.changedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })})`
+              : '—'}
+          </p>
         </div>
       </details>
 
