@@ -17,6 +17,7 @@ import { ROUTES } from '@/lib/constants/routes'
 import { cn } from '@/lib/utils/cn'
 import { BENCHMARK_META } from '@/lib/mock/rank-benchmarks'
 import { percentileBandLabel } from '@/lib/utils/percentile-label'
+import { getRankInsight } from '@/lib/utils/rank-insight'
 import type { RankResult } from '@/lib/types/rank'
 
 type RankMode = 'individual' | 'household'
@@ -155,6 +156,10 @@ export default function RankPage() {
     computeReturnRank(settings.annualReturnPct),
   ] : []
 
+  const rankInsight = isFullyLoaded && summary.assetCount > 0
+    ? getRankInsight(ranks)
+    : null
+
   // Rules of Hooks: useEffect must be before any conditional return.
   // Guard inside the effect so it only fires once all data is loaded.
   useEffect(() => {
@@ -253,6 +258,13 @@ export default function RankPage() {
               >
                 Add assets →
               </Link>
+            </div>
+          )}
+
+          {/* Rank insight — shown only when a meaningful gap or profile gap is detected */}
+          {rankInsight && (
+            <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3">
+              <p className="text-xs text-gray-400 leading-relaxed">{rankInsight}</p>
             </div>
           )}
 
