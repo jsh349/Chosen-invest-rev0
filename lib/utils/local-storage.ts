@@ -1,3 +1,33 @@
+/** Safely read a raw string from localStorage. Returns null on server or any error. */
+export function readScalar(key: string): string | null {
+  if (typeof window === 'undefined') return null
+  try {
+    return window.localStorage.getItem(key)
+  } catch {
+    return null
+  }
+}
+
+/** Safely write a raw string to localStorage. Silently ignores errors. */
+export function writeScalar(key: string, value: string): void {
+  if (typeof window === 'undefined') return
+  try {
+    window.localStorage.setItem(key, value)
+  } catch {
+    // ignore quota or security errors
+  }
+}
+
+/** Safely remove a key from localStorage. Silently ignores errors. */
+export function removeKey(key: string): void {
+  if (typeof window === 'undefined') return
+  try {
+    window.localStorage.removeItem(key)
+  } catch {
+    // ignore quota or security errors
+  }
+}
+
 /** Safely read and parse JSON from localStorage. Returns fallback on any error. */
 export function readJSON<T>(key: string, fallback: T): T {
   if (typeof window === 'undefined') return fallback

@@ -14,6 +14,7 @@
 import type { BenchmarkFile } from '@/lib/types/benchmark-import'
 import { validateBenchmarkFile } from '@/lib/utils/benchmark-import'
 import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
+import { writeJSON, removeKey } from '@/lib/utils/local-storage'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -52,9 +53,7 @@ export function stagePendingBenchmark(file: BenchmarkFile): void {
   if (typeof window === 'undefined') return
   const error = validateBenchmarkFile(file)
   if (error) throw new Error(`Cannot stage invalid benchmark file: ${error}`)
-  try {
-    localStorage.setItem(STORAGE_KEYS.benchmarkPending, JSON.stringify(file))
-  } catch { /* ignore quota / security errors */ }
+  writeJSON(STORAGE_KEYS.benchmarkPending, file)
 }
 
 /**
@@ -79,10 +78,7 @@ export function getPendingBenchmark(): BenchmarkFile | null {
  * SSR-safe: no-op on the server.
  */
 export function clearPendingBenchmark(): void {
-  if (typeof window === 'undefined') return
-  try {
-    localStorage.removeItem(STORAGE_KEYS.benchmarkPending)
-  } catch { /* ignore quota / security errors */ }
+  removeKey(STORAGE_KEYS.benchmarkPending)
 }
 
 // ---------------------------------------------------------------------------
@@ -101,9 +97,7 @@ export function recordAppliedBenchmark(file: BenchmarkFile): void {
     vintageYear: file.vintageYear,
     appliedAt:   new Date().toISOString(),
   }
-  try {
-    localStorage.setItem(STORAGE_KEYS.benchmarkApplied, JSON.stringify(record))
-  } catch { /* ignore quota / security errors */ }
+  writeJSON(STORAGE_KEYS.benchmarkApplied, record)
 }
 
 /**

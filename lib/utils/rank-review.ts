@@ -13,6 +13,7 @@
  */
 
 import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
+import { readScalar, writeScalar } from '@/lib/utils/local-storage'
 
 export type RankReviewInputs = {
   totalAssetValue:  number
@@ -48,17 +49,13 @@ export function getRankReviewFingerprint(inputs: RankReviewInputs): string {
  */
 export function checkRankReviewDue(currentFingerprint: string): boolean {
   if (typeof window === 'undefined') return false
-  try {
-    const stored = localStorage.getItem(STORAGE_KEYS.rankReviewSeen)
-    if (stored === null) {
-      // First engagement — set baseline silently, no prompt yet
-      localStorage.setItem(STORAGE_KEYS.rankReviewSeen, currentFingerprint)
-      return false
-    }
-    return stored !== currentFingerprint
-  } catch {
+  const stored = readScalar(STORAGE_KEYS.rankReviewSeen)
+  if (stored === null) {
+    // First engagement — set baseline silently, no prompt yet
+    writeScalar(STORAGE_KEYS.rankReviewSeen, currentFingerprint)
     return false
   }
+  return stored !== currentFingerprint
 }
 
 /**
@@ -69,7 +66,5 @@ export function checkRankReviewDue(currentFingerprint: string): boolean {
  */
 export function dismissRankReview(currentFingerprint: string): void {
   if (typeof window === 'undefined') return
-  try {
-    localStorage.setItem(STORAGE_KEYS.rankReviewSeen, currentFingerprint)
-  } catch { /* ignore quota / security errors */ }
+  writeScalar(STORAGE_KEYS.rankReviewSeen, currentFingerprint)
 }

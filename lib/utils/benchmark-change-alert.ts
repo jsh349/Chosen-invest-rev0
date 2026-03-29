@@ -1,6 +1,7 @@
 import { BENCHMARK_META } from '@/lib/mock/rank-benchmarks'
 import { getActiveBenchmarkSourceId } from '@/lib/adapters/rank-benchmarks-adapter'
 import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
+import { readScalar, writeScalar } from '@/lib/utils/local-storage'
 
 /**
  * Returns a short informational note when any saved snapshot predates the
@@ -36,12 +37,7 @@ export function getBenchmarkFingerprint(): string {
  */
 export function checkBenchmarkChanged(): boolean {
   if (typeof window === 'undefined') return false
-  try {
-    const seen = localStorage.getItem(LS_KEY)
-    return seen !== getBenchmarkFingerprint()
-  } catch {
-    return false
-  }
+  return readScalar(LS_KEY) !== getBenchmarkFingerprint()
 }
 
 /**
@@ -50,7 +46,5 @@ export function checkBenchmarkChanged(): boolean {
  */
 export function dismissBenchmarkAlert(): void {
   if (typeof window === 'undefined') return
-  try {
-    localStorage.setItem(LS_KEY, getBenchmarkFingerprint())
-  } catch { /* ignore quota / security errors */ }
+  writeScalar(LS_KEY, getBenchmarkFingerprint())
 }

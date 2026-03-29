@@ -1,5 +1,6 @@
 import type { RankResult } from '@/lib/types/rank'
 import { indexRanks } from '@/lib/utils/rank-index'
+import { RANK_GAP_THRESHOLD } from '@/lib/utils/rank-insight'
 
 /**
  * Generates a short deterministic narrative summary (1–2 sentences) that
@@ -52,9 +53,9 @@ export function getRankNarrativeSummary(ranks: RankResult[]): string {
 
   // Optional second sentence — return gap takes priority over profile note
   let second = ''
-  if (retPct !== null && overallPct - retPct >= 20) {
+  if (retPct !== null && overallPct - retPct >= RANK_GAP_THRESHOLD) {
     second = ' Your investment return rank is notably lower than your wealth rank.'
-  } else if (retPct !== null && retPct - overallPct >= 20) {
+  } else if (retPct !== null && retPct - overallPct >= RANK_GAP_THRESHOLD) {
     second = ' Your investment return rank is notably stronger than your wealth rank.'
   } else if (profileIncomplete) {
     second = ' More detailed comparisons will be available when profile inputs are completed.'
