@@ -29,10 +29,12 @@ export function buildAdvisorContext(
   goals: Goal[],
   transactions: Transaction[],
 ): AdvisorContext {
+  const ym = new Date().toISOString().slice(0, 7) // "YYYY-MM"
+  const monthlyTx = transactions.filter((t) => t.date.startsWith(ym))
   return {
     portfolio: buildPortfolioSummary(LOCAL_USER_ID, assets),
     hasGoals: goals.length > 0,
     goalCount: goals.length,
-    cashFlow: transactions.length > 0 ? computeCashFlow(transactions) : null,
+    cashFlow: monthlyTx.length > 0 ? computeCashFlow(monthlyTx) : null,
   }
 }
