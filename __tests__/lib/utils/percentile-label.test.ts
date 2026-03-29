@@ -12,6 +12,6 @@ describe('percentileBandLabel', () => {
   it('returns Around median at 49', () => expect(percentileBandLabel(49)).toBe('Around median'))
   it('returns Below median at 25', () => expect(percentileBandLabel(25)).toBe('Below median'))
   it('returns Below median at 39', () => expect(percentileBandLabel(39)).toBe('Below median'))
-  it('returns Below lower quartile at 24', () => expect(percentileBandLabel(24)).toBe('Below lower quartile'))
-  it('returns Below lower quartile at 0', () => expect(percentileBandLabel(0)).toBe('Below lower quartile'))
+  it('returns Bottom 25% at 24', () => expect(percentileBandLabel(24)).toBe('Bottom 25%'))
+  it('returns Bottom 25% at 0', () => expect(percentileBandLabel(0)).toBe('Bottom 25%'))
 })

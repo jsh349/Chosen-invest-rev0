@@ -10,5 +10,5 @@ export function percentileBandLabel(percentile: number): string {
   if (percentile >= 50) return 'Above median'
   if (percentile >= 40) return 'Around median'
   if (percentile >= 25) return 'Below median'
-  return 'Below lower quartile'
+  return 'Bottom 25%'
 }

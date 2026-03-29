@@ -204,9 +204,9 @@ export function computeReturnRank(annualReturnPct?: number): RankResult {
   const sign = annualReturnPct >= 0 ? '+' : ''
 
   let message: string
-  if (percentile >= 80) message = `${sign}${annualReturnPct.toFixed(1)}% annual return — top ${topPct}% of investors.`
-  else if (percentile >= 50) message = `${sign}${annualReturnPct.toFixed(1)}% annual return — top ${topPct}% of investors.`
-  else message = `${sign}${annualReturnPct.toFixed(1)}% return — top ${topPct}%. Market conditions vary.`
+  if (percentile >= 80) message = `${sign}${annualReturnPct.toFixed(1)}% annual return — top ${topPct}% of investors, above the benchmark average.`
+  else if (percentile >= 50) message = `${sign}${annualReturnPct.toFixed(1)}% annual return — top ${topPct}% of investors, near the benchmark median.`
+  else message = `${sign}${annualReturnPct.toFixed(1)}% annual return — top ${topPct}% of investors, below the benchmark median.`
 
   const detail: RankDetail = {
     comparisonBasis: 'All investors (by estimated annual return)',
