@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { PlusCircle, BarChart2, SlidersHorizontal } from 'lucide-react'
+import { PlusCircle, BarChart2, SlidersHorizontal, Trophy } from 'lucide-react'
 import { DashboardOverview } from '@/components/dashboard/dashboard-overview'
 import { AllocationChartCard } from '@/components/dashboard/allocation-chart-card'
 import { AISummaryCard } from '@/components/dashboard/ai-summary-card'
@@ -46,6 +46,16 @@ function EmptyState() {
         <PlusCircle className="h-4 w-4" />
         Add Your First Asset
       </Link>
+      <div className="mt-8 flex items-start gap-3 rounded-xl border border-surface-border bg-surface-card px-4 py-3 text-left max-w-xs">
+        <Trophy className="mt-0.5 h-4 w-4 shrink-0 text-brand-400" />
+        <p className="text-xs text-gray-400 leading-relaxed">
+          Once your portfolio is set up, you can compare your wealth position against benchmark ranges using the{' '}
+          <Link href={ROUTES.rank} className="text-brand-400 hover:text-brand-300 transition-colors">
+            Wealth Rank
+          </Link>{' '}
+          feature.
+        </p>
+      </div>
     </div>
   )
 }
