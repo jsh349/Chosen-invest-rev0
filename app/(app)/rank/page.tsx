@@ -11,6 +11,7 @@ import { computeOverallWealthRank, computeAgeBasedRank, computeAgeGenderRank, co
 import { buildPortfolioSummary } from '@/features/dashboard/helpers'
 import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
+import { RankShareCard } from '@/components/rank/rank-share-card'
 import { LOCAL_USER_ID } from '@/lib/constants/auth'
 import { ROUTES } from '@/lib/constants/routes'
 import { cn } from '@/lib/utils/cn'
@@ -246,6 +247,9 @@ export default function RankPage() {
               ))}
             </div>
           )}
+
+          {/* Share card — compact summary preview */}
+          {summary.assetCount > 0 && <RankShareCard ranks={ranks} />}
         </>
       )}
 
