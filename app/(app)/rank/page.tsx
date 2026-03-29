@@ -27,6 +27,7 @@ import { buildMonthlySummary } from '@/lib/utils/rank-monthly-summary'
 import { buildMilestoneHistory } from '@/lib/utils/rank-milestone-history'
 import { checkBenchmarkChanged, dismissBenchmarkAlert, benchmarkVersionNote, getBenchmarkFingerprint } from '@/lib/utils/benchmark-change-alert'
 import { getNextRankHint } from '@/lib/utils/rank-next-hint'
+import { getRankInterpretation } from '@/lib/utils/rank-interpretation'
 import { getRankReviewFingerprint, checkRankReviewDue, dismissRankReview } from '@/lib/utils/rank-review'
 import type { RankResult } from '@/lib/types/rank'
 
@@ -79,6 +80,9 @@ function RankRow({ result }: { result: RankResult }) {
             <p className="text-2xl font-bold text-gray-600">—</p>
           )}
           <p className="text-sm text-gray-400 leading-relaxed">{result.message}</p>
+          {hasPct && (
+            <p className="text-[11px] text-gray-500">{getRankInterpretation(result.percentile!)}</p>
+          )}
           {hasPct && (
             <div className="pt-1">
               <PercentileBar percentile={result.percentile!} />
