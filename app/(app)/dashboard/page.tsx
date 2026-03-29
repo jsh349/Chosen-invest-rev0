@@ -62,13 +62,13 @@ function EmptyState() {
 
 export default function DashboardPage() {
   const { assets, hasCustomAssets, isLoaded } = useAssets()
-  const { goals } = useGoals()
-  const { transactions } = useTransactions()
+  const { goals, isLoaded: goalsLoaded } = useGoals()
+  const { transactions, isLoaded: txLoaded } = useTransactions()
   const { prefs, isLoaded: prefsLoaded, toggle } = useDashboardPrefs()
   const { settings } = useSettings()
   const [showPrefs, setShowPrefs] = useState(false)
 
-  if (!isLoaded || !prefsLoaded) {
+  if (!isLoaded || !prefsLoaded || !goalsLoaded || !txLoaded) {
     return (
       <LoadingSpinner />
     )
