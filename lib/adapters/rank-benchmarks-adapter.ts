@@ -1,6 +1,7 @@
 import type { BenchmarkBucket } from '@/lib/types/rank'
 import type { BenchmarkFile } from '@/lib/types/benchmark-import'
 import { validateBenchmarkFile, parseBenchmarkFile } from '@/lib/utils/benchmark-import'
+import { runBenchmarkQA } from '@/lib/utils/benchmark-qa'
 import {
   OVERALL_WEALTH_BUCKETS,
   AGE_BASED_BUCKETS,
@@ -106,6 +107,15 @@ function resolveAdapter(): RankBenchmarksAdapter {
 
 /** Active adapter — resolved from stored preference at module load. */
 export const rankBenchmarksAdapter: RankBenchmarksAdapter = resolveAdapter()
+
+// One-time QA check at module load. Logs console.warn for any malformed bucket.
+// Never blocks; silent in test environments.
+runBenchmarkQA({
+  overallWealth:    rankBenchmarksAdapter.getOverallWealthBenchmarks(),
+  ageBased:         rankBenchmarksAdapter.getAgeBenchmarks(),
+  ageGender:        rankBenchmarksAdapter.getAgeGenderBenchmarks(),
+  investmentReturn: rankBenchmarksAdapter.getReturnBenchmarks(),
+}, { silent: process.env.NODE_ENV === 'test' })
 
 /**
  * Creates a RankBenchmarksAdapter from a validated BenchmarkFile.
