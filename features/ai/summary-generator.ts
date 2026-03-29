@@ -100,21 +100,27 @@ export function generateAISummary(ctx: AdvisorContext): AIAnalysisResult {
     }
   }
 
-  // Rank context
+  // Rank context — at most one narrative sentence, one key point
   const rs = ctx.rankSummary
   if (rs) {
     if (rs.overallPercentile != null && rs.overallPercentile >= 70) {
       keyPoints.push(`Wealth rank: top ${100 - rs.overallPercentile}% nationally`)
     }
+
+    // Pick the single most informative rank sentence (priority: return gap > age standing)
+    let rankSentence: string | null = null
     if (rs.overallPercentile != null && rs.returnPercentile != null) {
       if (rs.returnPercentile >= rs.overallPercentile + 15) {
-        lines.push('Your investment returns are outperforming relative to your wealth standing — strong momentum.')
+        rankSentence = 'Your investment return benchmark appears stronger than your overall wealth standing — good momentum.'
       } else if (rs.returnPercentile <= rs.overallPercentile - 15) {
-        lines.push('Your investment returns trail your overall wealth percentile. Consider reviewing your portfolio strategy.')
+        rankSentence = 'Your investment return benchmark trails your overall wealth percentile. Consider reviewing your portfolio strategy.'
       }
     }
-    if (rs.agePercentile != null && rs.agePercentile >= 75) {
-      lines.push(`You rank in the top ${100 - rs.agePercentile}% for your age group — well ahead of peers.`)
+    if (rankSentence === null && rs.agePercentile != null && rs.agePercentile >= 75) {
+      rankSentence = `Your wealth benchmark appears above average for your age group — top ${100 - rs.agePercentile}% among peers.`
+    }
+    if (rankSentence !== null) {
+      lines.push(rankSentence)
     }
   }
 
