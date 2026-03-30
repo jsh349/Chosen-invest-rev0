@@ -23,6 +23,25 @@ if (process.env.NODE_ENV === 'production' && process.env.AUTH_TRUST_HOST === 'tr
   )
 }
 
+// AUTH_URL must be set in production and must not point at localhost.
+// A localhost callback URL in production means OAuth redirects back to a
+// developer machine rather than the live server — auth silently breaks.
+if (process.env.NODE_ENV === 'production') {
+  const authUrl = process.env.AUTH_URL || process.env.NEXTAUTH_URL
+  if (!authUrl) {
+    throw new Error(
+      '[auth] AUTH_URL is not set in production.\n' +
+      'Set AUTH_URL to your production base URL. Example: AUTH_URL=https://yourdomain.com',
+    )
+  }
+  if (/localhost|127\.0\.0\.1/.test(authUrl)) {
+    throw new Error(
+      `[auth] AUTH_URL is set to a local address in production: "${authUrl}"\n` +
+      'Set AUTH_URL to your production base URL. Example: AUTH_URL=https://yourdomain.com',
+    )
+  }
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Google({
