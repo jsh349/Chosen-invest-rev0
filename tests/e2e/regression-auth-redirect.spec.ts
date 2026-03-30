@@ -50,3 +50,18 @@ test.describe('Auth redirect — /login itself is reachable', () => {
     await expect(page.getByRole('button', { name: /continue with google/i })).toBeVisible()
   })
 })
+
+test.describe('Auth error state — /login?error= renders user-visible message', () => {
+  // OAuthSignin is the most common error code returned by NextAuth on OAuth failure.
+  // The login page maps it to "Sign-in failed. Please try again." via oauthErrorMessage().
+  test('/login?error=OAuthSignin shows error message and keeps sign-in button', async ({ page }) => {
+    await page.goto('/login?error=OAuthSignin')
+    await page.waitForLoadState('networkidle')
+
+    // Error banner must be visible with the mapped human-readable message
+    await expect(page.getByText('Sign-in failed. Please try again.')).toBeVisible()
+
+    // Google sign-in button must still be present so the user can retry
+    await expect(page.getByRole('button', { name: /continue with google/i })).toBeVisible()
+  })
+})
