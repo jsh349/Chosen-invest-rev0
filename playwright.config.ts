@@ -7,9 +7,6 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:3001',
     headless: true,
-    launchOptions: {
-      executablePath: '/root/.cache/ms-playwright/chromium-1194/chrome-linux/chrome',
-    },
   },
   projects: [
     { name: 'chromium', use: { browserName: 'chromium' } },
