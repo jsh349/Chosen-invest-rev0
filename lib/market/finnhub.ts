@@ -14,8 +14,11 @@ export async function getQuote(symbol: string): Promise<{
   o: number  // open
   pc: number // previous close
 }> {
+  if (!symbol || typeof symbol !== 'string') {
+    throw new Error('[getQuote] symbol is required')
+  }
   const res = await fetch(
-    `${FINNHUB_BASE}/quote?symbol=${symbol}&token=${API_KEY}`,
+    `${FINNHUB_BASE}/quote?symbol=${encodeURIComponent(symbol)}&token=${API_KEY}`,
     { next: { revalidate: 60 } } // cache 60s
   )
   if (!res.ok) throw new Error(`Finnhub quote error: ${res.status}`)
@@ -25,6 +28,9 @@ export async function getQuote(symbol: string): Promise<{
 export async function searchSymbol(query: string): Promise<{
   result: Array<{ symbol: string; description: string; type: string }>
 }> {
+  if (!query || typeof query !== 'string') {
+    throw new Error('[searchSymbol] query is required')
+  }
   const res = await fetch(
     `${FINNHUB_BASE}/search?q=${encodeURIComponent(query)}&token=${API_KEY}`
   )

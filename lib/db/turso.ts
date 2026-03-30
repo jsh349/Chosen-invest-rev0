@@ -2,8 +2,16 @@ import { createClient } from '@libsql/client'
 import { drizzle } from 'drizzle-orm/libsql'
 import * as schema from './schema'
 
+const connectionUrl = process.env.TURSO_CONNECTION_URL
+if (!connectionUrl) {
+  throw new Error(
+    '[db] Missing required environment variable: TURSO_CONNECTION_URL\n' +
+    'Set TURSO_CONNECTION_URL=file:local.db for local development.',
+  )
+}
+
 const turso = createClient({
-  url:       process.env.TURSO_CONNECTION_URL!,
+  url:       connectionUrl,
   authToken: process.env.TURSO_AUTH_TOKEN,
 })
 
