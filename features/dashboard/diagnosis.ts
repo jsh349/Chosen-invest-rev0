@@ -1,6 +1,56 @@
+/**
+ * Health-card scoring specification — Phase 2 MVP formulas.
+ *
+ * All scores are integers in [0, 100]. statusFromScore maps:
+ *   score >= 70  → 'good'
+ *   score >= 50  → 'warning'
+ *   score <  50  → 'attention'
+ *
+ * ── DIVERSIFICATION ──────────────────────────────────────────────────
+ *   Input:  categoryCount = number of distinct asset categories
+ *   Score:  min(100, categoryCount × 16)
+ *   Result: 0 categories → 0 (attention)
+ *            1 category  → 16 (attention)
+ *            2 categories → 32 (attention)
+ *            3 categories → 48 (attention)   ← lowest warning threshold
+ *            4 categories → 64 (warning)
+ *           ≥5 categories → ≥80 (good at 5)
+ *   Rationale: each category adds 16 points; 5+ categories = well spread.
+ *
+ * ── CONCENTRATION RISK ───────────────────────────────────────────────
+ *   Input:  topPct = percentage of portfolio in the single largest category
+ *   Score:  topPct > 60% → 30 (attention)
+ *           topPct > 40% → 55 (warning)
+ *           topPct ≤ 40% → 80 (good)
+ *   Rationale: >60% in one category is high concentration risk;
+ *              40–60% is notable; ≤40% is healthy diversification.
+ *
+ * ── LIQUIDITY ────────────────────────────────────────────────────────
+ *   Input:  cashPct = percentage of portfolio in 'cash' category
+ *   Score:  cashPct >= 10% → 80 (good)
+ *           cashPct >=  5% → 55 (warning)
+ *           cashPct <   5% → 35 (attention)
+ *   Rationale: 10%+ cash covers emergency buffer; <5% is illiquid risk.
+ *
+ * ── GROWTH BALANCE ───────────────────────────────────────────────────
+ *   Input:  hasRetirement = any 'retirement' category asset exists
+ *           hasGrowth     = any 'stock' or 'etf' category asset exists
+ *   Score:  both present     → 80 (good)
+ *           one present      → 60 (warning)
+ *           neither present  → 40 (attention)
+ *   Rationale: a healthy portfolio has both growth assets and
+ *              long-term retirement savings.
+ *
+ * ── EMPTY / ZERO-TOTAL GUARD ─────────────────────────────────────────
+ *   When assetCount === 0 OR totalAssetValue === 0, all four cards
+ *   return score 0 / status 'attention' / generic placeholder message.
+ *   This prevents NaN, Infinity, and misleading grades on empty data.
+ */
+
 import type { PortfolioSummary } from '@/lib/types/dashboard'
 import type { FinancialHealthCard, HealthStatus } from '@/lib/types/health-card'
 
+// score >= 70 → 'good' | score >= 50 → 'warning' | score < 50 → 'attention'
 function statusFromScore(score: number): HealthStatus {
   if (score >= 70) return 'good'
   if (score >= 50) return 'warning'
@@ -31,7 +81,7 @@ export function generateHealthCards(summary: PortfolioSummary): FinancialHealthC
     ]
   }
 
-  // Diversification: number of categories
+  // Diversification: min(100, categoryCount × 16) → good ≥5, warning 4, attention ≤3
   const categoryCount = categoryBreakdown.length
   const diversificationScore = Math.min(100, categoryCount * 16)
   const diversificationMessage =
@@ -41,7 +91,7 @@ export function generateHealthCards(summary: PortfolioSummary): FinancialHealthC
       ? `${categoryCount} asset categories — consider broadening exposure.`
       : `Only ${categoryCount} category. Portfolio needs more diversification.`
 
-  // Concentration: largest single category %
+  // Concentration: topPct >60% → 30 (attention), >40% → 55 (warning), ≤40% → 80 (good)
   const topSlice = categoryBreakdown[0]
   const topPct = topSlice?.percentage ?? 0
   const concentrationScore = topPct > 60 ? 30 : topPct > 40 ? 55 : 80
@@ -54,7 +104,7 @@ export function generateHealthCards(summary: PortfolioSummary): FinancialHealthC
       ? `${topSlice.label} is ${topPct.toFixed(0)}% of total. Single-asset dominance to watch.`
       : 'No single category dominates. Concentration looks healthy.'
 
-  // Liquidity: cash %
+  // Liquidity: cashPct ≥10% → 80 (good), ≥5% → 55 (warning), <5% → 35 (attention)
   const cashSlice = categoryBreakdown.find((s) => s.category === 'cash')
   const cashPct = cashSlice?.percentage ?? 0
   const liquidityScore = cashPct >= 10 ? 80 : cashPct >= 5 ? 55 : 35
@@ -65,7 +115,7 @@ export function generateHealthCards(summary: PortfolioSummary): FinancialHealthC
       ? `Cash is ${cashPct.toFixed(0)}%. Consider building a stronger emergency fund.`
       : `Cash is under 5%. Low liquidity could be a risk in an emergency.`
 
-  // Balance: mix of stable + growth
+  // Balance: both retirement+growth → 80 (good), one only → 60 (warning), neither → 40 (attention)
   const hasRetirement = categoryBreakdown.some((s) => s.category === 'retirement')
   const hasGrowth = categoryBreakdown.some(
     (s) => s.category === 'stock' || s.category === 'etf'
