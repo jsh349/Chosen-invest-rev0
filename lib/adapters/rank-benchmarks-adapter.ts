@@ -87,13 +87,27 @@ export function setActiveBenchmarkSourceId(id: BenchmarkSource['id']): void {
 // Adapter resolution
 // ---------------------------------------------------------------------------
 
-function buildDefaultAdapter(): RankBenchmarksAdapter {
+function buildAdapterFromBuckets(buckets: {
+  overallWealth:    BenchmarkBucket[]
+  ageBased:         BenchmarkBucket[]
+  ageGender:        BenchmarkBucket[]
+  investmentReturn: BenchmarkBucket[]
+}): RankBenchmarksAdapter {
   return {
-    getOverallWealthBenchmarks: () => OVERALL_WEALTH_BUCKETS,
-    getAgeBenchmarks:           () => AGE_BASED_BUCKETS,
-    getAgeGenderBenchmarks:     () => AGE_GENDER_BUCKETS,
-    getReturnBenchmarks:        () => RETURN_BUCKETS,
+    getOverallWealthBenchmarks: () => buckets.overallWealth,
+    getAgeBenchmarks:           () => buckets.ageBased,
+    getAgeGenderBenchmarks:     () => buckets.ageGender,
+    getReturnBenchmarks:        () => buckets.investmentReturn,
   }
+}
+
+function buildDefaultAdapter(): RankBenchmarksAdapter {
+  return buildAdapterFromBuckets({
+    overallWealth:    OVERALL_WEALTH_BUCKETS,
+    ageBased:         AGE_BASED_BUCKETS,
+    ageGender:        AGE_GENDER_BUCKETS,
+    investmentReturn: RETURN_BUCKETS,
+  })
 }
 
 /**
@@ -130,12 +144,7 @@ function resolveAdapter(): RankBenchmarksAdapter {
           if (qaIssues > 0) {
             console.warn(`[BenchmarkAdapter] Curated file failed QA (${qaIssues} issue(s)). Using built-in defaults.`)
           } else {
-            return {
-              getOverallWealthBenchmarks: () => buckets.overallWealth,
-              getAgeBenchmarks:           () => buckets.ageBased,
-              getAgeGenderBenchmarks:     () => buckets.ageGender,
-              getReturnBenchmarks:        () => buckets.investmentReturn,
-            }
+            return buildAdapterFromBuckets(buckets)
           }
         } catch (err) {
           console.warn('[BenchmarkAdapter] Failed to parse curated file. Using built-in defaults.', err)
@@ -225,12 +234,7 @@ export function rankBenchmarksAdapterFromFile(file: BenchmarkFile): RankBenchmar
   try {
     const buckets = parseBenchmarkFile(file)
     runBenchmarkQA(buckets, { silent: process.env.NODE_ENV === 'test' })
-    return {
-      getOverallWealthBenchmarks: () => buckets.overallWealth,
-      getAgeBenchmarks:           () => buckets.ageBased,
-      getAgeGenderBenchmarks:     () => buckets.ageGender,
-      getReturnBenchmarks:        () => buckets.investmentReturn,
-    }
+    return buildAdapterFromBuckets(buckets)
   } catch (err) {
     console.warn('[BenchmarkAdapter] rankBenchmarksAdapterFromFile: failed to parse file. Falling back to defaults.', err)
     return buildDefaultAdapter()
