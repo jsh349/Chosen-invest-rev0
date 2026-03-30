@@ -527,7 +527,12 @@ export default function RankPage() {
           {/* Advisor review summary — structured 3-item status for profile / wealth / return */}
           {rankReviewSummary && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Review Summary</p>
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Review Summary</p>
+                <span className="text-[10px] text-amber-500/70">
+                  {reviewVisible ? 'Inputs changed' : 'Review pending'}
+                </span>
+              </div>
               <ul className="space-y-2.5">
                 {rankReviewSummary.map((item) => (
                   <li key={item.topic} className="flex items-start gap-2.5">
