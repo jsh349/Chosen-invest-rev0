@@ -473,6 +473,12 @@ export default function RankPage() {
                 </div>
               )}
               <div>
+                <p className="text-xs text-gray-500">Benchmark</p>
+                <p className="mt-0.5 text-sm font-semibold text-white">
+                  {sourceSummary?.currentLabel ?? (usingFallbackBenchmark ? 'Built-in reference' : 'Default')}
+                </p>
+              </div>
+              <div>
                 <p className="text-xs text-gray-500">Profile</p>
                 <p className={cn('mt-0.5 text-sm font-semibold', rankCompleteness(availableCount).color)}>
                   {rankCompleteness(availableCount).label}
