@@ -26,7 +26,7 @@ export function getBenchmarkHealthStatus(
   if (isUsingFallback) {
     return {
       status: 'fallback',
-      note: 'Preferred source could not be loaded — built-in data is active.',
+      note: 'Preferred source unavailable — built-in reference data is active.',
     }
   }
 

@@ -812,7 +812,7 @@ export default function RankPage() {
           </div>
           {sourceSummary.fallbackActive && (
             <p className="text-xs text-amber-400/80">
-              Built-in reference is active — curated source could not be loaded.
+              Preferred source unavailable — built-in reference data is active.
             </p>
           )}
         </div>
@@ -846,8 +846,8 @@ export default function RankPage() {
           <span className="text-[10px] text-gray-600">
             <span className="text-gray-500">Active source: </span>
             {usingFallbackBenchmark
-              ? 'Built-in (default) — curated source could not be loaded'
-              : activeBenchmarkSource === 'curated' ? 'Curated dataset' : 'Built-in (default)'}
+              ? 'Built-in reference — preferred source unavailable'
+              : activeBenchmarkSource === 'curated' ? 'Curated dataset' : 'Built-in reference'}
           </span>
           <span className="text-[10px] text-gray-600">
             <span className="text-gray-500">Status: </span>
@@ -861,7 +861,7 @@ export default function RankPage() {
           )}
           {usingFallbackBenchmark && (
             <span className="text-[10px] text-amber-500/70 w-full">
-              Results are based on the built-in reference dataset. Check the benchmark source in Settings.
+              Results are based on built-in reference data. Check the benchmark source in Settings.
             </span>
           )}
           {getBenchmarkSourceNote(activeBenchmarkSource, benchmarkCaps.isFallbackOnly) && (

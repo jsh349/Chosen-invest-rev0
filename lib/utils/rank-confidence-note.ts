@@ -29,7 +29,7 @@ export function getRankConfidenceNote(params: {
 
   if (benchmarkHealthStatus === 'fallback') {
     return {
-      text:  'Using built-in reference data — your preferred benchmark source could not be loaded.',
+      text:  'Using built-in reference data — preferred source unavailable.',
       level: 'low',
     }
   }
