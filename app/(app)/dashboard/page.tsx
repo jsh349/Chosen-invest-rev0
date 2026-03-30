@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-import { PlusCircle, BarChart2, SlidersHorizontal, Trophy } from 'lucide-react'
+import { PlusCircle, BarChart2, SlidersHorizontal, Trophy, Info } from 'lucide-react'
 import { DashboardOverview } from '@/components/dashboard/dashboard-overview'
 import { AllocationChartCard } from '@/components/dashboard/allocation-chart-card'
 import { AISummaryCard } from '@/components/dashboard/ai-summary-card'
@@ -171,6 +171,16 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+
+      {/* Preview disclosure — data is stored locally, not yet synced to cloud */}
+      <div className="flex items-start gap-2 rounded-lg border border-yellow-900/40 bg-yellow-950/30 px-3 py-2.5 text-xs text-yellow-300/80">
+        <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-yellow-400/70" />
+        <span>
+          <strong className="font-medium text-yellow-200/90">Preview mode</strong>
+          {' '}— your data is saved in this browser only and is not yet synced to the cloud.
+          Values shown are based on the assets you have entered.
+        </span>
+      </div>
 
       <DashboardOverview summary={summary} />
 
