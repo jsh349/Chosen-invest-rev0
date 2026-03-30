@@ -1,43 +1,42 @@
-# Plan.md — Phase 158: Rank Surface Parity Pass
+# Plan.md — Phase 159: Rank Rollout Readiness Checklist
 
 ## Task Summary
-Align the explanation text in RankShareCard with RankReportSection.
-After Phase 156, RankReportSection uses highlight.message for the
-explanation slot. RankShareCard still uses getRankInterpretation(),
-giving generic text on one surface and specific contextual text on the other.
+Add a compact internal-only rollout readiness checklist inside a collapsed
+<details> block in settings/page.tsx, placed below the existing
+Benchmark Diagnostics section.
 
-## Parity Gap
-RankReportSection explanation: "Top 30% nationally — above the median benchmark."
-RankShareCard explanation:     "Above the benchmark midpoint."
+## Goal
+Give internal reviewers a quick scan of whether the rank/benchmark system
+appears ready for external benchmark rollout. All checks are deterministic
+and computed from values already available in the component.
 
-Both surfaces show the same percentile — the contextual explanation
-should be consistent.
+## Checklist Items (5)
+1. Benchmark metadata defined   — BENCHMARK_META.version + updatedAt + sourceLabel all present
+2. Active source is not a stub  — !debugCaps.isFallbackOnly
+3. Full capability coverage     — all 4 caps (wealth/age/age+gender/return) = true
+4. Source health known          — debugHealth.status !== 'invalid'
+5. No staged update pending     — !debugRefresh.hasPending
 
-## Fix
-Replace getRankInterpretation(hero.percentile) with hero.message
-in the hero block of RankShareCard. Remove now-unused import.
+An aggregate "All ready" / "Not ready" indicator at the top.
 
 ## Non-Goals
-- No change to hero rank selection (overall_wealth is intentional for share card)
-- No change to secondary rank rows
-- No change to footer link copy ("Full breakdown →" suits the share card's purpose)
-- No change to partial data note
-- No changes to RankReportSection
+- No new utility file (all values are already in scope)
+- No user-facing exposure
+- No changes to existing diagnostics display
+- No new workflow or admin feature
 
 ## Affected Files
 ### Modified
-- `components/rank/rank-share-card.tsx`
-  — hero explanation: getRankInterpretation(hero.percentile) → hero.message
-  — remove getRankInterpretation import (now unused)
+- `app/(app)/settings/page.tsx`
+  — add <details> block after Benchmark Diagnostics, before Reset
 
 ## Risks
-- Minimal. hero.message is always a non-empty string on RankResult.
-  hero is only rendered when hero.percentile != null, which is also
-  when computeOverallWealthRank produces a specific message.
+- Minimal. Read-only display. No state mutation.
+- Collapsed by default — zero impact on non-internal users.
 
 ## Validation Steps
 1. TypeScript: npx tsc --noEmit → 0 errors
-2. Hero explanation shows rank-specific text ("nationally", etc.)
-3. Secondary rows unchanged
-4. Partial data note unchanged
-5. Footer unchanged
+2. Block renders collapsed by default
+3. Expand → 5 checklist items visible with ✓/✗ indicators
+4. Default source: items 1–4 all ✓, item 5 depends on pending state
+5. External stub source: item 2 (stub) + item 4 (invalid) show ✗
