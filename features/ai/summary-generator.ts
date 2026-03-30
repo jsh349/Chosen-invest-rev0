@@ -47,18 +47,20 @@ export function generateAISummary(ctx: AdvisorContext): AIAnalysisResult {
     `Your portfolio holds ${assetCount} asset${assetCount > 1 ? 's' : ''} with a total value of ${formatCompact(totalAssetValue, currencySymbol, showCents)}.`
   )
 
-  // Top category commentary
+  // Top category commentary.
+  // Thresholds match the Concentration Risk health card (diagnosis.ts):
+  //   >60% → attention, >40% → warning, ≤40% → good.
   if (topCategory) {
     if (topPct > 60) {
       lines.push(
         `${topCategory.label} is your dominant position at ${topPct.toFixed(0)}%, which introduces concentration risk.`
       )
       keyPoints.push(`High ${topCategory.label} concentration — review exposure`)
-    } else if (topPct > 35) {
+    } else if (topPct > 40) {
       lines.push(
-        `${topCategory.label} is your largest holding at ${topPct.toFixed(0)}%, providing a meaningful anchor to your portfolio.`
+        `${topCategory.label} is your largest holding at ${topPct.toFixed(0)}%. Single-category dominance is worth monitoring.`
       )
-      keyPoints.push(`${topCategory.label} anchors your portfolio`)
+      keyPoints.push(`${topCategory.label} concentration — worth monitoring`)
     } else {
       lines.push('No single asset class dominates — your allocation is well spread.')
       keyPoints.push('Well-spread allocation')
@@ -76,11 +78,15 @@ export function generateAISummary(ctx: AdvisorContext): AIAnalysisResult {
     keyPoints.push('No retirement savings — consider adding')
   }
 
-  // Cash signal
+  // Cash signal.
+  // Thresholds match the Liquidity health card (diagnosis.ts):
+  //   ≥10% → good, ≥5% → warning, <5% → attention.
   const cashSlice = categoryBreakdown.find((s) => s.category === 'cash')
   if (cashSlice && cashSlice.percentage >= 10) {
     keyPoints.push('Good cash liquidity buffer')
-  } else if (!cashSlice || cashSlice.percentage < 5) {
+  } else if (cashSlice && cashSlice.percentage >= 5) {
+    keyPoints.push('Cash buffer is modest — consider building toward 10% for a stronger emergency reserve')
+  } else {
     lines.push('Cash reserves are low. A larger liquidity buffer would improve your ability to handle unexpected expenses.')
     keyPoints.push('Low cash — consider building emergency fund')
   }
