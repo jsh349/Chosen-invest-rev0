@@ -108,7 +108,6 @@ export default function DashboardPage() {
     [assets, goals, transactions]
   )
   const summary = baseCtx.portfolio
-  const healthCards = useMemo(() => generateHealthCards(summary), [summary])
   const trendData = useMemo(() => buildMockTrend(summary.totalAssetValue), [summary.totalAssetValue])
   const userAge = useMemo(
     () => settings.birthYear ? new Date().getFullYear() - settings.birthYear : undefined,
@@ -118,9 +117,17 @@ export default function DashboardPage() {
   const ageRank = useMemo(() => computeAgeBasedRank(summary.totalAssetValue, userAge), [summary.totalAssetValue, userAge])
   const ageGenderRank = useMemo(() => computeAgeGenderRank(summary.totalAssetValue, userAge, settings.gender), [summary.totalAssetValue, userAge, settings.gender])
   const returnRank = useMemo(() => computeReturnRank(settings.annualReturnPct), [settings.annualReturnPct])
-  const aiAnalysis = useMemo(() => {
+
+  // Health cards and AI summary are co-derived from the same portfolio snapshot
+  // in a single useMemo. This guarantees both surfaces always reflect the same
+  // input data: a change to portfolio, rank, or settings triggers a single
+  // atomic re-computation of both rather than two independent re-renders that
+  // could briefly be out of sync.
+  const { healthCards, aiAnalysis } = useMemo(() => {
+    const cards = generateHealthCards(summary)
+    let analysis
     try {
-      return generateAISummary({
+      analysis = generateAISummary({
         ...baseCtx,
         rankSummary: {
           overallPercentile: overallRank.percentile,
@@ -131,7 +138,7 @@ export default function DashboardPage() {
         showCents: settings.showCents,
       })
     } catch {
-      return {
+      analysis = {
         userId: baseCtx.portfolio.userId,
         summaryText: 'Your summary is temporarily unavailable. Your portfolio data is still accessible above.',
         keyPoints: [],
@@ -140,6 +147,7 @@ export default function DashboardPage() {
         generatedAt: new Date().toISOString(),
       }
     }
+    return { healthCards: cards, aiAnalysis: analysis }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [baseCtx, overallRank.percentile, ageRank.percentile, returnRank.percentile, settings.currency, settings.showCents])
 
