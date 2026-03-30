@@ -3,6 +3,7 @@
 import { forwardRef } from 'react'
 import Link from 'next/link'
 import type { RankResult } from '@/lib/types/rank'
+import { topPctLabel, percentileColor } from '@/lib/utils/rank-format'
 import { cn } from '@/lib/utils/cn'
 import { ROUTES } from '@/lib/constants/routes'
 
@@ -14,17 +15,6 @@ type Props = {
   ranks: RankResult[]
 }
 
-function topPctLabel(percentile: number): string {
-  const top = 100 - percentile
-  return top === 0 ? '<1%' : `${top}%`
-}
-
-function percentileColor(percentile: number): string {
-  if (percentile >= 75) return 'text-emerald-400'
-  if (percentile >= 50) return 'text-brand-400'
-  if (percentile >= 30) return 'text-amber-400'
-  return 'text-gray-400'
-}
 
 /**
  * Self-contained rank summary card.

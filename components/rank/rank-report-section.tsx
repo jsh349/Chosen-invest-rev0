@@ -5,6 +5,7 @@ import type { RankResult } from '@/lib/types/rank'
 import type { RankHint } from '@/lib/utils/rank-next-hint'
 import { getPrimaryRank } from '@/lib/utils/rank-priority'
 import { getRankInsight } from '@/lib/utils/rank-insight'
+import { topPctLabel, percentileColor } from '@/lib/utils/rank-format'
 import { cn } from '@/lib/utils/cn'
 import { ROUTES } from '@/lib/constants/routes'
 
@@ -52,17 +53,6 @@ export function composeRankReport(
   }
 }
 
-function topPctLabel(percentile: number): string {
-  const top = 100 - percentile
-  return top === 0 ? '<1%' : `${top}%`
-}
-
-function percentileColor(percentile: number): string {
-  if (percentile >= 75) return 'text-emerald-400'
-  if (percentile >= 50) return 'text-brand-400'
-  if (percentile >= 30) return 'text-amber-400'
-  return 'text-gray-400'
-}
 
 /**
  * Renders a RankReportContent in canonical slot order.

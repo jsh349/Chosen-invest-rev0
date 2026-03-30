@@ -40,6 +40,7 @@ import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
 import { getRankNarrativeSummary } from '@/lib/utils/rank-narrative-summary'
 import { getBenchmarkSourceNote } from '@/lib/utils/benchmark-source-note'
 import { getRankSourceExplanation } from '@/lib/utils/rank-source-explanation'
+import { percentileColor } from '@/lib/utils/rank-format'
 import { getPrimaryRank } from '@/lib/utils/rank-priority'
 import { getRankReviewSummary } from '@/lib/utils/rank-review-summary'
 import { getRankReviewFingerprint, checkRankReviewDue, dismissRankReview } from '@/lib/utils/rank-review'
@@ -78,12 +79,6 @@ function rankCompleteness(availableCount: number): { label: string; color: strin
   return                          { label: 'More complete', color: 'text-emerald-400' }
 }
 
-function percentileColor(percentile: number): string {
-  if (percentile >= 75) return 'text-emerald-400'
-  if (percentile >= 50) return 'text-brand-400'
-  if (percentile >= 30) return 'text-amber-400'
-  return 'text-gray-400'
-}
 
 function PercentileBar({ percentile }: { percentile: number }) {
   const color =

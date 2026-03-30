@@ -1,42 +1,48 @@
-# Plan.md — Phase 159: Rank Rollout Readiness Checklist
+# Plan.md — Phase 160: Rank Maintainability Cleanup
 
 ## Task Summary
-Add a compact internal-only rollout readiness checklist inside a collapsed
-<details> block in settings/page.tsx, placed below the existing
-Benchmark Diagnostics section.
+Extract two identically-duplicated formatting helpers into a shared utility
+so colour thresholds and label logic have a single source of truth.
 
-## Goal
-Give internal reviewers a quick scan of whether the rank/benchmark system
-appears ready for external benchmark rollout. All checks are deterministic
-and computed from values already available in the component.
+## Finding
+topPctLabel(percentile):
+  — identical in rank-report-section.tsx and rank-share-card.tsx
 
-## Checklist Items (5)
-1. Benchmark metadata defined   — BENCHMARK_META.version + updatedAt + sourceLabel all present
-2. Active source is not a stub  — !debugCaps.isFallbackOnly
-3. Full capability coverage     — all 4 caps (wealth/age/age+gender/return) = true
-4. Source health known          — debugHealth.status !== 'invalid'
-5. No staged update pending     — !debugRefresh.hasPending
+percentileColor(percentile):
+  — identical in rank-report-section.tsx, rank-share-card.tsx, and rank/page.tsx
 
-An aggregate "All ready" / "Not ready" indicator at the top.
+If colour thresholds change (e.g. >= 30 → >= 25), all 3 files currently
+need simultaneous edits and can silently diverge.
+
+All other candidate files (benchmark-source-note, rank-source-explanation,
+rank-review, rank-change-reason) serve distinct purposes — not true duplicates.
+
+## Fix
+Extract to lib/utils/rank-format.ts.
+Import in all 3 files, remove local definitions.
 
 ## Non-Goals
-- No new utility file (all values are already in scope)
-- No user-facing exposure
-- No changes to existing diagnostics display
-- No new workflow or admin feature
+- No logic changes — identical copy, extract only
+- No changes to PercentileBar bg-* colours (different scale, intentional)
+- No changes to topPctColor in rank-overview-card.tsx (different scale: top%, not percentile)
+- No changes to any other files
 
 ## Affected Files
+### New
+- `lib/utils/rank-format.ts`
+  — export topPctLabel(percentile): string
+  — export percentileColor(percentile): string
+
 ### Modified
-- `app/(app)/settings/page.tsx`
-  — add <details> block after Benchmark Diagnostics, before Reset
+- `components/rank/rank-report-section.tsx`  — remove 2 local fns, import from rank-format
+- `components/rank/rank-share-card.tsx`       — remove 2 local fns, import from rank-format
+- `app/(app)/rank/page.tsx`                   — remove 1 local fn, import from rank-format
 
 ## Risks
-- Minimal. Read-only display. No state mutation.
-- Collapsed by default — zero impact on non-internal users.
+- Mechanical extraction only — zero logic change.
+- TypeScript will catch any mismatch.
 
 ## Validation Steps
 1. TypeScript: npx tsc --noEmit → 0 errors
-2. Block renders collapsed by default
-3. Expand → 5 checklist items visible with ✓/✗ indicators
-4. Default source: items 1–4 all ✓, item 5 depends on pending state
-5. External stub source: item 2 (stub) + item 4 (invalid) show ✗
+2. Visual: rank page colours identical before/after
+3. topPctLabel('<1%' edge case): percentile = 100 → 'Top <1%'
