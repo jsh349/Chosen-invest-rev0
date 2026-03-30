@@ -1,9 +1,5 @@
 import type { Transaction, TransactionCategory } from '@/lib/types/transaction'
 import { TRANSACTION_CATEGORIES } from '@/lib/types/transaction'
-import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
-import { readJSON, writeJSON } from '@/lib/utils/local-storage'
-
-const LS_KEY = STORAGE_KEYS.transactions
 
 const VALID_CATEGORIES = new Set<string>(TRANSACTION_CATEGORIES)
 
@@ -11,17 +7,19 @@ function isValidCategory(cat: string): cat is TransactionCategory {
   return VALID_CATEGORIES.has(cat)
 }
 
-/** Async adapter interface — matches the shape of a future API client. */
+/** Async adapter interface — decouples stores from the underlying data source. */
 export type TransactionsAdapter = {
   getAll(): Promise<Transaction[]>
   saveAll(transactions: Transaction[]): Promise<void>
 }
 
-/** Local implementation backed by localStorage. */
+/** API-backed implementation — persists transactions in Turso via /api/transactions. */
 export const transactionsAdapter: TransactionsAdapter = {
   async getAll() {
-    const all = readJSON<Transaction[]>(LS_KEY, [])
-    return all.filter((t) => {
+    const res = await fetch('/api/transactions', { credentials: 'include' })
+    if (!res.ok) throw new Error(`[transactionsAdapter] getAll failed: ${res.status}`)
+    const data = await res.json() as Transaction[]
+    return data.filter((t) => {
       if (!isValidCategory(t.category)) {
         console.warn(`[transactionsAdapter] Unknown category "${t.category}" on transaction "${t.id}" — skipped.`)
         return false
@@ -31,6 +29,12 @@ export const transactionsAdapter: TransactionsAdapter = {
   },
 
   async saveAll(transactions) {
-    if (!writeJSON(LS_KEY, transactions)) throw new Error('localStorage write failed (transactions)')
+    const res = await fetch('/api/transactions', {
+      method:      'POST',
+      credentials: 'include',
+      headers:     { 'Content-Type': 'application/json' },
+      body:        JSON.stringify(transactions),
+    })
+    if (!res.ok) throw new Error(`[transactionsAdapter] saveAll failed: ${res.status}`)
   },
 }

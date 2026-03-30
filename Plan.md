@@ -1,49 +1,57 @@
-# Plan.md — Phase 2 Prerequisite: LOCAL_USER_ID → session.user.id
+# Plan.md — Phase 2: Turso Persistence
 
 ## Task Summary
-Replace the hardcoded `LOCAL_USER_ID = 'local_user'` placeholder with the real
-authenticated user ID from the session across all 6 usage sites in client
-components and stores.
+Wire Turso (libSQL + Drizzle) as the primary data store for assets, goals, and
+transactions. Replace localStorage adapters with API-backed adapters.
+Includes float precision migration (real → integer minor units) as schema
+foundation, applied before any real data is written.
 
 ## Goal
-Ensure real session user IDs flow through all data-tagging paths before Phase 2
-persistence work begins. Without this, switching from localStorage to Turso would
-tag all records with the string `'local_user'` regardless of who is signed in,
-making per-user data isolation impossible.
+Users' financial data is persisted server-side in Turso, scoped to the
+authenticated user ID. localStorage is no longer the source of truth for
+assets, goals, or transactions.
+
+## Implementation Order
+User requested: (1) adapter swap, (2) API routes, (3) float precision.
+Technically correct order used here: schema/precision first → API routes →
+adapter swap. Rationale: Turso DB is currently empty; changing value storage
+from REAL to INTEGER must happen before any data is written, not after.
 
 ## Non-Goals
-- No Turso or server-side persistence changes
-- No schema migration
-- No new features or UI changes
-- No changes to the data adapter layer
-- No removal of the `LOCAL_USER_ID` constant (still used as fallback during loading)
-
-## Constraints
-- All affected files are client components (`'use client'`) — cannot call `auth()` directly
-- Must use `useSession()` from `next-auth/react` (SessionProvider already wraps the app in `app/layout.tsx`)
-- Fall back to `LOCAL_USER_ID` when session is unavailable (SSR hydration / loading state)
-- Do not break existing functionality
+- No household / household-notes persistence (localStorage remains)
+- No settings / dashboard-prefs persistence (localStorage remains)
+- No migration of existing localStorage data to Turso (no live users yet)
+- No offline localStorage fallback after adapter swap
+- No Turso migration execution — migration SQL is generated; user runs
+  `npm run db:migrate` once after this step
 
 ## Affected Files
 
-### New
-- `lib/hooks/use-current-user-id.ts`
-
 ### Modified
-- `features/ai/advisor-context.ts`        — add `userId` param, remove internal `LOCAL_USER_ID` import
-- `app/(app)/dashboard/page.tsx`          — use hook, pass `userId` to `buildAdvisorContext`
-- `app/(app)/portfolio/input/page.tsx`    — use hook, replace `LOCAL_USER_ID`
-- `app/(app)/rank/page.tsx`               — use hook, replace `LOCAL_USER_ID`
-- `lib/store/household-store.tsx`         — use hook, replace `LOCAL_USER_ID`
-- `lib/store/household-notes-store.tsx`   — use hook, replace `LOCAL_USER_ID`
+- `lib/db/schema.ts`                     — value_cents INTEGER, add goals + transactions tables
+- `lib/adapters/assets-adapter.ts`       — localStorage → API fetch
+- `lib/adapters/goals-adapter.ts`        — localStorage → API fetch
+- `lib/adapters/transactions-adapter.ts` — localStorage → API fetch
+- `package.json`                         — add db:migrate script
+
+### New
+- `lib/db/migrations/` (generated)       — Drizzle migration SQL
+- `lib/api/validators.ts`                — Zod schemas for all three resources
+- `app/api/assets/route.ts`              — GET / POST / DELETE
+- `app/api/goals/route.ts`               — GET / POST
+- `app/api/transactions/route.ts`        — GET / POST
 
 ## Risks
-- `useSession()` returns `null` during SSR hydration — fallback to `LOCAL_USER_ID` prevents blank IDs
-- Adding `currentUserId` to `useCallback` deps in stores recreates callbacks on session change — acceptable and correct
-- No data migration needed: localStorage is per-browser, userId change only affects newly created records
+- FK constraint: goals/transactions fail if user row missing → upsert user on every mutating request
+- Float conversion: Math.round(value * 100) must be exact at all I/O boundaries
+- Negative amounts (transactions): sign preserved through Math.round
+- Remote Turso requires TURSO_AUTH_TOKEN — fails without it in production
+- Adapter errors now produce network failures instead of localStorage errors;
+  existing persist-error CustomEvent handling remains sufficient
 
 ## Validation Steps
 1. `npx tsc --noEmit` → 0 errors
-2. Sign in → open dashboard → no runtime errors
-3. Portfolio input → saved asset in localStorage has real user ID (DevTools → Application → localStorage)
-4. `npm test -- --ci` → all tests pass
+2. `npm run db:migrate` → tables created in Turso
+3. Sign in → add assets via portfolio input → reload dashboard → data persists
+4. `GET /api/assets` in DevTools Network → correct JSON returned
+5. `npm test -- --ci` → all tests pass

@@ -1,9 +1,5 @@
 import type { Asset, AssetCategory } from '@/lib/types/asset'
-import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
 import { ASSET_CATEGORIES } from '@/lib/constants/asset-categories'
-import { readJSON, writeJSON } from '@/lib/utils/local-storage'
-
-const LS_KEY = STORAGE_KEYS.assets
 
 const VALID_ASSET_CATEGORIES = new Set<string>(ASSET_CATEGORIES.map((c) => c.key))
 
@@ -11,18 +7,20 @@ function isValidAssetCategory(cat: string): cat is AssetCategory {
   return VALID_ASSET_CATEGORIES.has(cat)
 }
 
-/** Async adapter interface — matches the shape of a future API client. */
+/** Async adapter interface — decouples stores from the underlying data source. */
 export type AssetsAdapter = {
   getAll(): Promise<Asset[]>
   saveAll(assets: Asset[]): Promise<void>
   clear(): Promise<void>
 }
 
-/** Local implementation backed by localStorage. */
+/** API-backed implementation — persists assets in Turso via /api/assets. */
 export const assetsAdapter: AssetsAdapter = {
   async getAll() {
-    const all = readJSON<Asset[]>(LS_KEY, [])
-    return all.filter((a) => {
+    const res = await fetch('/api/assets', { credentials: 'include' })
+    if (!res.ok) throw new Error(`[assetsAdapter] getAll failed: ${res.status}`)
+    const data = await res.json() as Asset[]
+    return data.filter((a) => {
       if (!isValidAssetCategory(a.category)) {
         console.warn(`[assetsAdapter] Unknown category "${a.category}" on asset "${a.id}" — skipped.`)
         return false
@@ -32,10 +30,17 @@ export const assetsAdapter: AssetsAdapter = {
   },
 
   async saveAll(assets) {
-    if (!writeJSON(LS_KEY, assets)) throw new Error('localStorage write failed (assets)')
+    const res = await fetch('/api/assets', {
+      method:      'POST',
+      credentials: 'include',
+      headers:     { 'Content-Type': 'application/json' },
+      body:        JSON.stringify(assets),
+    })
+    if (!res.ok) throw new Error(`[assetsAdapter] saveAll failed: ${res.status}`)
   },
 
   async clear() {
-    writeJSON(LS_KEY, [])
+    const res = await fetch('/api/assets', { method: 'DELETE', credentials: 'include' })
+    if (!res.ok) throw new Error(`[assetsAdapter] clear failed: ${res.status}`)
   },
 }

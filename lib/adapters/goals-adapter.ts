@@ -1,22 +1,26 @@
 import type { Goal } from '@/lib/types/goal'
-import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
-import { readJSON, writeJSON } from '@/lib/utils/local-storage'
 
-const LS_KEY = STORAGE_KEYS.goals
-
-/** Async adapter interface — matches the shape of a future API client. */
+/** Async adapter interface — decouples stores from the underlying data source. */
 export type GoalsAdapter = {
   getAll(): Promise<Goal[]>
   saveAll(goals: Goal[]): Promise<void>
 }
 
-/** Local implementation backed by localStorage. */
+/** API-backed implementation — persists goals in Turso via /api/goals. */
 export const goalsAdapter: GoalsAdapter = {
   async getAll() {
-    return readJSON<Goal[]>(LS_KEY, [])
+    const res = await fetch('/api/goals', { credentials: 'include' })
+    if (!res.ok) throw new Error(`[goalsAdapter] getAll failed: ${res.status}`)
+    return res.json() as Promise<Goal[]>
   },
 
   async saveAll(goals) {
-    if (!writeJSON(LS_KEY, goals)) throw new Error('localStorage write failed (goals)')
+    const res = await fetch('/api/goals', {
+      method:      'POST',
+      credentials: 'include',
+      headers:     { 'Content-Type': 'application/json' },
+      body:        JSON.stringify(goals),
+    })
+    if (!res.ok) throw new Error(`[goalsAdapter] saveAll failed: ${res.status}`)
   },
 }
