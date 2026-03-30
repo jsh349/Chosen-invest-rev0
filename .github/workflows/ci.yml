@@ -27,4 +27,4 @@ jobs:
         run: npm run typecheck
 
       - name: Unit tests
-        run: npm test -- --passWithNoTests
+        run: npm test -- --coverage --passWithNoTests
