@@ -41,6 +41,7 @@ export default function PortfolioInputPage() {
   const { assets, hasCustomAssets, isLoaded, setAssets } = useAssets()
   const { fmt } = useFormatCurrency()
   const [entries, setEntries] = useState<FormEntry[] | null>(null)
+  const [saving, setSaving] = useState(false)
 
   // isLoaded is the intentional one-shot trigger. Adding assets/hasCustomAssets
   // would reset the form and lose in-progress edits whenever the store updates.
@@ -77,7 +78,8 @@ export default function PortfolioInputPage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!entries) return
+    if (!entries || saving) return
+    setSaving(true)
     const validEntries = entries.filter(
       (en) => en.name.trim() && parseFloat(en.value) > 0
     )
@@ -142,9 +144,9 @@ export default function PortfolioInputPage() {
           >
             Cancel
           </Button>
-          <Button type="submit">
-            Save &amp; View Dashboard
-            <ChevronRight className="h-4 w-4" />
+          <Button type="submit" disabled={saving}>
+            {saving ? 'Saving…' : 'Save & View Dashboard'}
+            {!saving && <ChevronRight className="h-4 w-4" />}
           </Button>
         </div>
       </form>
