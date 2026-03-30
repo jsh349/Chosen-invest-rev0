@@ -1,51 +1,46 @@
-# Plan.md — Category Consistency Pass
+# Plan.md — Phase 151: Benchmark Source Readiness Note
 
 ## Task Summary
-Eliminate duplicate transaction category constants and add missing asset
-category validation at read time, so both adapters behave consistently
-before real API data is introduced.
+Add a compact informational note for external benchmark transition states,
+specifically the case where the external source is prepared but not yet
+connected. Existing local/fallback states are already communicated.
 
 ## Goal
-Single source of truth for each category list; both adapters validate
-categories when reading from localStorage (or eventually an API).
+Show a concise, user-readable note in the rank methodology section when:
+- active source is `external` (stub / not yet connected) — the only missing case
+- Existing "Built-in (default)" label and fallback amber note already cover the other states
 
 ## Non-Goals
-- No rename of category IDs (asset slugs are already correct)
-- No redesign of UI
-- No schema migration
-- No new features
+- No new alert system
+- No redesign
+- No methodology section rewrite
+- No external fetch
+- No changes to existing benchmark change alert
+- No changes to existing fallback note
 
-## Findings
-Asset categories are already correctly separated (slug ID stored, label
-displayed via CATEGORY_MAP). Two concrete problems remain:
-
-1. `TransactionCategory` values are defined as a union type in
-   `lib/types/transaction.ts` but the equivalent runtime array is
-   duplicated: once as `CATEGORIES` in `transactions/page.tsx` and once
-   as `VALID_CATEGORIES` in `transactions-adapter.ts`. One constant,
-   one source of truth.
-
-2. `assets-adapter.ts` has no category validation on `getAll()` read.
-   The transactions adapter gained this in the last bug fix pass.
-   Assets should be consistent.
+## Constraints
+- Communication layer only — no logic changes
+- Note must be null-safe (returns null → nothing rendered)
+- Must not interfere with existing rank behavior
 
 ## Affected Files
+### New
+- `lib/utils/benchmark-source-note.ts`
+  — `getBenchmarkSourceNote(sourceId, isFallbackOnly)` pure function
+  — returns string | null for 3 source states
+
 ### Modified
-- `lib/types/transaction.ts`
-  — export `TRANSACTION_CATEGORIES` array (runtime companion to the union type)
-- `lib/adapters/transactions-adapter.ts`
-  — import from types; remove local `VALID_CATEGORIES` Set
-- `app/(app)/transactions/page.tsx`
-  — import from types; remove local `CATEGORIES` array
-- `lib/adapters/assets-adapter.ts`
-  — add `getAll()` filter using `ASSET_CATEGORIES` keys; warn on unknown
+- `app/(app)/rank/page.tsx`
+  — compute `benchmarkSourceNote` from active source + caps
+  — render below existing fallback note in methodology section (3 lines)
 
 ## Risks
-- Low. No stored data changes. No UI changes. Adapters become stricter on
-  read, matching existing behaviour for transactions.
+- Very low. Pure addition, no logic changes.
+- Note is null-guarded — if isFallbackOnly is false, nothing shows.
 
 ## Validation Steps
-1. All tests pass (jest)
-2. Portfolio page loads existing assets without any console warns
-3. Transactions page: existing transactions load, filter dropdown works
-4. Invalid category in localStorage → skipped with console.warn, rest loads
+1. Default source: no new note visible
+2. Curated source: no new note visible
+3. External source (if ever stored in localStorage): note shows
+4. Fallback (curated selected but failed to load): existing amber note unchanged
+5. TypeScript passes: npx tsc --noEmit

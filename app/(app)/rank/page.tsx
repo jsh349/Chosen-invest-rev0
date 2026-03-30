@@ -38,6 +38,7 @@ import { getRankConfidenceNote } from '@/lib/utils/rank-confidence-note'
 import { readScalar, writeScalar } from '@/lib/utils/local-storage'
 import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
 import { getRankNarrativeSummary } from '@/lib/utils/rank-narrative-summary'
+import { getBenchmarkSourceNote } from '@/lib/utils/benchmark-source-note'
 import { getPrimaryRank } from '@/lib/utils/rank-priority'
 import { getRankReviewSummary } from '@/lib/utils/rank-review-summary'
 import { getRankReviewFingerprint, checkRankReviewDue, dismissRankReview } from '@/lib/utils/rank-review'
@@ -823,6 +824,11 @@ export default function RankPage() {
           {usingFallbackBenchmark && (
             <span className="text-[10px] text-amber-500/70 w-full">
               Results are based on the built-in reference dataset. Check the benchmark source in Settings.
+            </span>
+          )}
+          {getBenchmarkSourceNote(activeBenchmarkSource, benchmarkCaps.isFallbackOnly) && (
+            <span className="text-[10px] text-gray-500 w-full">
+              {getBenchmarkSourceNote(activeBenchmarkSource, benchmarkCaps.isFallbackOnly)}
             </span>
           )}
         </div>
