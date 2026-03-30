@@ -14,7 +14,22 @@ import { GoalsSummaryCard } from '@/components/dashboard/goals-summary-card'
 import { generateHealthCards } from '@/features/dashboard/diagnosis'
 import { generateAISummary } from '@/features/ai/summary-generator'
 import { buildAdvisorContext } from '@/features/ai/advisor-context'
-import { NetWorthTrendCard } from '@/components/dashboard/net-worth-trend-card'
+// ssr: false — Recharts uses DOM APIs (window, document) that do not exist on the
+// server. Skipping the server-render pass eliminates cold-path SSR overhead on
+// every dashboard request and avoids potential hydration mismatches.
+import dynamic from 'next/dynamic'
+const NetWorthTrendCard = dynamic(
+  () => import('@/components/dashboard/net-worth-trend-card').then((m) => ({ default: m.NetWorthTrendCard })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="rounded-2xl border border-surface-border bg-surface-card p-5 animate-pulse">
+        <div className="mb-4 h-4 w-36 rounded bg-surface-border" />
+        <div className="h-32 rounded bg-surface-border" />
+      </div>
+    ),
+  },
+)
 import { TransactionSummaryCard } from '@/components/dashboard/transaction-summary-card'
 import { TaxOpportunityCard } from '@/components/dashboard/tax-opportunity-card'
 import { CashFlowInsightCard } from '@/components/dashboard/cash-flow-insight-card'
