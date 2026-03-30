@@ -17,6 +17,7 @@ import {
 } from '@/lib/adapters/rank-benchmarks-adapter'
 import { getBenchmarkCapabilities } from '@/lib/utils/benchmark-capabilities'
 import { getBenchmarkHealthStatus } from '@/lib/utils/benchmark-health'
+import '@/lib/mock/guard'
 import { BENCHMARK_META } from '@/lib/mock/rank-benchmarks'
 import { readBenchmarkRefreshState } from '@/lib/utils/benchmark-refresh'
 import { readScalar } from '@/lib/utils/local-storage'

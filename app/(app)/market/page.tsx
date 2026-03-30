@@ -5,6 +5,7 @@ import { RefreshCw } from 'lucide-react'
 import { MarketTickerRow } from '@/components/market/market-ticker-row'
 import { MarketSearchBar } from '@/components/market/market-search-bar'
 import { MarketSummaryStrip } from '@/components/market/market-summary-strip'
+import '@/lib/mock/guard'
 import {
   MOCK_INDICES,
   MOCK_STOCKS,

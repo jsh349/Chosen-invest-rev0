@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
 import { readJSON, writeJSON } from '@/lib/utils/local-storage'
 import type { RankResult } from '@/lib/types/rank'
+import '@/lib/mock/guard'
 import { BENCHMARK_META } from '@/lib/mock/rank-benchmarks'
 import { getActiveBenchmarkSourceId } from '@/lib/adapters/rank-benchmarks-adapter'
 
