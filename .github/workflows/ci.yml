@@ -8,6 +8,7 @@ jobs:
   quality:
     name: Type-check & Unit Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v4
@@ -27,4 +28,4 @@ jobs:
         run: npm run typecheck
 
       - name: Unit tests
-        run: npm test -- --coverage --passWithNoTests
+        run: npm test -- --ci --coverage --passWithNoTests
