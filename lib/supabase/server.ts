@@ -7,6 +7,8 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { serverEnv } from '@/lib/env/server'
 
+// createClient uses the anon key — user data safety depends on RLS policies being enabled.
+// Confirm RLS is enforced on any table queried through this client.
 export async function createClient() {
   const cookieStore = await cookies()
 
