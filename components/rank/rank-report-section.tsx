@@ -7,6 +7,7 @@ import { getPrimaryRank } from '@/lib/utils/rank-priority'
 import { getRankInterpretation } from '@/lib/utils/rank-interpretation'
 import { getRankInsight } from '@/lib/utils/rank-insight'
 import { cn } from '@/lib/utils/cn'
+import { ROUTES } from '@/lib/constants/routes'
 
 type Props = {
   ranks: RankResult[]
@@ -114,10 +115,18 @@ export function RankReportSection({ ranks, nextHint }: Props) {
         </div>
       )}
 
-      {/* Footer — benchmark framing */}
-      <p className="border-t border-surface-border pt-2 text-[10px] text-gray-600">
-        Benchmark-based estimate · not financial advice
-      </p>
+      {/* Footer — benchmark framing + detail link */}
+      <div className="border-t border-surface-border pt-2 flex items-center justify-between gap-3">
+        <p className="text-[10px] text-gray-600">
+          Benchmark-based estimate · not financial advice
+        </p>
+        <Link
+          href={ROUTES.rank}
+          className="shrink-0 text-[10px] text-brand-400 hover:text-brand-300 transition-colors"
+        >
+          View rank details →
+        </Link>
+      </div>
     </div>
   )
 }
