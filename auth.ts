@@ -1,11 +1,27 @@
 import NextAuth from 'next-auth'
 import Google from 'next-auth/providers/google'
 
+// Validate required OAuth credentials at module load time.
+// Avoids opaque NextAuth errors when credentials are missing.
+const AUTH_GOOGLE_ID     = process.env.AUTH_GOOGLE_ID
+const AUTH_GOOGLE_SECRET = process.env.AUTH_GOOGLE_SECRET
+if (!AUTH_GOOGLE_ID || !AUTH_GOOGLE_SECRET) {
+  throw new Error(
+    '[auth] Missing required environment variables: AUTH_GOOGLE_ID and/or AUTH_GOOGLE_SECRET\n' +
+    'Check .env.local (development) or your deployment environment variables.',
+  )
+}
+
+// Paths that are publicly accessible without authentication.
+// The middleware protects everything else — add new public routes here, not to a protected list.
+// Note: '/' is excluded from the middleware matcher entirely (see middleware.ts).
+const PUBLIC_PREFIXES = ['/login', '/signup', '/api/']
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Google({
-      clientId:     process.env.AUTH_GOOGLE_ID,
-      clientSecret: process.env.AUTH_GOOGLE_SECRET,
+      clientId:     AUTH_GOOGLE_ID,
+      clientSecret: AUTH_GOOGLE_SECRET,
     }),
   ],
   pages: {
@@ -19,19 +35,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session
     },
     authorized({ auth, request: { nextUrl } }) {
-      const isLoggedIn = !!auth?.user
-      const isAppRoute = nextUrl.pathname.startsWith('/dashboard') ||
-                         nextUrl.pathname.startsWith('/portfolio') ||
-                         nextUrl.pathname.startsWith('/market') ||
-                         nextUrl.pathname.startsWith('/analysis') ||
-                         nextUrl.pathname.startsWith('/ai') ||
-                         nextUrl.pathname.startsWith('/settings') ||
-                         nextUrl.pathname.startsWith('/goals') ||
-                         nextUrl.pathname.startsWith('/transactions') ||
-                         nextUrl.pathname.startsWith('/household') ||
-                         nextUrl.pathname.startsWith('/tax-opportunity') ||
-                         nextUrl.pathname.startsWith('/rank')
-      if (isAppRoute && !isLoggedIn) return false
+      const isLoggedIn  = !!auth?.user
+      const isPublicPath = PUBLIC_PREFIXES.some(p => nextUrl.pathname.startsWith(p))
+      if (!isPublicPath && !isLoggedIn) return false
       return true
     },
   },
