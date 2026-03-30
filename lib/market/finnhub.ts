@@ -1,8 +1,9 @@
-// Server-only: FINNHUB_API_KEY must NOT use the NEXT_PUBLIC_ prefix.
-// Using NEXT_PUBLIC_ would embed the key into the browser bundle at build time.
 // This file may only be imported from server components, API routes, or server actions.
+import 'server-only'
+import { serverEnv } from '@/lib/env/server'
+
 const FINNHUB_BASE = 'https://finnhub.io/api/v1'
-const API_KEY = process.env.FINNHUB_API_KEY!
+const API_KEY = serverEnv.FINNHUB_API_KEY
 
 export async function getQuote(symbol: string): Promise<{
   c: number  // current price
