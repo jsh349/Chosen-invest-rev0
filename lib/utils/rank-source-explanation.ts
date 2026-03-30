@@ -5,6 +5,7 @@
  *
  * Returns null when:
  *   - the source is a stub / not yet connected (confidenceNote covers it)
+ *   - the source is 'default' (baseline; no note needed)
  *   - the source id is unrecognised
  */
 export function getRankSourceExplanation(
@@ -18,9 +19,6 @@ export function getRankSourceExplanation(
     return 'Compared against your curated benchmark dataset.'
   }
 
-  if (sourceId === 'default') {
-    return 'Compared against built-in reference benchmarks.'
-  }
-
+  // Default source is the baseline — no note needed in the confidence slot.
   return null
 }
