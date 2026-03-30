@@ -45,9 +45,15 @@ export function getRankChecklist(
     items.push({ text: 'Add return estimate for investment rank', href: ROUTES.settings })
   }
 
-  // Allocation review — before goals, as low wealth rank is a more immediate signal
+  // Allocation review — only when age context is available, so the rank signal
+  // is demographic-adjusted and more reliable as a portfolio review trigger.
+  // Without age, the overall rank may shift significantly once profile is complete.
   const { overall } = indexRanks(ranks)
-  if (overall?.percentile !== null && overall?.percentile !== undefined && overall.percentile < 40) {
+  if (
+    profile.hasAge &&
+    overall?.percentile !== null && overall?.percentile !== undefined &&
+    overall.percentile < 40
+  ) {
     items.push({ text: 'Review portfolio allocation', href: ROUTES.portfolioList })
   }
 
