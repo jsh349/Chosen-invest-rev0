@@ -9,7 +9,8 @@ import { ROUTES } from '@/lib/constants/routes'
 import { cn } from '@/lib/utils/cn'
 import type { Goal } from '@/lib/types/goal'
 
-function nearestGoal(goals: Goal[]): Goal {
+function nearestGoal(goals: Goal[]): Goal | null {
+  if (goals.length === 0) return null
   const withDate = goals
     .filter((g) => g.targetDate)
     .sort((a, b) => a.targetDate!.localeCompare(b.targetDate!))
@@ -47,6 +48,7 @@ export function GoalsSummaryCard() {
   const totalTarget = goals.reduce((sum, g) => sum + g.targetAmount, 0)
   const totalCurrent = goals.reduce((sum, g) => sum + g.currentAmount, 0)
   const featured = nearestGoal(goals)
+  if (!featured) return null
   const progress = goalProgressPct(featured)
 
   return (

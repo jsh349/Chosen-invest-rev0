@@ -18,7 +18,7 @@ export const assetsAdapter: AssetsAdapter = {
   },
 
   async saveAll(assets) {
-    writeJSON(LS_KEY, assets)
+    if (!writeJSON(LS_KEY, assets)) throw new Error('localStorage write failed (assets)')
   },
 
   async clear() {

@@ -47,14 +47,14 @@ export function GoalsProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const setGoals = useCallback((newGoals: Goal[]) => {
-    void goalsAdapter.saveAll(newGoals).catch(console.error)
+    void goalsAdapter.saveAll(newGoals).catch(() => { console.error('[goals] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
     setGoalsState(newGoals)
   }, [])
 
   const addGoal = useCallback((goal: Goal) => {
     setGoalsState((prev) => {
       const updated = [...prev, goal]
-      void goalsAdapter.saveAll(updated).catch(console.error)
+      void goalsAdapter.saveAll(updated).catch(() => { console.error('[goals] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
       return updated
     })
     recordAudit('Goal added', goal.name)
@@ -66,7 +66,7 @@ export function GoalsProvider({ children }: { children: ReactNode }) {
       const updated = prev.map((g) =>
         g.id === id ? { ...g, ...patch, updatedAt: new Date().toISOString() } : g
       )
-      void goalsAdapter.saveAll(updated).catch(console.error)
+      void goalsAdapter.saveAll(updated).catch(() => { console.error('[goals] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
       if (target) recordAudit('Goal edited', patch.name ?? target.name)
       return updated
     })
@@ -77,7 +77,7 @@ export function GoalsProvider({ children }: { children: ReactNode }) {
       const target = prev.find((g) => g.id === id)
       if (target) recordAudit('Goal deleted', target.name)
       const updated = prev.filter((g) => g.id !== id)
-      void goalsAdapter.saveAll(updated).catch(console.error)
+      void goalsAdapter.saveAll(updated).catch(() => { console.error('[goals] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
       return updated
     })
   }, [])

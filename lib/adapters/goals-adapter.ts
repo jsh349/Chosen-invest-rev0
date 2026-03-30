@@ -17,6 +17,6 @@ export const goalsAdapter: GoalsAdapter = {
   },
 
   async saveAll(goals) {
-    writeJSON(LS_KEY, goals)
+    if (!writeJSON(LS_KEY, goals)) throw new Error('localStorage write failed (goals)')
   },
 }

@@ -45,10 +45,20 @@ const OBJECT_KEYS: ReadonlySet<string> = new Set([
   STORAGE_KEYS.benchmarkApplied,
 ])
 
+const VALID_CURRENCY_CODES = new Set<string>(['USD', 'EUR', 'GBP', 'JPY', 'KRW'])
+
 function isSafeToRestore(key: string, value: unknown): boolean {
   if (ARRAY_KEYS.has(key) && !Array.isArray(value)) return false
   if (OBJECT_KEYS.has(key) && (typeof value !== 'object' || value === null || Array.isArray(value))) return false
   if (STRING_KEYS.has(key) && typeof value !== 'string') return false
+  // Content-level validation for settings object
+  if (key === STORAGE_KEYS.settings && typeof value === 'object' && value !== null) {
+    const s = value as Record<string, unknown>
+    if (s.currency !== undefined && !VALID_CURRENCY_CODES.has(s.currency as string)) return false
+    if (s.showCents !== undefined && typeof s.showCents !== 'boolean') return false
+    if (s.birthYear !== undefined && (typeof s.birthYear !== 'number' || s.birthYear < 1900 || s.birthYear > 2100)) return false
+    if (s.annualReturnPct !== undefined && (typeof s.annualReturnPct !== 'number' || s.annualReturnPct < -100 || s.annualReturnPct > 1000)) return false
+  }
   return true
 }
 
@@ -80,7 +90,7 @@ function handleExport() {
   for (const key of ALL_STORAGE_KEYS) {
     try {
       const raw = window.localStorage.getItem(key)
-      if (raw === null) { data[key] = null; continue }
+      if (raw === null) continue
       // Scalar string keys are stored as raw strings — no JSON layer
       data[key] = STRING_KEYS.has(key) ? raw : JSON.parse(raw)
     } catch {

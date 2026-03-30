@@ -57,7 +57,10 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const update = useCallback((patch: Partial<AppSettings>) => {
     setSettings((prev) => {
       const updated = { ...prev, ...patch }
-      writeJSON(LS_KEY, updated)
+      if (!writeJSON(LS_KEY, updated)) {
+        console.error('[settings] save failed')
+        window.dispatchEvent(new CustomEvent('persist-error'))
+      }
       return updated
     })
   }, [])

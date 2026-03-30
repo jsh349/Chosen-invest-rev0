@@ -17,6 +17,6 @@ export const householdAdapter: HouseholdAdapter = {
   },
 
   async saveAll(members) {
-    writeJSON(LS_KEY, members)
+    if (!writeJSON(LS_KEY, members)) throw new Error('localStorage write failed (household)')
   },
 }

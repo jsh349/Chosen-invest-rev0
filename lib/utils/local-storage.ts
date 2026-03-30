@@ -39,12 +39,16 @@ export function readJSON<T>(key: string, fallback: T): T {
   }
 }
 
-/** Safely write JSON to localStorage. Silently ignores errors (e.g. quota). */
-export function writeJSON(key: string, value: unknown): void {
-  if (typeof window === 'undefined') return
+/**
+ * Safely write JSON to localStorage.
+ * Returns true on success, false on failure (quota exceeded, security error, etc.).
+ */
+export function writeJSON(key: string, value: unknown): boolean {
+  if (typeof window === 'undefined') return false
   try {
     window.localStorage.setItem(key, JSON.stringify(value))
+    return true
   } catch {
-    // ignore quota or serialisation errors
+    return false
   }
 }

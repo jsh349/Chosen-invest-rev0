@@ -167,6 +167,7 @@ export default function GoalsPage() {
     if (addForm.targetDate && !isDateFormat(addForm.targetDate)) { setAddError('Use YYYY-MM-DD date format.'); return }
     const amounts = parseForm(addForm)
     if (!amounts) { setAddError('Target amount must be a positive number and saved amount must be 0 or more.'); return }
+    if (amounts.currentAmount > amounts.targetAmount) { setAddError('Saved amount cannot exceed the target amount.'); return }
     const now = new Date().toISOString()
     addGoal({
       id:            crypto.randomUUID(),
@@ -203,6 +204,7 @@ export default function GoalsPage() {
     if (editForm.targetDate && !isDateFormat(editForm.targetDate)) { setEditError('Use YYYY-MM-DD date format.'); return }
     const amounts = parseForm(editForm)
     if (!amounts) { setEditError('Target amount must be a positive number and saved amount must be 0 or more.'); return }
+    if (amounts.currentAmount > amounts.targetAmount) { setEditError('Saved amount cannot exceed the target amount.'); return }
     updateGoal(id, {
       name:          editForm.name.trim(),
       type:          editForm.type,

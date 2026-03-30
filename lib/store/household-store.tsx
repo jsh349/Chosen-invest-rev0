@@ -54,7 +54,7 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
     const updated = [...membersRef.current, memberWithUser]
     membersRef.current = updated
     setMembers(updated)
-    void householdAdapter.saveAll(updated).catch(console.error)
+    void householdAdapter.saveAll(updated).catch(() => { console.error('[household] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
     recordAudit('Household member added', memberWithUser.name)
   }, [])
 
@@ -63,7 +63,7 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
     const updated = membersRef.current.filter((m) => m.id !== id)
     membersRef.current = updated
     setMembers(updated)
-    void householdAdapter.saveAll(updated).catch(console.error)
+    void householdAdapter.saveAll(updated).catch(() => { console.error('[household] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
     if (target) recordAudit('Household member removed', target.name)
   }, [])
 
