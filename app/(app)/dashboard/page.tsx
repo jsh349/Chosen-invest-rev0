@@ -271,9 +271,14 @@ export default function DashboardPage() {
       <NetWorthTrendCard data={trendData} isMock />
 
       <div>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">
-          Financial Health
-        </h2>
+        <div className="mb-3 flex items-baseline justify-between gap-4">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+            Financial Health
+          </h2>
+          <span className="text-xs text-gray-600 shrink-0">
+            Simplified signals · not financial advice
+          </span>
+        </div>
         <HealthCardsGrid cards={healthCards} />
       </div>
 
