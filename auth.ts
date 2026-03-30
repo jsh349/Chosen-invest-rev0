@@ -1,5 +1,6 @@
 import NextAuth from 'next-auth'
 import Google from 'next-auth/providers/google'
+import { PUBLIC_PATHS } from '@/lib/constants/routes'
 
 // Validate required OAuth credentials at module load time.
 // Avoids opaque NextAuth errors when credentials are missing.
@@ -11,11 +12,6 @@ if (!AUTH_GOOGLE_ID || !AUTH_GOOGLE_SECRET) {
     'Check .env.local (development) or your deployment environment variables.',
   )
 }
-
-// Paths that are publicly accessible without authentication.
-// The middleware protects everything else — add new public routes here, not to a protected list.
-// Note: '/' is excluded from the middleware matcher entirely (see middleware.ts).
-const PUBLIC_PREFIXES = ['/login', '/signup', '/api/']
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
@@ -36,7 +32,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn  = !!auth?.user
-      const isPublicPath = PUBLIC_PREFIXES.some(p => nextUrl.pathname.startsWith(p))
+      const isPublicPath = PUBLIC_PATHS.some(p => nextUrl.pathname.startsWith(p))
       if (!isPublicPath && !isLoggedIn) return false
       return true
     },
