@@ -528,8 +528,10 @@ export default function RankPage() {
             rankAllocationInsight={rankAllocationInsight}
           />
 
-          {/* Rank actions — contextual navigation links derived from rank state */}
-          {rankActions.length > 0 && (
+          {/* Rank actions — contextual navigation links derived from rank state.
+              Suppressed when checklist is active: both surfaces guide toward the
+              same destinations and showing both adds density without extra value. */}
+          {rankActions.length > 0 && rankChecklist.length === 0 && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3 flex flex-wrap gap-x-5 gap-y-2">
               {rankActions.map((action) => (
                 <Link
