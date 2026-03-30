@@ -26,7 +26,7 @@ import { getRankGoalInsight } from '@/lib/utils/rank-goal-insight'
 import { buildMonthlySummary } from '@/lib/utils/rank-monthly-summary'
 import { buildMilestoneHistory } from '@/lib/utils/rank-milestone-history'
 import { checkBenchmarkChanged, dismissBenchmarkAlert, benchmarkVersionNote, getBenchmarkFingerprint, getBenchmarkTransitionNote, getBenchmarkSourceSummary, type BenchmarkSourceSummary } from '@/lib/utils/benchmark-change-alert'
-import { getNextRankHint } from '@/lib/utils/rank-next-hint'
+import { getPrimaryRankNextAction } from '@/lib/utils/rank-next-hint'
 import { getRankInterpretation } from '@/lib/utils/rank-interpretation'
 import { getRankInputExplanation } from '@/lib/utils/rank-input-explanation'
 import { getRankAllocationInsight } from '@/lib/utils/rank-allocation-insight'
@@ -274,7 +274,24 @@ export default function RankPage() {
     ? getRankActions(ranks, { hasGoals: goals.length > 0 })
     : []
 
+  // nextHint must be computed before rankGoalInsight so we can suppress the
+  // goal insight when the next-step slot already covers the same topic.
+  const nextHint = isFullyLoaded && goalsLoaded && summary.assetCount > 0
+    ? getPrimaryRankNextAction(
+        {
+          hasAge:    !!settings.birthYear,
+          hasGender: !!settings.gender,
+          hasReturn: settings.annualReturnPct !== undefined,
+          hasGoals:  goals.length > 0,
+        },
+        ranks,
+      )
+    : null
+
+  // Suppress goal insight when the next-step slot already points to Goals —
+  // showing both would surface the same message in two adjacent slots.
   const rankGoalInsight = isFullyLoaded && goalsLoaded && summary.assetCount > 0
+    && nextHint?.href !== ROUTES.goals
     ? getRankGoalInsight(ranks, goals)
     : null
 
@@ -290,14 +307,6 @@ export default function RankPage() {
 
   const rankReviewSummary = isFullyLoaded && summary.assetCount > 0
     ? getRankReviewSummary(ranks, {
-        hasAge:    !!settings.birthYear,
-        hasGender: !!settings.gender,
-        hasReturn: settings.annualReturnPct !== undefined,
-      })
-    : null
-
-  const nextHint = isFullyLoaded && summary.assetCount > 0
-    ? getNextRankHint({
         hasAge:    !!settings.birthYear,
         hasGender: !!settings.gender,
         hasReturn: settings.annualReturnPct !== undefined,
