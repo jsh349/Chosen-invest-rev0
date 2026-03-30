@@ -3,56 +3,20 @@
 import Link from 'next/link'
 import type { RankResult } from '@/lib/types/rank'
 import type { RankHint } from '@/lib/utils/rank-next-hint'
-import { getPrimaryRank } from '@/lib/utils/rank-priority'
-import { getRankInsight } from '@/lib/utils/rank-insight'
 import { topPctLabel, percentileColor } from '@/lib/utils/rank-format'
 import { cn } from '@/lib/utils/cn'
 import { ROUTES } from '@/lib/constants/routes'
+// Composition logic lives in a utility so any surface can import it
+// without depending on this UI component. Re-exported here for convenience.
+import { composeRankReport } from '@/lib/utils/rank-report-composer'
+export { composeRankReport } from '@/lib/utils/rank-report-composer'
+export type { RankReportContent } from '@/lib/utils/rank-report-composer'
 
 type Props = {
   ranks: RankResult[]
   /** Pre-computed next-step hint — pass null when all profile fields are filled. */
   nextHint?: RankHint | null
 }
-
-/**
- * The four content slots of a compact rank report, in canonical display order.
- *
- * Slot selection rules (each slot picks the highest-value single item):
- *   highlight      — highest-priority rank that has a real percentile (RANK_PRIORITY_ORDER)
- *   explanation    — getRankInterpretation applied to highlight.percentile
- *   comparisonNote — getRankInsight cross-rank gap analysis; null = slot omitted
- *   nextAction     — caller-supplied next-step hint; null = slot omitted
- */
-export type RankReportContent = {
-  highlight:      RankResult
-  explanation:    string
-  comparisonNote: string | null
-  nextAction:     RankHint | null
-}
-
-/**
- * Pure composition function — converts rank data into a RankReportContent
- * object using the fixed slot order above.
- *
- * Returns null when no rank has a real percentile (nothing to show).
- * Deterministic: same inputs always produce the same output.
- */
-export function composeRankReport(
-  ranks: RankResult[],
-  nextHint: RankHint | null | undefined,
-): RankReportContent | null {
-  const highlight = getPrimaryRank(ranks)
-  if (!highlight || highlight.percentile === null) return null
-
-  return {
-    highlight,
-    explanation:    highlight.message,
-    comparisonNote: getRankInsight(ranks),
-    nextAction:     nextHint ?? null,
-  }
-}
-
 
 /**
  * Renders a RankReportContent in canonical slot order.
