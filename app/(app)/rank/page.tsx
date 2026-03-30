@@ -39,6 +39,7 @@ import { readScalar, writeScalar } from '@/lib/utils/local-storage'
 import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
 import { getRankNarrativeSummary } from '@/lib/utils/rank-narrative-summary'
 import { getBenchmarkSourceNote } from '@/lib/utils/benchmark-source-note'
+import { getRankSourceExplanation } from '@/lib/utils/rank-source-explanation'
 import { getPrimaryRank } from '@/lib/utils/rank-priority'
 import { getRankReviewSummary } from '@/lib/utils/rank-review-summary'
 import { getRankReviewFingerprint, checkRankReviewDue, dismissRankReview } from '@/lib/utils/rank-review'
@@ -323,6 +324,10 @@ export default function RankPage() {
     ? getRankConfidenceNote({ benchmarkHealthStatus: benchmarkHealth.status })
     : null
 
+  const sourceExplanation = isFullyLoaded && summary.assetCount > 0
+    ? getRankSourceExplanation(activeBenchmarkSource, benchmarkCaps.isFallbackOnly)
+    : null
+
   const rankChecklist = isFullyLoaded && goalsLoaded && summary.assetCount > 0
     ? getRankChecklist(
         {
@@ -450,14 +455,14 @@ export default function RankPage() {
                   {rankCompleteness(availableCount).label}
                 </p>
               </div>
-              {(confidenceNote ?? inputExplanation) && (
+              {(confidenceNote ?? inputExplanation ?? sourceExplanation) && (
                 <p className={cn(
                   'w-full border-t border-surface-border pt-3 text-xs',
                   confidenceNote
                     ? confidenceNote.level === 'low' ? 'text-amber-500' : 'text-gray-500'
                     : 'text-gray-500',
                 )}>
-                  {confidenceNote?.text ?? inputExplanation}
+                  {confidenceNote?.text ?? inputExplanation ?? sourceExplanation}
                 </p>
               )}
             </div>

@@ -1,53 +1,45 @@
-# Plan.md — Phase 153: Rank Summary State Compression
+# Plan.md — Phase 154: Source-Specific Explanation Variants
 
 ## Task Summary
-Reduce visible summary density on the rank page by suppressing rank actions
-when the rank checklist is already showing. Both blocks serve as "what to
-do next" surfaces and overlap significantly when the user profile is incomplete.
+Add a lowest-priority source-specific explanation to the rank summary strip.
+When no confidence note or input explanation is active (healthy state),
+show a one-line note identifying which benchmark the comparison is based on.
 
 ## Goal
-In the incomplete-profile state (most common for new users), remove one of
-two sequential action link blocks. The checklist is the higher-value surface
-because it explains WHY each action is needed. Rank actions are redundant
-when checklist items are present.
+- default source  → "Compared against built-in reference benchmarks."
+- curated source  → "Compared against your curated benchmark dataset."
+- fallback/stub   → null (confidenceNote already covers these states)
 
 ## Non-Goals
-- No redesign
-- No logic changes to getRankActions or getRankChecklist
-- No changes to the checklist or action data itself
-- No changes to narrative summary, explanation block, or review summary
-- No new state
+- No changes to confidenceNote, inputExplanation, or narrative summary
+- No changes to priority of existing explanation slots
+- No methodology rewrite
+- No new UI element — reuses existing summary strip text slot
 
-## Findings
-Surface audit (individual mode, with assets):
-1. Summary strip
-2. PrimaryRankHighlight
-3. Narrative summary
-4. Review banner (conditional)
-5. RankDetailExplanationBlock (≤2 items)
-6. Rank actions  ← overlaps with #7 when checklist shows
-7. Rank checklist ← higher-value: includes context + reason
-8. Review Summary card
-9. Rank rows
-
-In incomplete-profile state, blocks 6 and 7 appear together with
-similar/identical link targets. Suppressing 6 when 7 is active removes
-1 whole redundant block.
-
-getRankReviewSummary already returns null when all ok — Review Summary
-card is already correctly gated.
+## Explanation Priority Order (after change)
+1. confidenceNote  — fallback / invalid / partial  (most critical)
+2. inputExplanation — incomplete profile
+3. sourceExplanation — healthy source identification  ← new, lowest priority
 
 ## Affected Files
+### New
+- `lib/utils/rank-source-explanation.ts`
+  — `getRankSourceExplanation(sourceId, isFallbackOnly): string | null`
+
 ### Modified
 - `app/(app)/rank/page.tsx`
-  — add `&& rankChecklist.length === 0` to rank actions render condition
+  — import getRankSourceExplanation
+  — compute `sourceExplanation` alongside other summaries
+  — extend summary strip: `confidenceNote?.text ?? inputExplanation ?? sourceExplanation`
 
 ## Risks
-- Minimal. Rank actions still show when checklist is empty (complete profile).
-- No data loss, no logic change, no new state.
+- Minimal. sourceExplanation is only shown when both confidenceNote and
+  inputExplanation are null (healthy, complete-profile user). No existing
+  behaviour changes.
 
 ## Validation Steps
-1. Incomplete profile (no age/gender/return): checklist shows, rank actions hidden
-2. Complete profile: checklist empty, rank actions show normally
-3. No assets: neither block shows (unchanged)
-4. TypeScript: npx tsc --noEmit → 0 errors
+1. Default source, complete profile → "Compared against built-in reference benchmarks."
+2. Curated source, complete profile → "Compared against your curated benchmark dataset."
+3. Any source, incomplete profile → inputExplanation wins (source note suppressed)
+4. Fallback/invalid/partial → confidenceNote wins (source note suppressed)
+5. TypeScript: npx tsc --noEmit → 0 errors
