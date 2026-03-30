@@ -72,3 +72,40 @@ export function getBenchmarkTransitionNote(): string | null {
   const to   = currentSource === 'curated' ? 'curated dataset' : 'built-in reference'
   return `Benchmark source changed from ${from} to ${to} — reference ranges may differ from your previous visit.`
 }
+
+// ---------------------------------------------------------------------------
+// Source change summary (structured)
+// ---------------------------------------------------------------------------
+
+export type BenchmarkSourceSummary = {
+  /** Human-readable label for the currently active source */
+  currentLabel: string
+  /** Human-readable label for the previously active source, or null if unchanged */
+  previousLabel: string | null
+  /** True when the curated source failed to load and built-in is used instead */
+  fallbackActive: boolean
+}
+
+/**
+ * Returns a structured summary of the current benchmark source state.
+ * Call this before checkBenchmarkChanged() / dismissBenchmarkAlert() so the
+ * previous fingerprint is still available.
+ *
+ * Returns null on the server (SSR-safe).
+ */
+export function getBenchmarkSourceSummary(fallbackActive: boolean): BenchmarkSourceSummary | null {
+  if (typeof window === 'undefined') return null
+  const currentSource = getActiveBenchmarkSourceId()
+  const currentLabel = currentSource === 'curated' ? 'Curated dataset' : 'Built-in reference'
+
+  let previousLabel: string | null = null
+  const stored = readScalar(LS_KEY)
+  if (stored !== null) {
+    const prevSource = stored.split('::')[1] ?? null
+    if (prevSource !== null && prevSource !== currentSource) {
+      previousLabel = prevSource === 'curated' ? 'Curated dataset' : 'Built-in reference'
+    }
+  }
+
+  return { currentLabel, previousLabel, fallbackActive }
+}

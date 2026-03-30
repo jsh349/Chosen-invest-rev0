@@ -25,7 +25,7 @@ import { getRankActions } from '@/lib/utils/rank-actions'
 import { getRankGoalInsight } from '@/lib/utils/rank-goal-insight'
 import { buildMonthlySummary } from '@/lib/utils/rank-monthly-summary'
 import { buildMilestoneHistory } from '@/lib/utils/rank-milestone-history'
-import { checkBenchmarkChanged, dismissBenchmarkAlert, benchmarkVersionNote, getBenchmarkFingerprint, getBenchmarkTransitionNote } from '@/lib/utils/benchmark-change-alert'
+import { checkBenchmarkChanged, dismissBenchmarkAlert, benchmarkVersionNote, getBenchmarkFingerprint, getBenchmarkTransitionNote, getBenchmarkSourceSummary, type BenchmarkSourceSummary } from '@/lib/utils/benchmark-change-alert'
 import { getNextRankHint } from '@/lib/utils/rank-next-hint'
 import { getRankInterpretation } from '@/lib/utils/rank-interpretation'
 import { getRankInputExplanation } from '@/lib/utils/rank-input-explanation'
@@ -221,6 +221,7 @@ export default function RankPage() {
   const [mode, setMode] = useState<RankMode>(readPersistedMode)
   const [benchmarkAlertVisible, setBenchmarkAlertVisible] = useState(false)
   const [benchmarkTransitionNote, setBenchmarkTransitionNote] = useState<string | null>(null)
+  const [sourceSummary, setSourceSummary] = useState<BenchmarkSourceSummary | null>(null)
   const [reviewVisible, setReviewVisible] = useState(false)
 
   const isFullyLoaded = assetsLoaded && householdLoaded && settingsLoaded && snapshotsLoaded && goalsLoaded
@@ -343,11 +344,10 @@ export default function RankPage() {
   }, [isFullyLoaded, summary.totalAssetValue, userAge, settings.gender, settings.annualReturnPct])
 
   useEffect(() => {
-    // getBenchmarkTransitionNote must be called before checkBenchmarkChanged writes
-    // the initial fingerprint on first visit (checkBenchmarkChanged returns false on
-    // first visit, so ordering only matters for the note — but keeping them together
-    // ensures both read the same stored value).
+    // All three reads must happen before checkBenchmarkChanged() may write the
+    // current fingerprint — they rely on the previously stored value.
     setBenchmarkTransitionNote(getBenchmarkTransitionNote())
+    setSourceSummary(getBenchmarkSourceSummary(isUsingFallbackBenchmark()))
     setBenchmarkAlertVisible(checkBenchmarkChanged())
   }, [])
 
@@ -782,6 +782,30 @@ export default function RankPage() {
           >
             Dismiss
           </button>
+        </div>
+      )}
+
+      {/* Benchmark source change summary — shown when source changed or fallback is active */}
+      {sourceSummary !== null && (sourceSummary.previousLabel !== null || sourceSummary.fallbackActive) && (
+        <div className="rounded-xl border border-surface-border bg-surface-card px-4 py-3 space-y-1.5">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-500">Benchmark Source</p>
+          <div className="flex flex-wrap gap-x-6 gap-y-1">
+            <span className="text-xs text-gray-400">
+              <span className="text-gray-300">Current</span>
+              {' — '}{sourceSummary.currentLabel}
+            </span>
+            {sourceSummary.previousLabel !== null && (
+              <span className="text-xs text-gray-400">
+                <span className="text-gray-300">Previous</span>
+                {' — '}{sourceSummary.previousLabel}
+              </span>
+            )}
+          </div>
+          {sourceSummary.fallbackActive && (
+            <p className="text-xs text-amber-400/80">
+              Built-in reference is active — curated source could not be loaded.
+            </p>
+          )}
         </div>
       )}
 
