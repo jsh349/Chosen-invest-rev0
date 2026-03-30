@@ -12,7 +12,7 @@ import {
 import type { HouseholdMember } from '@/lib/types/household'
 import { householdAdapter } from '@/lib/adapters/household-adapter'
 import { recordAudit } from '@/lib/store/audit-store'
-import { LOCAL_USER_ID } from '@/lib/constants/auth'
+import { useCurrentUserId } from '@/lib/hooks/use-current-user-id'
 
 type HouseholdContextType = {
   members: HouseholdMember[]
@@ -31,6 +31,7 @@ const HouseholdContext = createContext<HouseholdContextType>({
 export function HouseholdProvider({ children }: { children: ReactNode }) {
   const [members, setMembers] = useState<HouseholdMember[]>([])
   const [isLoaded, setIsLoaded] = useState(false)
+  const currentUserId = useCurrentUserId()
   // Ref mirrors state so callbacks can build the updated array without
   // putting async side-effects inside the setState updater (which React
   // Strict Mode double-invokes in development).
@@ -52,13 +53,13 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const addMember = useCallback((member: HouseholdMember) => {
-    const memberWithUser: HouseholdMember = { ...member, userId: member.userId ?? LOCAL_USER_ID }
+    const memberWithUser: HouseholdMember = { ...member, userId: member.userId ?? currentUserId }
     const updated = [...membersRef.current, memberWithUser]
     membersRef.current = updated
     setMembers(updated)
     void householdAdapter.saveAll(updated).catch(() => { console.error('[household] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
     recordAudit('Household member added', memberWithUser.name)
-  }, [])
+  }, [currentUserId])
 
   const removeMember = useCallback((id: string) => {
     const target = membersRef.current.find((m) => m.id === id)

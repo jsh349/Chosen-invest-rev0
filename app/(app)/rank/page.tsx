@@ -13,7 +13,7 @@ import { buildPortfolioSummary } from '@/features/dashboard/helpers'
 import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { RankShareCard } from '@/components/rank/rank-share-card'
-import { LOCAL_USER_ID } from '@/lib/constants/auth'
+import { useCurrentUserId } from '@/lib/hooks/use-current-user-id'
 import { ROUTES } from '@/lib/constants/routes'
 import { cn } from '@/lib/utils/cn'
 import '@/lib/mock/guard'
@@ -219,6 +219,7 @@ export default function RankPage() {
   const { compact } = useFormatCurrency()
   const { snapshots, isLoaded: snapshotsLoaded, saveSnapshot } = useRankSnapshots()
   const { goals, isLoaded: goalsLoaded } = useGoals()
+  const currentUserId = useCurrentUserId()
   const [mode, setMode] = useState<RankMode>(readPersistedMode)
   const [benchmarkAlertVisible, setBenchmarkAlertVisible] = useState(false)
   const [benchmarkTransitionNote, setBenchmarkTransitionNote] = useState<string | null>(null)
@@ -240,8 +241,8 @@ export default function RankPage() {
 
   // Memoized so mode/alert/review state changes don't re-run the full calculation.
   const summary = useMemo(
-    () => buildPortfolioSummary(LOCAL_USER_ID, assets),
-    [assets]
+    () => buildPortfolioSummary(currentUserId, assets),
+    [currentUserId, assets]
   )
   const userAge = useMemo(
     () => settings.birthYear ? new Date().getFullYear() - settings.birthYear : undefined,

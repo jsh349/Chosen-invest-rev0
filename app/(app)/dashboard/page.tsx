@@ -62,6 +62,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { useSettings } from '@/lib/store/settings-store'
+import { useCurrentUserId } from '@/lib/hooks/use-current-user-id'
 
 const CARD_KEYS = Object.keys(CARD_LABELS) as DashboardCardKey[]
 
@@ -114,13 +115,14 @@ export default function DashboardPage() {
   const { transactions, isLoaded: txLoaded } = useTransactions()
   const { prefs, isLoaded: prefsLoaded, toggle } = useDashboardPrefs()
   const { settings, isLoaded: settingsLoaded } = useSettings()
+  const currentUserId = useCurrentUserId()
   const [showPrefs, setShowPrefs] = useState(false)
 
   // All hooks must run unconditionally before any early return (Rules of Hooks).
   // These computations are safe with empty arrays while data is loading.
   const baseCtx = useMemo(
-    () => buildAdvisorContext(assets, goals, transactions),
-    [assets, goals, transactions]
+    () => buildAdvisorContext(assets, goals, transactions, currentUserId),
+    [assets, goals, transactions, currentUserId]
   )
   const summary = baseCtx.portfolio
   const trendData = useMemo(() => buildMockTrend(summary.totalAssetValue), [summary.totalAssetValue])

@@ -12,7 +12,7 @@ import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { useAssets } from '@/lib/store/assets-store'
 import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
 import { ROUTES } from '@/lib/constants/routes'
-import { LOCAL_USER_ID } from '@/lib/constants/auth'
+import { useCurrentUserId } from '@/lib/hooks/use-current-user-id'
 
 // Extends AssetFormEntry locally to carry identity fields for existing assets.
 // _id and _createdAt are preserved through edits and used at submit time so
@@ -42,6 +42,7 @@ export default function PortfolioInputPage() {
   const { fmt } = useFormatCurrency()
   const [entries, setEntries] = useState<FormEntry[] | null>(null)
   const [saving, setSaving] = useState(false)
+  const currentUserId = useCurrentUserId()
 
   // isLoaded is the intentional one-shot trigger. Adding assets/hasCustomAssets
   // would reset the form and lose in-progress edits whenever the store updates.
@@ -89,7 +90,7 @@ export default function PortfolioInputPage() {
     }
     const now = new Date().toISOString()
     const newAssets = validEntries.map((en) => ({
-      ...formEntryToAsset(en, LOCAL_USER_ID, en._id ?? crypto.randomUUID()),
+      ...formEntryToAsset(en, currentUserId, en._id ?? crypto.randomUUID()),
       createdAt: en._createdAt ?? now,
     }))
     // Await persistence so the dashboard never reads stale data on load.

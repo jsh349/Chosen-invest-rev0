@@ -12,7 +12,7 @@ import {
 import type { HouseholdNote } from '@/lib/types/household-note'
 import { householdNotesAdapter } from '@/lib/adapters/household-notes-adapter'
 import { recordAudit } from '@/lib/store/audit-store'
-import { LOCAL_USER_ID } from '@/lib/constants/auth'
+import { useCurrentUserId } from '@/lib/hooks/use-current-user-id'
 
 type HouseholdNotesContextType = {
   notes: HouseholdNote[]
@@ -31,6 +31,7 @@ const HouseholdNotesContext = createContext<HouseholdNotesContextType>({
 export function HouseholdNotesProvider({ children }: { children: ReactNode }) {
   const [notes, setNotes] = useState<HouseholdNote[]>([])
   const [isLoaded, setIsLoaded] = useState(false)
+  const currentUserId = useCurrentUserId()
   // Ref mirrors state so callbacks can build the updated array without
   // putting async side-effects inside the setState updater.
   const notesRef = useRef<HouseholdNote[]>([])
@@ -51,13 +52,13 @@ export function HouseholdNotesProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const addNote = useCallback((note: HouseholdNote) => {
-    const noteWithUser: HouseholdNote = { ...note, userId: note.userId ?? LOCAL_USER_ID }
+    const noteWithUser: HouseholdNote = { ...note, userId: note.userId ?? currentUserId }
     const updated = [noteWithUser, ...notesRef.current]
     notesRef.current = updated
     setNotes(updated)
     void householdNotesAdapter.saveAll(updated).catch(console.error)
     recordAudit('Note added', noteWithUser.title)
-  }, [])
+  }, [currentUserId])
 
   const removeNote = useCallback((id: string) => {
     const target = notesRef.current.find((n) => n.id === id)
