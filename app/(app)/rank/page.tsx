@@ -379,6 +379,9 @@ export default function RankPage() {
               ? 'Your individual portfolio ranked against reference benchmarks'
               : 'Combined household wealth ranked against reference benchmarks'}
           </p>
+          <span className="mt-1.5 inline-block rounded-full border border-surface-border bg-surface-muted px-2.5 py-0.5 text-[10px] font-medium text-gray-400">
+            {mode === 'individual' ? 'Individual Comparison' : 'Household Comparison'}
+          </span>
         </div>
         <ModeToggle mode={mode} onChange={(m) => { setMode(m); writeScalar(STORAGE_KEYS.rankComparisonMode, m) }} />
       </div>
