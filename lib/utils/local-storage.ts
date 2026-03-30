@@ -8,13 +8,17 @@ export function readScalar(key: string): string | null {
   }
 }
 
-/** Safely write a raw string to localStorage. Silently ignores errors. */
-export function writeScalar(key: string, value: string): void {
-  if (typeof window === 'undefined') return
+/**
+ * Safely write a raw string to localStorage.
+ * Returns true on success, false on failure (quota exceeded, security error, etc.).
+ */
+export function writeScalar(key: string, value: string): boolean {
+  if (typeof window === 'undefined') return false
   try {
     window.localStorage.setItem(key, value)
+    return true
   } catch {
-    // ignore quota or security errors
+    return false
   }
 }
 

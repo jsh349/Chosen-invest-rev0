@@ -17,6 +17,6 @@ export const householdNotesAdapter: HouseholdNotesAdapter = {
   },
 
   async saveAll(notes) {
-    writeJSON(LS_KEY, notes)
+    if (!writeJSON(LS_KEY, notes)) throw new Error('localStorage write failed (household notes)')
   },
 }

@@ -17,6 +17,24 @@ const LS_KEY = STORAGE_KEYS.settings
 
 export type CurrencyCode = 'USD' | 'EUR' | 'GBP' | 'JPY' | 'KRW'
 
+const VALID_CURRENCIES = new Set<string>(['USD', 'EUR', 'GBP', 'JPY', 'KRW'])
+const VALID_GENDERS    = new Set<string>(['male', 'female', 'other', 'undisclosed'])
+
+/**
+ * Strips fields with invalid types or values from a raw stored object.
+ * Guards against corrupted localStorage or schema drift across app versions.
+ * The result is merged onto DEFAULT_SETTINGS at load time.
+ */
+function sanitizeStoredSettings(raw: Record<string, unknown>): Partial<AppSettings> {
+  const out: Partial<AppSettings> = {}
+  if (VALID_CURRENCIES.has(raw.currency as string))                                             out.currency        = raw.currency as CurrencyCode
+  if (typeof raw.showCents === 'boolean')                                                        out.showCents       = raw.showCents
+  if (typeof raw.birthYear === 'number' && raw.birthYear >= 1900 && raw.birthYear <= 2100)      out.birthYear       = raw.birthYear
+  if (typeof raw.gender === 'string' && VALID_GENDERS.has(raw.gender))                         out.gender          = raw.gender as GenderOption
+  if (typeof raw.annualReturnPct === 'number' && raw.annualReturnPct >= -100 && raw.annualReturnPct <= 1000) out.annualReturnPct = raw.annualReturnPct
+  return out
+}
+
 export type AppSettings = {
   currency:         CurrencyCode
   showCents:        boolean
@@ -47,9 +65,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
-    const stored = readJSON<Partial<AppSettings>>(LS_KEY, {})
+    const stored = readJSON<Record<string, unknown>>(LS_KEY, {})
     if (stored && Object.keys(stored).length > 0) {
-      setSettings({ ...DEFAULT_SETTINGS, ...stored })
+      setSettings({ ...DEFAULT_SETTINGS, ...sanitizeStoredSettings(stored) })
     }
     setIsLoaded(true)
   }, [])

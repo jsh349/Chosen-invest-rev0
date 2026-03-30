@@ -56,7 +56,7 @@ export function HouseholdNotesProvider({ children }: { children: ReactNode }) {
     const updated = [noteWithUser, ...notesRef.current]
     notesRef.current = updated
     setNotes(updated)
-    void householdNotesAdapter.saveAll(updated).catch(console.error)
+    void householdNotesAdapter.saveAll(updated).catch(() => { window.dispatchEvent(new CustomEvent('persist-error')) })
     recordAudit('Note added', noteWithUser.title)
   }, [currentUserId])
 
@@ -65,7 +65,7 @@ export function HouseholdNotesProvider({ children }: { children: ReactNode }) {
     const updated = notesRef.current.filter((n) => n.id !== id)
     notesRef.current = updated
     setNotes(updated)
-    void householdNotesAdapter.saveAll(updated).catch(console.error)
+    void householdNotesAdapter.saveAll(updated).catch(() => { window.dispatchEvent(new CustomEvent('persist-error')) })
     if (target) recordAudit('Note deleted', target.title)
   }, [])
 

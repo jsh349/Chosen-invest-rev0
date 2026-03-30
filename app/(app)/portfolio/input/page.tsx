@@ -85,6 +85,7 @@ export default function PortfolioInputPage() {
       (en) => en.name.trim() && parseFloat(en.value) > 0
     )
     if (validEntries.length === 0) {
+      setSaving(false)
       router.push(ROUTES.dashboard)
       return
     }
@@ -93,9 +94,14 @@ export default function PortfolioInputPage() {
       ...formEntryToAsset(en, currentUserId, en._id ?? crypto.randomUUID()),
       createdAt: en._createdAt ?? now,
     }))
-    // Await persistence so the dashboard never reads stale data on load.
-    await setAssets(newAssets)
-    router.push(ROUTES.dashboard)
+    try {
+      // Await persistence so the dashboard never reads stale data on load.
+      await setAssets(newAssets)
+      router.push(ROUTES.dashboard)
+    } catch {
+      // API save failed — stay on page so the user can retry.
+      setSaving(false)
+    }
   }
 
   return (

@@ -21,6 +21,10 @@ export const assetsAdapter: AssetsAdapter = {
     if (!res.ok) throw new Error(`[assetsAdapter] getAll failed: ${res.status}`)
     const data = await res.json() as Asset[]
     return data.filter((a) => {
+      if (!a.id || typeof a.value !== 'number' || !a.name) {
+        console.warn('[assetsAdapter] Skipping malformed asset — missing id, value, or name.', a)
+        return false
+      }
       if (!isValidAssetCategory(a.category)) {
         console.warn(`[assetsAdapter] Unknown category "${a.category}" on asset "${a.id}" — skipped.`)
         return false

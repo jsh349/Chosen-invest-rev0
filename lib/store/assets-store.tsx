@@ -19,7 +19,7 @@ type AssetsContextType = {
   addAsset: (asset: Asset) => void
   updateAsset: (id: string, patch: Partial<Pick<Asset, 'name' | 'category' | 'value'>>) => void
   removeAsset: (id: string) => void
-  clearAssets: () => void
+  clearAssets: () => Promise<void>
   isLoaded: boolean
 }
 
@@ -30,7 +30,7 @@ const AssetsContext = createContext<AssetsContextType>({
   addAsset: () => {},
   updateAsset: () => {},
   removeAsset: () => {},
-  clearAssets: () => {},
+  clearAssets: () => Promise.resolve(),
   isLoaded: false,
 })
 
@@ -55,9 +55,10 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
     // then return the save Promise so callers can await persistence before
     // navigating away (prevents stale-read on immediate dashboard reload).
     setAssetsState(newAssets)
-    return assetsAdapter.saveAll(newAssets).catch(() => {
-      console.error('[assets] save failed')
+    return assetsAdapter.saveAll(newAssets).catch((err) => {
+      console.error('[assets] save failed', err)
       window.dispatchEvent(new CustomEvent('persist-error'))
+      throw err
     })
   }, [])
 
@@ -95,8 +96,12 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
-  const clearAssets = useCallback(() => {
-    void assetsAdapter.clear().catch(() => { console.error('[assets] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
+  const clearAssets = useCallback(async () => {
+    await assetsAdapter.clear().catch((err) => {
+      console.error('[assets] clear failed', err)
+      window.dispatchEvent(new CustomEvent('persist-error'))
+      throw err
+    })
     setAssetsState([])
   }, [])
 
