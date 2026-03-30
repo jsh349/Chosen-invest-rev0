@@ -34,7 +34,7 @@ export function getRankActions(
 
   // Rule 2: wealth rank below the 75th percentile → review portfolio
   if (actions.length < 2 && overallPct !== null && overallPct < 75) {
-    actions.push({ label: 'Review portfolio composition', href: ROUTES.portfolioList })
+    actions.push({ label: 'Review portfolio allocation', href: ROUTES.portfolioList })
   }
 
   // Rule 3: overall rank available but no goals set
@@ -48,7 +48,7 @@ export function getRankActions(
     returnMissing &&
     !actions.some((a) => a.href === ROUTES.settings)
   ) {
-    actions.push({ label: 'Add return estimate for full ranking', href: ROUTES.settings })
+    actions.push({ label: 'Add return estimate for investment rank', href: ROUTES.settings })
   }
 
   return actions.slice(0, 2)
