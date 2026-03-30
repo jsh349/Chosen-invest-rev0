@@ -32,12 +32,12 @@ export function DashboardOverview({ summary }: DashboardOverviewProps) {
       </Card>
 
       <Card className="flex flex-col gap-1">
-        <p className="text-xs uppercase tracking-wide text-gray-500">Top Category</p>
+        <p className="text-xs uppercase tracking-wide text-gray-500">Largest Category</p>
         <p className="text-2xl font-bold text-white">
           {topCategory?.label ?? '—'}
         </p>
         <p className="text-xs text-gray-500">
-          {topCategory ? `${topCategory.percentage.toFixed(0)}% of portfolio` : 'No data yet'}
+          {topCategory ? `by value · ${topCategory.percentage.toFixed(0)}% of portfolio` : 'No data yet'}
         </p>
       </Card>
 
