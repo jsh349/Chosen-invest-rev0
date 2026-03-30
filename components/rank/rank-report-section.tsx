@@ -4,7 +4,6 @@ import Link from 'next/link'
 import type { RankResult } from '@/lib/types/rank'
 import type { RankHint } from '@/lib/utils/rank-next-hint'
 import { getPrimaryRank } from '@/lib/utils/rank-priority'
-import { getRankInterpretation } from '@/lib/utils/rank-interpretation'
 import { getRankInsight } from '@/lib/utils/rank-insight'
 import { cn } from '@/lib/utils/cn'
 import { ROUTES } from '@/lib/constants/routes'
@@ -47,7 +46,7 @@ export function composeRankReport(
 
   return {
     highlight,
-    explanation:    getRankInterpretation(highlight.percentile),
+    explanation:    highlight.message,
     comparisonNote: getRankInsight(ranks),
     nextAction:     nextHint ?? null,
   }

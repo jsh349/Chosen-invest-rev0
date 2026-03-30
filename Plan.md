@@ -1,54 +1,39 @@
-# Plan.md — Phase 155: Rank Review Cooldown
+# Plan.md — Phase 156: Rank Report Interpretation Slot Refinement
 
 ## Task Summary
-Add a 7-day cooldown to the rank review prompt so it doesn't resurface
-immediately after minor input changes (e.g. asset value crossing a $1k
-bucket). Cooldown only starts on explicit dismiss. Initial baseline write
-has no cooldown.
+Replace getRankInterpretation() in the compact rank report's explanation
+slot with highlight.message — the rank-type-specific contextual message
+already computed in the RankResult.
 
 ## Goal
-After the user dismisses the review prompt, suppress it for 7 days even
-if the fingerprint changes slightly. Prompt returns naturally after:
-  a) cooldown expires (7 days), or
-  b) never: existing fingerprint-match suppression still applies
+Slot 2 (explanation) currently shows a generic band label
+("Above the benchmark midpoint.") that lacks rank-type context.
+highlight.message already contains the specific, contextual version:
+"Top 30% nationally — above the median benchmark."
+
+## Before / After
+Before: explanation = getRankInterpretation(highlight.percentile)
+After:  explanation = highlight.message
 
 ## Non-Goals
-- No changes to getRankReviewFingerprint or the fingerprint format
-- No changes to rank/page.tsx (API is unchanged)
-- No backend, no scheduling, no notifications
-- No changes to settings/page.tsx
-
-## Design
-Two separate localStorage keys:
-  rankReviewSeen     — existing: stores last-dismissed fingerprint (format UNCHANGED)
-  rankReviewCooldown — NEW: stores dismiss timestamp as numeric string
-
-checkRankReviewDue:
-  1. No stored fp → write baseline (no cooldown), return false
-  2. fp matches → return false
-  3. fp differs, no cooldown key → return true  (pre-dismiss state: initial baseline)
-  4. fp differs, cooldown active  → return false (suppressed)
-  5. fp differs, cooldown expired → return true
-
-dismissRankReview:
-  - writes fp to rankReviewSeen (unchanged)
-  - writes Date.now() to rankReviewCooldown (new)
+- No changes to getRankInterpretation (still used elsewhere)
+- No changes to rank/page.tsx
+- No changes to comparisonNote, nextAction, highlight slots
+- No new interpretation logic
 
 ## Affected Files
 ### Modified
-- `lib/constants/storage-keys.ts` — add `rankReviewCooldown` key
-- `lib/utils/rank-review.ts` — add cooldown constant + logic
-- `__tests__/lib/utils/rank-review.test.ts` — add 3 cooldown tests
-
-## Backward Compatibility
-Old storage (rankReviewSeen without cooldown key) → no cooldown key present
-→ rule 3 applies → prompt shows if fingerprint changed. Safe migration.
+- `components/rank/rank-report-section.tsx`
+  — in composeRankReport: use highlight.message instead of getRankInterpretation
+  — remove now-unused getRankInterpretation import
 
 ## Risks
-- Minimal. Additive. All existing tests pass unchanged.
-- rank/page.tsx call sites unchanged.
+- Minimal. highlight.message is typed as non-optional string.
+  composeRankReport already guards that highlight.percentile !== null,
+  so message is always a fully computed contextual string at this point.
 
 ## Validation Steps
-1. Existing tests pass: npx jest rank-review.test
-2. New cooldown tests pass
-3. TypeScript: npx tsc --noEmit → 0 errors
+1. TypeScript: npx tsc --noEmit → 0 errors
+2. Slot 2 shows rank-specific context ("nationally", "aged X–Y", etc.)
+3. Slot 1 (Top X%) and Slot 2 are complementary, not duplicative
+4. No regression in other slots (comparisonNote, nextAction, footer)
