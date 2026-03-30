@@ -18,6 +18,7 @@ import { getBenchmarkCapabilities } from '@/lib/utils/benchmark-capabilities'
 import { getBenchmarkHealthStatus } from '@/lib/utils/benchmark-health'
 import { BENCHMARK_META } from '@/lib/mock/rank-benchmarks'
 import { readBenchmarkRefreshState } from '@/lib/utils/benchmark-refresh'
+import { readScalar } from '@/lib/utils/local-storage'
 
 /** Keys whose stored value must be an array. Non-array values are skipped on import. */
 const ARRAY_KEYS: ReadonlySet<string> = new Set([
@@ -187,6 +188,7 @@ export default function SettingsPage() {
   const debugFallback = isUsingFallbackBenchmark()
   const debugRefresh  = readBenchmarkRefreshState()
   const debugHealth   = getBenchmarkHealthStatus(debugCaps, debugFallback)
+  const debugMode     = readScalar(STORAGE_KEYS.rankComparisonMode) ?? 'individual'
 
   return (
     <div className="space-y-6">
@@ -413,9 +415,19 @@ export default function SettingsPage() {
           Benchmark Diagnostics <span className="normal-case font-normal text-gray-700">(internal)</span>
         </summary>
         <div className="mt-3 space-y-1.5 font-mono text-[11px] text-gray-500">
-          <p><span className="inline-block w-32 text-gray-600">Active source</span>{debugSrcId}</p>
+          {/* Priority fields — scan these first */}
+          <p><span className="inline-block w-36 text-gray-600">Comparison mode</span>{debugMode}</p>
+          <p><span className="inline-block w-36 text-gray-600">Active source</span>{debugSrcId}</p>
           <p>
-            <span className="inline-block w-32 text-gray-600">Health</span>
+            <span className="inline-block w-36 text-gray-600">Fallback</span>
+            {debugFallback
+              ? 'active — preferred source unavailable'
+              : debugCaps.isFallbackOnly
+                ? 'stub source'
+                : 'no'}
+          </p>
+          <p>
+            <span className="inline-block w-36 text-gray-600">Health</span>
             <span className={
               debugHealth.status === 'healthy'  ? 'text-emerald-400' :
               debugHealth.status === 'partial'  ? 'text-amber-400'   :
@@ -426,27 +438,30 @@ export default function SettingsPage() {
             </span>
             <span className="ml-2 text-gray-600">{debugHealth.note}</span>
           </p>
-          <p><span className="inline-block w-32 text-gray-600">Fallback active</span>{debugFallback ? 'yes' : 'no'}</p>
-          <p><span className="inline-block w-32 text-gray-600">Fallback-only</span>{debugCaps.isFallbackOnly ? 'yes' : 'no'}</p>
-          <p><span className="inline-block w-32 text-gray-600">Capabilities</span>
-            wealth {debugCaps.supportsWealth ? '✓' : '✗'} &nbsp;
-            age {debugCaps.supportsAge ? '✓' : '✗'} &nbsp;
-            age+gender {debugCaps.supportsAgeGender ? '✓' : '✗'} &nbsp;
-            return {debugCaps.supportsReturn ? '✓' : '✗'}
+          <p>
+            <span className="inline-block w-36 text-gray-600">Capabilities</span>
+            <span className={debugCaps.supportsWealth    ? 'text-gray-400' : 'text-red-400'}>wealth {debugCaps.supportsWealth    ? '✓' : '✗'}</span>
+            {' · '}
+            <span className={debugCaps.supportsAge       ? 'text-gray-400' : 'text-red-400'}>age {debugCaps.supportsAge          ? '✓' : '✗'}</span>
+            {' · '}
+            <span className={debugCaps.supportsAgeGender ? 'text-gray-400' : 'text-red-400'}>age+gender {debugCaps.supportsAgeGender ? '✓' : '✗'}</span>
+            {' · '}
+            <span className={debugCaps.supportsReturn    ? 'text-gray-400' : 'text-red-400'}>return {debugCaps.supportsReturn    ? '✓' : '✗'}</span>
           </p>
-          <p><span className="inline-block w-32 text-gray-600">Meta version</span>{BENCHMARK_META.version}</p>
-          <p><span className="inline-block w-32 text-gray-600">Meta updated</span>{BENCHMARK_META.updatedAt}</p>
+          {/* Reference metadata */}
+          <p><span className="inline-block w-36 text-gray-600">Version</span>{BENCHMARK_META.version}</p>
+          <p><span className="inline-block w-36 text-gray-600">Updated</span>{BENCHMARK_META.updatedAt}</p>
           {debugRefresh.lastApplied ? (
             <p>
-              <span className="inline-block w-32 text-gray-600">Last applied</span>
+              <span className="inline-block w-36 text-gray-600">Last applied</span>
               {debugRefresh.lastApplied.source} ({debugRefresh.lastApplied.vintageYear})
               {' — '}{new Date(debugRefresh.lastApplied.appliedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
             </p>
           ) : (
-            <p><span className="inline-block w-32 text-gray-600">Last applied</span>—</p>
+            <p><span className="inline-block w-36 text-gray-600">Last applied</span>—</p>
           )}
           {debugRefresh.hasPending && (
-            <p><span className="inline-block w-32 text-gray-600">Pending</span>{debugRefresh.pendingSource ?? '—'}</p>
+            <p><span className="inline-block w-36 text-gray-600">Pending</span>{debugRefresh.pendingSource ?? '—'}</p>
           )}
         </div>
       </details>
