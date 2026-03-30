@@ -74,10 +74,10 @@ function getRankCoverageNote(type: RankType, caps: BenchmarkSourceCapabilities):
   return supported[type] ? null : 'Not supported by active source'
 }
 
-function rankCompleteness(availableCount: number): { label: string; color: string } {
-  if (availableCount <= 1) return { label: 'Basic',         color: 'text-gray-400' }
-  if (availableCount <= 2) return { label: 'Partial',       color: 'text-amber-400' }
-  return                          { label: 'More complete', color: 'text-emerald-400' }
+function rankCompleteness(availableCount: number, total: number): { label: string; color: string } {
+  if (availableCount <= 1)       return { label: 'Basic',    color: 'text-gray-400' }
+  if (availableCount < total)    return { label: 'Partial',  color: 'text-amber-400' }
+  return                                { label: 'Complete', color: 'text-emerald-400' }
 }
 
 
@@ -491,8 +491,8 @@ export default function RankPage() {
               </div>
               <div>
                 <p className="text-xs text-gray-500">Profile</p>
-                <p className={cn('mt-0.5 text-sm font-semibold', rankCompleteness(availableCount).color)}>
-                  {rankCompleteness(availableCount).label}
+                <p className={cn('mt-0.5 text-sm font-semibold', rankCompleteness(availableCount, ranks.length).color)}>
+                  {rankCompleteness(availableCount, ranks.length).label}
                 </p>
               </div>
               {(confidenceNote ?? inputExplanation ?? sourceExplanation) && (
@@ -862,7 +862,7 @@ export default function RankPage() {
         <div className="mt-2 border-t border-surface-border pt-2 flex flex-wrap gap-x-4 gap-y-1">
           <span className="text-[10px] text-gray-600">
             <span className="text-gray-500">Benchmark: </span>
-            {BENCHMARK_META.sourceLabel}
+            {activeBenchmarkMeta.sourceLabel}
           </span>
           <span className="text-[10px] text-gray-600">
             <span className="text-gray-500">Version: </span>
@@ -875,8 +875,8 @@ export default function RankPage() {
           <span className="text-[10px] text-gray-600">
             <span className="text-gray-500">Active source: </span>
             {usingFallbackBenchmark
-              ? 'Built-in reference — preferred source unavailable'
-              : activeBenchmarkSource === 'curated' ? 'Curated dataset' : 'Built-in reference'}
+              ? `${activeBenchmarkMeta.sourceLabel} — preferred source unavailable`
+              : activeBenchmarkMeta.sourceLabel}
           </span>
           <span className="text-[10px] text-gray-600">
             <span className="text-gray-500">Status: </span>
