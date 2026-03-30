@@ -18,16 +18,16 @@ import { cn } from '@/lib/utils/cn'
 import { ROUTES } from '@/lib/constants/routes'
 
 const NAV_ITEMS = [
-  { label: 'Dashboard',  href: ROUTES.dashboard,      Icon: LayoutDashboard },
-  { label: 'Portfolio',  href: ROUTES.portfolioList,   Icon: Briefcase       },
-  { label: 'Goals',        href: ROUTES.goals,          Icon: Target          },
-  { label: 'Transactions', href: ROUTES.transactions,   Icon: ArrowLeftRight  },
-  { label: 'Household',   href: ROUTES.household,       Icon: Users           },
-  { label: 'Rank',       href: ROUTES.rank,             Icon: Trophy          },
-  { label: 'Market',     href: ROUTES.market,          Icon: TrendingUp      },
-  { label: 'Analysis',   href: ROUTES.analysis,        Icon: BarChart2       },
-  { label: 'AI Advisor', href: ROUTES.ai,              Icon: Sparkles        },
-  { label: 'Settings',   href: ROUTES.settings,        Icon: Settings        },
+  { label: 'Dashboard',    href: ROUTES.dashboard,    Icon: LayoutDashboard },
+  { label: 'Portfolio',    href: ROUTES.portfolioList, Icon: Briefcase       },
+  { label: 'Goals',        href: ROUTES.goals,         Icon: Target          },
+  { label: 'Transactions', href: ROUTES.transactions,  Icon: ArrowLeftRight  },
+  { label: 'Household',    href: ROUTES.household,     Icon: Users           },
+  { label: 'Rank',         href: ROUTES.rank,          Icon: Trophy          },
+  { label: 'Market',       href: ROUTES.market,        Icon: TrendingUp      },
+  { label: 'Analysis',     href: ROUTES.analysis,      Icon: BarChart2,      comingSoon: true },
+  { label: 'AI Advisor',   href: ROUTES.ai,            Icon: Sparkles,       comingSoon: true },
+  { label: 'Settings',     href: ROUTES.settings,      Icon: Settings        },
 ]
 
 export function AppSidebar() {
@@ -44,7 +44,7 @@ export function AppSidebar() {
 
       {/* Nav */}
       <nav className="flex-1 space-y-0.5 overflow-y-auto p-3">
-        {NAV_ITEMS.map(({ label, href, Icon }) => {
+        {NAV_ITEMS.map(({ label, href, Icon, comingSoon }) => {
           const active = pathname === href || pathname.startsWith(href + '/')
           return (
             <Link
@@ -54,11 +54,18 @@ export function AppSidebar() {
                 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
                 active
                   ? 'bg-brand-950 text-brand-300 font-medium'
-                  : 'text-gray-400 hover:bg-surface-muted hover:text-white'
+                  : comingSoon
+                    ? 'text-gray-600 hover:bg-surface-muted hover:text-gray-400'
+                    : 'text-gray-400 hover:bg-surface-muted hover:text-white'
               )}
             >
               <Icon className="h-4 w-4 flex-shrink-0" />
-              {label}
+              <span className="flex-1">{label}</span>
+              {comingSoon && (
+                <span className="rounded px-1.5 py-0.5 text-[10px] font-medium bg-surface-muted text-gray-600 leading-none">
+                  Soon
+                </span>
+              )}
             </Link>
           )
         })}
