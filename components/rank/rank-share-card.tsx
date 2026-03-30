@@ -87,14 +87,19 @@ export const RankShareCard = forwardRef<HTMLDivElement, Props>(
             {secondary.length > 0 && (
               <div className="divide-y divide-surface-border border-t border-surface-border">
                 {secondary.map((r) => (
-                  <div key={r.type} className="flex items-center justify-between py-2">
-                    <span className="text-xs text-gray-500">{r.label}</span>
+                  <div key={r.type} className="flex items-start justify-between gap-3 py-2">
+                    <div>
+                      <span className="text-xs text-gray-500">{r.label}</span>
+                      {r.message && (
+                        <p className="text-[10px] text-gray-600 leading-snug mt-0.5">{r.message}</p>
+                      )}
+                    </div>
                     {r.percentile != null ? (
-                      <span className={cn('text-sm font-semibold tabular-nums', percentileColor(r.percentile))}>
+                      <span className={cn('shrink-0 text-sm font-semibold tabular-nums', percentileColor(r.percentile))}>
                         Top {topPctLabel(r.percentile)}
                       </span>
                     ) : (
-                      <span className="text-xs text-gray-600">—</span>
+                      <span className="shrink-0 text-xs text-gray-600">—</span>
                     )}
                   </div>
                 ))}
