@@ -562,8 +562,11 @@ export default function RankPage() {
             </div>
           )}
 
-          {/* Advisor review summary — structured 3-item status for profile / wealth / return */}
-          {rankReviewSummary && (
+          {/* Advisor review summary — secondary review surface.
+              Suppressed while reviewVisible is true: the banner above is the primary
+              prompt when inputs have just changed. Once the banner is dismissed,
+              this card becomes the ongoing review reference. */}
+          {rankReviewSummary && !reviewVisible && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-3">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Review Summary</p>
