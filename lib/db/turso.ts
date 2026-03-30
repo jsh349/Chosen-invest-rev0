@@ -1,3 +1,5 @@
+// Role: primary app data store (assets, transactions, goals, settings, users).
+// Active from Phase 2+. Do NOT use Supabase for these tables. See doc/decisions.md.
 import { createClient } from '@libsql/client'
 import { drizzle } from 'drizzle-orm/libsql'
 import * as schema from './schema'

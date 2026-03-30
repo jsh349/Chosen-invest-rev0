@@ -56,6 +56,31 @@
 
 ---
 
+### [2026-03-30] Turso vs Supabase — 역할 경계 명시
+
+**결정:** 두 DB의 역할을 Phase 기준으로 분리. 겹치지 않는다.
+
+**역할 분담:**
+
+| 계층 | 담당 | 활성화 시점 |
+|---|---|---|
+| **Turso (libSQL + Drizzle)** | 앱 구조 데이터 — assets, transactions, goals, settings, users | Phase 2+ |
+| **Supabase** | RLS 기반 멀티유저 격리, Storage, Realtime | Phase 5+ |
+
+**규칙:**
+- Phase 2–4 신규 데이터는 Turso에 먼저 쓴다. Supabase 쿼리는 작성하지 않는다.
+- Phase 5에서 멀티유저 전환 시 Supabase RLS를 도입하되, Turso에 이미 있는 테이블과 중복 설계하지 않는다.
+- Turso와 Supabase 양쪽에 같은 테이블을 만들지 않는다 (단일 소스 원칙).
+- Supabase는 현재 auth 연동과 클라이언트 설정만 존재. 새 Supabase 쿼리 추가 전에 이 문서를 먼저 확인한다.
+
+**언제 번복하나:**
+- Realtime 또는 Storage 기능이 Phase 5 이전에 필요해지면 이 결정을 업데이트한다.
+- Turso 한계(동시 쓰기, 스케일)가 먼저 나타나면 마이그레이션 전략을 별도 문서로 작성한다.
+
+**관련 파일:** `lib/db/turso.ts`, `lib/db/schema.ts`, `lib/supabase/server.ts`, `lib/supabase/client.ts`
+
+---
+
 ### [2026-03-28] Google Gemini 1.5 (primary AI) + Anthropic Claude (secondary)
 
 **결정:** AI Summary는 Gemini Flash 우선, 복잡한 분석은 Claude 사용

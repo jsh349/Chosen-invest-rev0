@@ -1,3 +1,5 @@
+// Role: RLS-based multi-user isolation, Storage, Realtime. Active from Phase 5+.
+// Do NOT add app-data queries (assets, goals, transactions) here before Phase 5. See doc/decisions.md.
 // This file may only be imported from server components, API routes, or server actions.
 // The service role key bypasses row-level security — never expose it to browser context.
 import 'server-only'
