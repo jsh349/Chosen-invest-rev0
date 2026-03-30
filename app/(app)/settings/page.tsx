@@ -132,9 +132,10 @@ export default function SettingsPage() {
   const [returnError, setReturnError] = useState('')
 
   const benchmarkSources = getAvailableBenchmarkSources()
-  const [selectedBenchmarkSource, setSelectedBenchmarkSource] = useState<BenchmarkSource['id']>(
-    getActiveBenchmarkSourceId
-  )
+  const [selectedBenchmarkSource, setSelectedBenchmarkSource] = useState<BenchmarkSource['id']>(() => {
+    const id = getActiveBenchmarkSourceId()
+    return id === 'curated' ? 'curated' : 'default'
+  })
 
   // recordAudit() writes directly to localStorage outside the React context,
   // so context state can be stale when navigating here. Refresh on mount so
