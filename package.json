@@ -9,7 +9,7 @@
     "lint": "next lint",
     "test": "jest",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
+    "db:migrate": "node scripts/migrate.mjs",
     "typecheck": "tsc --noEmit",
     "security": "npm audit --audit-level=high"
   },
