@@ -807,6 +807,13 @@ export default function RankPage() {
               ? 'Built-in (default) — curated source could not be loaded'
               : activeBenchmarkSource === 'curated' ? 'Curated dataset' : 'Built-in (default)'}
           </span>
+          <span className="text-[10px] text-gray-600">
+            <span className="text-gray-500">Status: </span>
+            {benchmarkHealth.status === 'healthy'  && 'Current'}
+            {benchmarkHealth.status === 'partial'  && 'Partial — not all categories supported'}
+            {benchmarkHealth.status === 'fallback' && 'Using fallback'}
+            {benchmarkHealth.status === 'invalid'  && 'Stub source — no real data'}
+          </span>
           {BENCHMARK_META.notes && (
             <span className="text-[10px] text-gray-600 w-full">{BENCHMARK_META.notes}</span>
           )}
