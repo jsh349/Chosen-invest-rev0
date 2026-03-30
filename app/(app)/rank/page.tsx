@@ -818,8 +818,8 @@ export default function RankPage() {
 
       {/* Benchmark source change summary — shown when source changed or fallback is active */}
       {sourceSummary !== null && (sourceSummary.previousLabel !== null || sourceSummary.fallbackActive) && (
-        <div className="rounded-xl border border-surface-border bg-surface-card px-4 py-3 space-y-1.5">
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-500">Benchmark Source</p>
+        <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Benchmark Source</p>
           <div className="flex flex-wrap gap-x-6 gap-y-1">
             <span className="text-xs text-gray-400">
               <span className="text-gray-300">Current</span>
