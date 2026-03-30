@@ -16,7 +16,6 @@ import { RANK_GAP_THRESHOLD } from '@/lib/utils/rank-insight'
  * A second sentence is appended (at most one) when:
  *   - Return rank is ≥ 20 pts below overall  → note about return standing
  *   - Return rank is ≥ 20 pts above overall  → note about return strength
- *   - Profile is incomplete and no return gap → prompt to complete profile
  *
  * Always returns a non-empty string.
  */
@@ -35,7 +34,7 @@ export function getRankNarrativeSummary(ranks: RankResult[]): string {
   // No overall data — nothing meaningful to say yet
   if (overallPct === null) {
     return profileIncomplete
-      ? 'Benchmark comparisons are not yet available. Add profile details to unlock rank comparisons.'
+      ? 'Rank comparisons require additional profile details.'
       : 'Overall wealth rank is unavailable with current portfolio data.'
   }
 
@@ -57,8 +56,6 @@ export function getRankNarrativeSummary(ranks: RankResult[]): string {
     second = ' Your investment return rank is notably lower than your wealth rank.'
   } else if (retPct !== null && retPct - overallPct >= RANK_GAP_THRESHOLD) {
     second = ' Your investment return rank is notably stronger than your wealth rank.'
-  } else if (profileIncomplete) {
-    second = ' More detailed comparisons will be available when profile inputs are completed.'
   }
 
   return opening + second
