@@ -50,3 +50,34 @@ describe('HTTP security headers — next.config.ts', () => {
     expect(headers['Content-Security-Policy-Report-Only']).toContain('https://fonts.gstatic.com')
   })
 })
+
+// ── Clickjacking protection ───────────────────────────────────────────────────
+// Two independent mechanisms guard against framing attacks:
+//   X-Frame-Options     : legacy header, honoured by all browsers — actively blocks.
+//   CSP frame-ancestors : modern override for CSP Level 2+ browsers.
+//
+// IMPORTANT: frame-ancestors is currently in Content-Security-Policy-Report-Only
+// (violations are logged but NOT blocked). X-Frame-Options is therefore the
+// sole active clickjacking barrier until CSP is promoted to enforcement mode.
+describe('clickjacking protection', () => {
+  let headers: Record<string, string>
+
+  beforeAll(async () => {
+    headers = await getConfiguredHeaders()
+  })
+
+  it('X-Frame-Options DENY is present — active blocking mechanism', () => {
+    expect(headers['X-Frame-Options']).toBe('DENY')
+  })
+
+  it('CSP frame-ancestors none is declared — ready for enforcement promotion', () => {
+    expect(headers['Content-Security-Policy-Report-Only']).toContain("frame-ancestors 'none'")
+  })
+
+  // This test documents that CSP is still in report-only mode.
+  // When promoting CSP to enforcement (Content-Security-Policy key), remove this
+  // assertion and add a test that Content-Security-Policy also contains frame-ancestors.
+  it('CSP enforcement header is not yet active — X-Frame-Options carries the full load', () => {
+    expect(headers['Content-Security-Policy']).toBeUndefined()
+  })
+})
