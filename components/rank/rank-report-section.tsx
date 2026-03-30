@@ -14,6 +14,44 @@ type Props = {
   nextHint?: RankHint | null
 }
 
+/**
+ * The four content slots of a compact rank report, in canonical display order.
+ *
+ * Slot selection rules (each slot picks the highest-value single item):
+ *   highlight      — highest-priority rank that has a real percentile (RANK_PRIORITY_ORDER)
+ *   explanation    — getRankInterpretation applied to highlight.percentile
+ *   comparisonNote — getRankInsight cross-rank gap analysis; null = slot omitted
+ *   nextAction     — caller-supplied next-step hint; null = slot omitted
+ */
+export type RankReportContent = {
+  highlight:      RankResult
+  explanation:    string
+  comparisonNote: string | null
+  nextAction:     RankHint | null
+}
+
+/**
+ * Pure composition function — converts rank data into a RankReportContent
+ * object using the fixed slot order above.
+ *
+ * Returns null when no rank has a real percentile (nothing to show).
+ * Deterministic: same inputs always produce the same output.
+ */
+export function composeRankReport(
+  ranks: RankResult[],
+  nextHint: RankHint | null | undefined,
+): RankReportContent | null {
+  const highlight = getPrimaryRank(ranks)
+  if (!highlight || highlight.percentile === null) return null
+
+  return {
+    highlight,
+    explanation:    getRankInterpretation(highlight.percentile),
+    comparisonNote: getRankInsight(ranks),
+    nextAction:     nextHint ?? null,
+  }
+}
+
 function topPctLabel(percentile: number): string {
   const top = 100 - percentile
   return top === 0 ? '<1%' : `${top}%`
@@ -27,22 +65,15 @@ function percentileColor(percentile: number): string {
 }
 
 /**
- * Compact, reusable rank report section.
- *
- * Shows:
- *   1. Primary rank highlight (highest-priority rank with a real percentile)
- *   2. One interpretation line
- *   3. One comparison note (insight) when a meaningful gap is detected
- *   4. One next-step suggestion link when provided
- *
- * Returns null when no rank data is available — safe to render unconditionally.
+ * Renders a RankReportContent in canonical slot order.
+ * Slots 3 and 4 (comparisonNote, nextAction) are omitted when null.
+ * Returns null when no rank data is available.
  */
 export function RankReportSection({ ranks, nextHint }: Props) {
-  const primary = getPrimaryRank(ranks)
-  if (!primary || primary.percentile === null) return null
+  const report = composeRankReport(ranks, nextHint)
+  if (!report) return null
 
-  const interpretation = getRankInterpretation(primary.percentile)
-  const comparisonNote = getRankInsight(ranks)
+  const { highlight, explanation, comparisonNote, nextAction } = report
 
   return (
     <div
@@ -52,33 +83,33 @@ export function RankReportSection({ ranks, nextHint }: Props) {
     >
       <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Rank Report</p>
 
-      {/* 1. Primary rank highlight */}
+      {/* Slot 1 — primary rank highlight */}
       <div className="space-y-0.5">
-        <p className="text-[10px] uppercase tracking-wide text-gray-600">{primary.label}</p>
-        <p className={cn('text-2xl font-bold tabular-nums leading-none', percentileColor(primary.percentile))}>
-          Top {topPctLabel(primary.percentile)}
+        <p className="text-[10px] uppercase tracking-wide text-gray-600">{highlight.label}</p>
+        <p className={cn('text-2xl font-bold tabular-nums leading-none', percentileColor(highlight.percentile!))}>
+          Top {topPctLabel(highlight.percentile!)}
         </p>
-        <p className="text-xs tabular-nums text-gray-600">{primary.percentile}th percentile</p>
+        <p className="text-xs tabular-nums text-gray-600">{highlight.percentile}th percentile</p>
       </div>
 
-      {/* 2. Interpretation */}
-      <p className="text-xs text-gray-400 leading-relaxed">{interpretation}</p>
+      {/* Slot 2 — short explanation */}
+      <p className="text-xs text-gray-400 leading-relaxed">{explanation}</p>
 
-      {/* 3. Comparison note */}
+      {/* Slot 3 — comparison note (omitted when null) */}
       {comparisonNote && (
         <p className="border-t border-surface-border pt-2 text-xs text-gray-500 leading-relaxed">
           {comparisonNote}
         </p>
       )}
 
-      {/* 4. Next-step suggestion */}
-      {nextHint && (
+      {/* Slot 4 — next action (omitted when null) */}
+      {nextAction && (
         <div className="border-t border-surface-border pt-2">
           <Link
-            href={nextHint.href}
+            href={nextAction.href}
             className="text-xs text-brand-400 hover:text-brand-300 transition-colors"
           >
-            {nextHint.text}
+            {nextAction.text}
           </Link>
         </div>
       )}
