@@ -113,6 +113,11 @@ export function RankReportSection({ ranks, nextHint }: Props) {
           </Link>
         </div>
       )}
+
+      {/* Footer — benchmark framing */}
+      <p className="border-t border-surface-border pt-2 text-[10px] text-gray-600">
+        Benchmark-based estimate · not financial advice
+      </p>
     </div>
   )
 }

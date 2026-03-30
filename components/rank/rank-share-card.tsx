@@ -5,6 +5,7 @@ import Link from 'next/link'
 import type { RankResult } from '@/lib/types/rank'
 import { cn } from '@/lib/utils/cn'
 import { ROUTES } from '@/lib/constants/routes'
+import { getRankInterpretation } from '@/lib/utils/rank-interpretation'
 
 // Overall shown as hero; age + return shown as secondary rows
 const HERO_TYPE      = 'overall_wealth'
@@ -72,14 +73,19 @@ export const RankShareCard = forwardRef<HTMLDivElement, Props>(
               <div className="rounded-lg bg-surface-muted/50 px-4 py-3">
                 <p className="text-[10px] text-gray-600 uppercase tracking-wide mb-1">{hero.label}</p>
                 {hero.percentile != null ? (
-                  <div className="flex items-baseline gap-2">
-                    <span className={cn('text-2xl font-bold tabular-nums leading-none', percentileColor(hero.percentile))}>
-                      Top {topPctLabel(hero.percentile)}
-                    </span>
-                    <span className="text-xs text-gray-600 tabular-nums">
-                      {hero.percentile}th pct.
-                    </span>
-                  </div>
+                  <>
+                    <div className="flex items-baseline gap-2">
+                      <span className={cn('text-2xl font-bold tabular-nums leading-none', percentileColor(hero.percentile))}>
+                        Top {topPctLabel(hero.percentile)}
+                      </span>
+                      <span className="text-xs text-gray-600 tabular-nums">
+                        {hero.percentile}th pct.
+                      </span>
+                    </div>
+                    <p className="mt-1.5 text-[11px] text-gray-500 leading-relaxed">
+                      {getRankInterpretation(hero.percentile)}
+                    </p>
+                  </>
                 ) : (
                   <span className="text-sm text-gray-600">—</span>
                 )}
