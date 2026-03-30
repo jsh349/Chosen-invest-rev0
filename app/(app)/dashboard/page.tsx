@@ -4,7 +4,6 @@ import { useState, useMemo, useEffect, Suspense, lazy } from 'react'
 import Link from 'next/link'
 import { PlusCircle, BarChart2, SlidersHorizontal, Trophy, Info } from 'lucide-react'
 import { DashboardOverview } from '@/components/dashboard/dashboard-overview'
-import { AllocationChartCard } from '@/components/dashboard/allocation-chart-card'
 // Lazy-loaded so the AI section is code-split and wrapped in a Suspense
 // boundary — one slow or failing AI render cannot block the rest of the page.
 const AISummaryCard = lazy(() => import('@/components/dashboard/ai-summary-card'))
@@ -14,10 +13,26 @@ import { GoalsSummaryCard } from '@/components/dashboard/goals-summary-card'
 import { generateHealthCards } from '@/features/dashboard/diagnosis'
 import { generateAISummary } from '@/features/ai/summary-generator'
 import { buildAdvisorContext } from '@/features/ai/advisor-context'
-// ssr: false — Recharts uses DOM APIs (window, document) that do not exist on the
-// server. Skipping the server-render pass eliminates cold-path SSR overhead on
-// every dashboard request and avoids potential hydration mismatches.
+// ssr: false — chart cards use DOM-dependent rendering paths and are
+// conditionally visible. Dynamic loading defers their JS chunks to client,
+// so hidden cards never contribute to initial parse cost.
 import dynamic from 'next/dynamic'
+const AllocationChartCard = dynamic(
+  () => import('@/components/dashboard/allocation-chart-card').then((m) => ({ default: m.AllocationChartCard })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="rounded-2xl border border-surface-border bg-surface-card p-5 animate-pulse">
+        <div className="mb-4 h-4 w-28 rounded bg-surface-border" />
+        <div className="space-y-3">
+          <div className="h-3 w-full rounded bg-surface-border" />
+          <div className="h-3 w-4/5 rounded bg-surface-border" />
+          <div className="h-3 w-3/5 rounded bg-surface-border" />
+        </div>
+      </div>
+    ),
+  },
+)
 const NetWorthTrendCard = dynamic(
   () => import('@/components/dashboard/net-worth-trend-card').then((m) => ({ default: m.NetWorthTrendCard })),
   {
