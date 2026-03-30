@@ -133,6 +133,33 @@
 
 ---
 
+### [2026-03-30] Asset value precision — REAL (float) for Phase 1, INTEGER minor units before Phase 3
+
+**현재 상태 (Phase 1–2):**
+- `assets.value` is stored as SQLite `REAL` (IEEE 754 double = JS `number`)
+- Sufficient for user-entered portfolio values in normal ranges (e.g. $100 – $10M USD)
+
+**위험 (Risk):**
+- IEEE 754 doubles lose precision for very large integers (>2^53 ≈ $9 quadrillion) — not a real-world risk for MVP
+- High-precision crypto amounts (e.g. 0.000000012 BTC) can round silently
+- `value1 === value2` float equality is unreliable — never compare asset values with `===`
+
+**Phase 3 이전 마이그레이션 필요 (Migration required before Phase 3):**
+- **Option A (recommended):** Migrate to `integer('value_cents')` in minor units (e.g. USD cents, KRW 원).
+  - Store: `Math.round(userInput * 100)` → retrieve: `db_value / 100`
+  - Exact for all normal financial values, no float artifacts
+- **Option B:** Store as `text('value')` decimal string, parse with a decimal library on read.
+  - More flexible for crypto, but adds a parsing dependency
+
+**현재 규칙 (Until migrated):**
+- Always `Math.round()` or `toFixed()` before display — never show raw float
+- Treat `value` as approximate; do not compare with `===`
+- Do not introduce crypto sub-cent precision features before migration
+
+**관련 파일:** `lib/db/schema.ts` (value: real), `lib/types/asset.ts` (value: number)
+
+---
+
 ## 폴더 구조 결정
 
 ### [2026-03-28] `doc/` (단수) 유지
