@@ -31,9 +31,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session
     },
     authorized({ auth, request: { nextUrl } }) {
-      const isLoggedIn  = !!auth?.user
+      const isLoggedIn   = !!auth?.user
       const isPublicPath = PUBLIC_PATHS.some(p => nextUrl.pathname.startsWith(p))
-      if (!isPublicPath && !isLoggedIn) return false
+      if (!isPublicPath && !isLoggedIn) {
+        // API callers expect machine-readable errors, not browser redirects.
+        if (nextUrl.pathname.startsWith('/api/')) {
+          return Response.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+        return false
+      }
       return true
     },
   },
