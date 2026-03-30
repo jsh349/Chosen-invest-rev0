@@ -10,7 +10,10 @@ import {
 } from 'recharts'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
-import type { TrendPoint } from '@/lib/mock/trend'
+
+// Defined here rather than imported from lib/mock — this component should not
+// depend on a mock module. Shape must match whatever data source provides trend points.
+type TrendPoint = { month: string; value: number }
 
 interface NetWorthTrendCardProps {
   data: TrendPoint[]
