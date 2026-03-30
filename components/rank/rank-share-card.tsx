@@ -1,11 +1,9 @@
 'use client'
 
 import { forwardRef } from 'react'
-import Link from 'next/link'
 import type { RankResult } from '@/lib/types/rank'
 import { topPctLabel, percentileColor } from '@/lib/utils/rank-format'
 import { cn } from '@/lib/utils/cn'
-import { ROUTES } from '@/lib/constants/routes'
 
 // Overall shown as hero; age + return shown as secondary rows
 const HERO_TYPE      = 'overall_wealth'
@@ -112,17 +110,11 @@ export const RankShareCard = forwardRef<HTMLDivElement, Props>(
           </>
         )}
 
-        {/* Disclaimer + link to full rank detail */}
-        <div className="pt-1 border-t border-surface-border flex items-center justify-between gap-3">
+        {/* Disclaimer */}
+        <div className="pt-1 border-t border-surface-border">
           <p className="text-[10px] text-gray-600 leading-relaxed">
             Benchmark-based estimate · not financial advice · Chosen Invest
           </p>
-          <Link
-            href={ROUTES.rank}
-            className="shrink-0 text-[10px] text-brand-400 hover:text-brand-300 transition-colors"
-          >
-            Full breakdown →
-          </Link>
         </div>
       </div>
     )
