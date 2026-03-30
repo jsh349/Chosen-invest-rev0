@@ -1,0 +1,37 @@
+name: Deploy
+
+# Fires only after the CI workflow completes — never in parallel with it.
+# This ensures lint, typecheck, and unit tests have passed before any deploy
+# is triggered. Vercel's native GitHub integration may still fire on [deploy]
+# commits directly; once VERCEL_DEPLOY_HOOK_URL is configured here, that
+# becomes the authoritative CI-gated path.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+jobs:
+  deploy:
+    name: Deploy to Vercel (post-CI)
+    runs-on: ubuntu-latest
+
+    # Two conditions must both be true:
+    #   1. The CI workflow completed successfully (all checks green).
+    #   2. The commit message contains [deploy] (matches vercel.json ignoreCommand intent).
+    if: |
+      github.event.workflow_run.conclusion == 'success' &&
+      contains(github.event.workflow_run.head_commit.message, '[deploy]')
+
+    steps:
+      - name: Trigger Vercel deploy hook
+        env:
+          VERCEL_DEPLOY_HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$VERCEL_DEPLOY_HOOK_URL" ]; then
+            echo "::warning::VERCEL_DEPLOY_HOOK_URL secret is not set — deploy skipped."
+            echo "To enable: add VERCEL_DEPLOY_HOOK_URL to GitHub repository secrets."
+            echo "Generate a deploy hook: Vercel dashboard → Project → Settings → Git → Deploy Hooks"
+            exit 0
+          fi
+          curl --fail --silent -X POST "$VERCEL_DEPLOY_HOOK_URL"
+          echo "Deploy hook triggered successfully."
