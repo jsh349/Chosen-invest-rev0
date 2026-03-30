@@ -76,7 +76,7 @@ export default function PortfolioInputPage() {
     setEntries((prev) => (prev ? prev.filter((_, i) => i !== index) : prev))
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!entries || saving) return
     setSaving(true)
@@ -92,7 +92,8 @@ export default function PortfolioInputPage() {
       ...formEntryToAsset(en, LOCAL_USER_ID, en._id ?? crypto.randomUUID()),
       createdAt: en._createdAt ?? now,
     }))
-    setAssets(newAssets)
+    // Await persistence so the dashboard never reads stale data on load.
+    await setAssets(newAssets)
     router.push(ROUTES.dashboard)
   }
 

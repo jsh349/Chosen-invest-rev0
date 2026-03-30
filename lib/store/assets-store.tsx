@@ -15,7 +15,7 @@ import { assetsAdapter } from '@/lib/adapters/assets-adapter'
 type AssetsContextType = {
   assets: Asset[]
   hasCustomAssets: boolean
-  setAssets: (assets: Asset[]) => void
+  setAssets: (assets: Asset[]) => Promise<void>
   addAsset: (asset: Asset) => void
   updateAsset: (id: string, patch: Partial<Pick<Asset, 'name' | 'category' | 'value'>>) => void
   removeAsset: (id: string) => void
@@ -26,7 +26,7 @@ type AssetsContextType = {
 const AssetsContext = createContext<AssetsContextType>({
   assets: [],
   hasCustomAssets: false,
-  setAssets: () => {},
+  setAssets: () => Promise.resolve(),
   addAsset: () => {},
   updateAsset: () => {},
   removeAsset: () => {},
@@ -51,8 +51,14 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const setAssets = useCallback((newAssets: Asset[]) => {
-    void assetsAdapter.saveAll(newAssets).catch(() => { console.error('[assets] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
+    // Update in-memory state immediately so the UI responds without waiting,
+    // then return the save Promise so callers can await persistence before
+    // navigating away (prevents stale-read on immediate dashboard reload).
     setAssetsState(newAssets)
+    return assetsAdapter.saveAll(newAssets).catch(() => {
+      console.error('[assets] save failed')
+      window.dispatchEvent(new CustomEvent('persist-error'))
+    })
   }, [])
 
   const addAsset = useCallback((asset: Asset) => {
