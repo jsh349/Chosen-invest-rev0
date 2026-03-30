@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, Suspense, lazy } from 'react'
+import { useState, useMemo, useEffect, Suspense, lazy } from 'react'
 import Link from 'next/link'
 import { PlusCircle, BarChart2, SlidersHorizontal, Trophy, Info } from 'lucide-react'
 import { DashboardOverview } from '@/components/dashboard/dashboard-overview'
@@ -123,7 +123,7 @@ export default function DashboardPage() {
   // input data: a change to portfolio, rank, or settings triggers a single
   // atomic re-computation of both rather than two independent re-renders that
   // could briefly be out of sync.
-  const { healthCards, aiAnalysis } = useMemo(() => {
+  const { healthCards, computedAiAnalysis } = useMemo(() => {
     const cards = generateHealthCards(summary)
     let analysis
     try {
@@ -147,9 +147,18 @@ export default function DashboardPage() {
         generatedAt: new Date().toISOString(),
       }
     }
-    return { healthCards: cards, aiAnalysis: analysis }
+    return { healthCards: cards, computedAiAnalysis: analysis }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [baseCtx, overallRank.percentile, ageRank.percentile, returnRank.percentile, settings.currency, settings.showCents])
+
+  // Defer the AI summary render to a useEffect so health cards and the rest of
+  // the dashboard paint first. The skeleton shows for one frame, then the effect
+  // fires and the AI card appears. When generateAISummary becomes truly async
+  // (real Gemini call), make this effect async — the skeleton stays until resolved.
+  const [aiAnalysis, setAiAnalysis] = useState<typeof computedAiAnalysis | null>(null)
+  useEffect(() => {
+    setAiAnalysis(computedAiAnalysis)
+  }, [computedAiAnalysis])
 
   if (!isLoaded || !prefsLoaded || !goalsLoaded || !txLoaded || !settingsLoaded) {
     return (
@@ -231,8 +240,14 @@ export default function DashboardPage() {
         <div className="flex flex-col gap-6">
           {show('portfolioStatus') && <PortfolioStatusCard summary={summary} />}
           {show('advisor') && (
+            // aiAnalysis is null on the first render frame (deferred via useEffect)
+            // so the skeleton shows while health cards and other sections paint first.
             <Suspense fallback={<AISummarySkeleton />}>
-              <AISummaryCard analysis={aiAnalysis} />
+              {aiAnalysis ? (
+                <AISummaryCard analysis={aiAnalysis} />
+              ) : (
+                <AISummarySkeleton />
+              )}
             </Suspense>
           )}
         </div>
