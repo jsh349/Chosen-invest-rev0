@@ -50,6 +50,20 @@
 import type { PortfolioSummary } from '@/lib/types/dashboard'
 import type { FinancialHealthCard, HealthStatus } from '@/lib/types/health-card'
 
+/**
+ * Shared threshold constants — imported by summary-generator.ts to prevent drift.
+ * Changing these values here automatically propagates to the AI summary.
+ */
+export const CONCENTRATION_THRESHOLDS = {
+  attention: 60, // topPct > 60  → high concentration risk
+  warning:   40, // topPct > 40  → single-category dominance
+} as const
+
+export const LIQUIDITY_THRESHOLDS = {
+  good:    10, // cashPct >= 10 → good buffer
+  warning:  5, // cashPct >=  5 → modest buffer
+} as const
+
 // score >= 70 → 'good' | score >= 50 → 'warning' | score < 50 → 'attention'
 function statusFromScore(score: number): HealthStatus {
   if (score >= 70) return 'good'

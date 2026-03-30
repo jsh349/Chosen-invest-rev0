@@ -3,6 +3,9 @@ import type { AdvisorContext } from '@/features/ai/advisor-context'
 import { formatCompact } from '@/lib/utils/currency'
 import { ROUTES } from '@/lib/constants/routes'
 import { RANK_GAP_THRESHOLD } from '@/lib/utils/rank-insight'
+// Shared thresholds from the health-card source of truth — prevents drift between
+// health card signals and AI summary commentary.
+import { CONCENTRATION_THRESHOLDS, LIQUIDITY_THRESHOLDS } from '@/features/dashboard/diagnosis'
 
 export function generateAISummary(ctx: AdvisorContext): AIAnalysisResult {
   const { categoryBreakdown, totalAssetValue, assetCount, userId } = ctx.portfolio
@@ -51,12 +54,12 @@ export function generateAISummary(ctx: AdvisorContext): AIAnalysisResult {
   // Thresholds match the Concentration Risk health card (diagnosis.ts):
   //   >60% → attention, >40% → warning, ≤40% → good.
   if (topCategory) {
-    if (topPct > 60) {
+    if (topPct > CONCENTRATION_THRESHOLDS.attention) {
       lines.push(
         `${topCategory.label} is your dominant position at ${topPct.toFixed(0)}%, which introduces concentration risk.`
       )
       keyPoints.push(`High ${topCategory.label} concentration — review exposure`)
-    } else if (topPct > 40) {
+    } else if (topPct > CONCENTRATION_THRESHOLDS.warning) {
       lines.push(
         `${topCategory.label} is your largest holding at ${topPct.toFixed(0)}%. Single-category dominance is worth monitoring.`
       )
@@ -82,10 +85,10 @@ export function generateAISummary(ctx: AdvisorContext): AIAnalysisResult {
   // Thresholds match the Liquidity health card (diagnosis.ts):
   //   ≥10% → good, ≥5% → warning, <5% → attention.
   const cashSlice = categoryBreakdown.find((s) => s.category === 'cash')
-  if (cashSlice && cashSlice.percentage >= 10) {
+  if (cashSlice && cashSlice.percentage >= LIQUIDITY_THRESHOLDS.good) {
     keyPoints.push('Good cash liquidity buffer')
-  } else if (cashSlice && cashSlice.percentage >= 5) {
-    keyPoints.push('Cash buffer is modest — consider building toward 10% for a stronger emergency reserve')
+  } else if (cashSlice && cashSlice.percentage >= LIQUIDITY_THRESHOLDS.warning) {
+    keyPoints.push(`Cash buffer is modest — consider building toward ${LIQUIDITY_THRESHOLDS.good}% for a stronger emergency reserve`)
   } else {
     lines.push('Cash reserves are low. A larger liquidity buffer would improve your ability to handle unexpected expenses.')
     keyPoints.push('Low cash — consider building emergency fund')
@@ -155,7 +158,7 @@ export function generateAISummary(ctx: AdvisorContext): AIAnalysisResult {
       actions.push({ label: 'Review savings allocation', href: ROUTES.portfolioList })
     }
   }
-  if (actions.length < 2 && topPct > 60) {
+  if (actions.length < 2 && topPct > CONCENTRATION_THRESHOLDS.attention) {
     actions.push({ label: 'Review portfolio allocation', href: ROUTES.portfolioList })
   } else if (actions.length < 2) {
     actions.push({ label: 'View portfolio details', href: ROUTES.portfolioList })

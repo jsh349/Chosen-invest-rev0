@@ -1,9 +1,9 @@
 import { generateHealthCards } from '@/features/dashboard/diagnosis'
-import type { PortfolioSummary } from '@/lib/types/dashboard'
-import type { AllocationSlice } from '@/lib/types/dashboard'
+import type { PortfolioSummary, AllocationSlice } from '@/lib/types/dashboard'
+import type { AssetCategory } from '@/lib/types/asset'
 
 function makeSummary(
-  slices: Array<{ category: string; label: string; value: number; percentage: number }>,
+  slices: Array<{ category: AssetCategory; label: string; value: number; percentage: number }>,
   total?: number
 ): PortfolioSummary {
   const totalAssetValue = total ?? slices.reduce((s, sl) => s + sl.value, 0)
