@@ -403,7 +403,7 @@ export default function RankPage() {
               : 'Combined household wealth ranked against reference benchmarks'}
           </p>
           <span className="mt-1.5 inline-block rounded-full border border-surface-border bg-surface-muted px-2.5 py-0.5 text-[10px] font-medium text-gray-400">
-            {mode === 'individual' ? 'Individual' : 'Household'} · {usingFallbackBenchmark ? 'Built-in data' : 'Custom data'}
+            {mode === 'individual' ? 'Individual' : 'Household'} · {(activeBenchmarkSource === 'default' || usingFallbackBenchmark) ? 'Built-in reference' : 'Curated data'}
           </span>
         </div>
         <ModeToggle mode={mode} onChange={(m) => { setMode(m); writeScalar(STORAGE_KEYS.rankComparisonMode, m) }} />
@@ -486,7 +486,7 @@ export default function RankPage() {
               <div>
                 <p className="text-xs text-gray-500">Benchmark</p>
                 <p className="mt-0.5 text-sm font-semibold text-white">
-                  {sourceSummary?.currentLabel ?? (usingFallbackBenchmark ? 'Built-in reference' : 'Default')}
+                  {sourceSummary?.currentLabel ?? (activeBenchmarkSource === 'default' || usingFallbackBenchmark ? 'Built-in reference' : 'Curated data')}
                 </p>
               </div>
               <div>
