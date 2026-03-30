@@ -90,9 +90,9 @@ export function RankOverviewCard({ rank, ageRank, ageGenderRank, returnRank, tot
             <PercentileBar percentile={rank.percentile} tall />
           )}
           <div className="flex justify-between text-[10px] text-gray-600">
-            <span>0%</span>
-            <span>50%</span>
-            <span>100%</span>
+            <span>0th</span>
+            <span>50th</span>
+            <span>100th</span>
           </div>
           <p className="text-xs text-gray-400">{rank.message}</p>
         </div>

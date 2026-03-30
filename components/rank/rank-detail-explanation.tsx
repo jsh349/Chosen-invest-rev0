@@ -1,5 +1,12 @@
 import Link from 'next/link'
 import type { RankHint } from '@/lib/utils/rank-next-hint'
+import { ROUTES } from '@/lib/constants/routes'
+
+function linkLabel(href: string): string {
+  if (href === ROUTES.portfolioList || href === ROUTES.portfolioInput) return 'Portfolio →'
+  if (href === ROUTES.goals) return 'Goals →'
+  return 'Settings →'
+}
 
 type Props = {
   nextHint:             RankHint | null
@@ -40,7 +47,7 @@ export function RankDetailExplanationBlock({ nextHint, rankInsight, rankGoalInsi
               href={item.href}
               className="shrink-0 text-xs text-brand-400 hover:text-brand-300 transition-colors"
             >
-              Settings →
+              {linkLabel(item.href)}
             </Link>
           )}
         </div>
