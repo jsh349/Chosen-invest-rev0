@@ -1,45 +1,54 @@
-# Plan.md — Phase 154: Source-Specific Explanation Variants
+# Plan.md — Phase 155: Rank Review Cooldown
 
 ## Task Summary
-Add a lowest-priority source-specific explanation to the rank summary strip.
-When no confidence note or input explanation is active (healthy state),
-show a one-line note identifying which benchmark the comparison is based on.
+Add a 7-day cooldown to the rank review prompt so it doesn't resurface
+immediately after minor input changes (e.g. asset value crossing a $1k
+bucket). Cooldown only starts on explicit dismiss. Initial baseline write
+has no cooldown.
 
 ## Goal
-- default source  → "Compared against built-in reference benchmarks."
-- curated source  → "Compared against your curated benchmark dataset."
-- fallback/stub   → null (confidenceNote already covers these states)
+After the user dismisses the review prompt, suppress it for 7 days even
+if the fingerprint changes slightly. Prompt returns naturally after:
+  a) cooldown expires (7 days), or
+  b) never: existing fingerprint-match suppression still applies
 
 ## Non-Goals
-- No changes to confidenceNote, inputExplanation, or narrative summary
-- No changes to priority of existing explanation slots
-- No methodology rewrite
-- No new UI element — reuses existing summary strip text slot
+- No changes to getRankReviewFingerprint or the fingerprint format
+- No changes to rank/page.tsx (API is unchanged)
+- No backend, no scheduling, no notifications
+- No changes to settings/page.tsx
 
-## Explanation Priority Order (after change)
-1. confidenceNote  — fallback / invalid / partial  (most critical)
-2. inputExplanation — incomplete profile
-3. sourceExplanation — healthy source identification  ← new, lowest priority
+## Design
+Two separate localStorage keys:
+  rankReviewSeen     — existing: stores last-dismissed fingerprint (format UNCHANGED)
+  rankReviewCooldown — NEW: stores dismiss timestamp as numeric string
+
+checkRankReviewDue:
+  1. No stored fp → write baseline (no cooldown), return false
+  2. fp matches → return false
+  3. fp differs, no cooldown key → return true  (pre-dismiss state: initial baseline)
+  4. fp differs, cooldown active  → return false (suppressed)
+  5. fp differs, cooldown expired → return true
+
+dismissRankReview:
+  - writes fp to rankReviewSeen (unchanged)
+  - writes Date.now() to rankReviewCooldown (new)
 
 ## Affected Files
-### New
-- `lib/utils/rank-source-explanation.ts`
-  — `getRankSourceExplanation(sourceId, isFallbackOnly): string | null`
-
 ### Modified
-- `app/(app)/rank/page.tsx`
-  — import getRankSourceExplanation
-  — compute `sourceExplanation` alongside other summaries
-  — extend summary strip: `confidenceNote?.text ?? inputExplanation ?? sourceExplanation`
+- `lib/constants/storage-keys.ts` — add `rankReviewCooldown` key
+- `lib/utils/rank-review.ts` — add cooldown constant + logic
+- `__tests__/lib/utils/rank-review.test.ts` — add 3 cooldown tests
+
+## Backward Compatibility
+Old storage (rankReviewSeen without cooldown key) → no cooldown key present
+→ rule 3 applies → prompt shows if fingerprint changed. Safe migration.
 
 ## Risks
-- Minimal. sourceExplanation is only shown when both confidenceNote and
-  inputExplanation are null (healthy, complete-profile user). No existing
-  behaviour changes.
+- Minimal. Additive. All existing tests pass unchanged.
+- rank/page.tsx call sites unchanged.
 
 ## Validation Steps
-1. Default source, complete profile → "Compared against built-in reference benchmarks."
-2. Curated source, complete profile → "Compared against your curated benchmark dataset."
-3. Any source, incomplete profile → inputExplanation wins (source note suppressed)
-4. Fallback/invalid/partial → confidenceNote wins (source note suppressed)
-5. TypeScript: npx tsc --noEmit → 0 errors
+1. Existing tests pass: npx jest rank-review.test
+2. New cooldown tests pass
+3. TypeScript: npx tsc --noEmit → 0 errors

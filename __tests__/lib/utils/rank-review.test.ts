@@ -2,8 +2,10 @@ import {
   getRankReviewFingerprint,
   checkRankReviewDue,
   dismissRankReview,
+  RANK_REVIEW_COOLDOWN_MS,
   type RankReviewInputs,
 } from '@/lib/utils/rank-review'
+import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
 
 // ---------------------------------------------------------------------------
 // localStorage mock (test env is node)
@@ -139,5 +141,46 @@ describe('dismissRankReview', () => {
     const newer = fp({ birthYear: 1990 })
     dismissRankReview(newer)
     expect(localStorageMock.getItem('chosen_rank_review_seen_v1')).toBe(newer)
+  })
+
+  it('writes a numeric timestamp to the cooldown key', () => {
+    dismissRankReview(fp())
+    const raw = localStorageMock.getItem(STORAGE_KEYS.rankReviewCooldown)
+    expect(raw).not.toBeNull()
+    expect(Number.isFinite(parseInt(raw!, 10))).toBe(true)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// cooldown
+// ---------------------------------------------------------------------------
+
+describe('cooldown', () => {
+  it('suppresses prompt when fingerprint changed within cooldown window', () => {
+    const original = fp()
+    checkRankReviewDue(original)   // establish baseline (no cooldown)
+    dismissRankReview(original)    // starts cooldown now
+    const changed = fp({ totalAssetValue: 200_000 })
+    expect(checkRankReviewDue(changed)).toBe(false)
+  })
+
+  it('shows prompt after cooldown window has passed', () => {
+    const original = fp()
+    checkRankReviewDue(original)
+    dismissRankReview(original)
+    // Backdate the cooldown timestamp to simulate expiry
+    localStorageMock.setItem(
+      STORAGE_KEYS.rankReviewCooldown,
+      String(Date.now() - RANK_REVIEW_COOLDOWN_MS - 1_000),
+    )
+    const changed = fp({ totalAssetValue: 200_000 })
+    expect(checkRankReviewDue(changed)).toBe(true)
+  })
+
+  it('does not suppress prompt before any dismissal (initial baseline only)', () => {
+    const original = fp()
+    checkRankReviewDue(original)   // baseline only — no cooldown key written
+    const changed = fp({ birthYear: 1990 })
+    expect(checkRankReviewDue(changed)).toBe(true)
   })
 })
