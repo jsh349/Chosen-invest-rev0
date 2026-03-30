@@ -11,20 +11,23 @@ export type RankConfidenceNote = {
  * Returns a single concise, non-technical note about rank data trustworthiness
  * when a concern exists — or null when everything is healthy.
  *
- * Based entirely on existing signals: benchmark fallback usage and health status.
+ * Takes only benchmarkHealthStatus — isUsingFallback is intentionally omitted.
+ * getBenchmarkHealthStatus() always produces status 'fallback' when isUsingFallback
+ * is true, so the health status alone encodes both signals; passing both would
+ * create an implicit contract that callers must keep in sync.
+ *
  * Priority order (first match wins — one note at a time):
- *   1. fallback active → level 'low'      (preferred source failed to load)
- *   2. status 'invalid' → level 'low'     (source is a stub, no real data)
- *   3. status 'partial' → level 'moderate' (some rank categories unsupported)
- *   4. status 'healthy' → null            (no concern to surface)
+ *   1. status 'fallback' → level 'low'    (preferred source failed to load)
+ *   2. status 'invalid'  → level 'low'    (source not yet connected)
+ *   3. status 'partial'  → level 'moderate' (some rank categories unsupported)
+ *   4. status 'healthy'  → null           (no concern to surface)
  */
 export function getRankConfidenceNote(params: {
-  isUsingFallback:       boolean
   benchmarkHealthStatus: BenchmarkHealthStatus
 }): RankConfidenceNote | null {
-  const { isUsingFallback, benchmarkHealthStatus } = params
+  const { benchmarkHealthStatus } = params
 
-  if (isUsingFallback || benchmarkHealthStatus === 'fallback') {
+  if (benchmarkHealthStatus === 'fallback') {
     return {
       text:  'Using built-in reference data — your preferred benchmark source could not be loaded.',
       level: 'low',
@@ -33,7 +36,7 @@ export function getRankConfidenceNote(params: {
 
   if (benchmarkHealthStatus === 'invalid') {
     return {
-      text:  'This benchmark source is a placeholder — rank comparisons use built-in reference data.',
+      text:  'This benchmark source is not yet connected — rank comparisons use built-in reference data.',
       level: 'low',
     }
   }

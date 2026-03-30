@@ -319,7 +319,7 @@ export default function RankPage() {
     : null
 
   const confidenceNote = isFullyLoaded && summary.assetCount > 0
-    ? getRankConfidenceNote({ isUsingFallback: usingFallbackBenchmark, benchmarkHealthStatus: benchmarkHealth.status })
+    ? getRankConfidenceNote({ benchmarkHealthStatus: benchmarkHealth.status })
     : null
 
   const rankChecklist = isFullyLoaded && goalsLoaded && summary.assetCount > 0
