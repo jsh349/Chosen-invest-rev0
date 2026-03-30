@@ -12,6 +12,7 @@ import {
   getActiveBenchmarkSourceId,
   setActiveBenchmarkSourceId,
   isUsingFallbackBenchmark,
+  getActiveBenchmarkMeta,
   type BenchmarkSource,
 } from '@/lib/adapters/rank-benchmarks-adapter'
 import { getBenchmarkCapabilities } from '@/lib/utils/benchmark-capabilities'
@@ -52,15 +53,21 @@ function isSafeToRestore(key: string, value: unknown): boolean {
   if (ARRAY_KEYS.has(key) && !Array.isArray(value)) return false
   if (OBJECT_KEYS.has(key) && (typeof value !== 'object' || value === null || Array.isArray(value))) return false
   if (STRING_KEYS.has(key) && typeof value !== 'string') return false
-  // Content-level validation for settings object
-  if (key === STORAGE_KEYS.settings && typeof value === 'object' && value !== null) {
-    const s = value as Record<string, unknown>
-    if (s.currency !== undefined && !VALID_CURRENCY_CODES.has(s.currency as string)) return false
-    if (s.showCents !== undefined && typeof s.showCents !== 'boolean') return false
-    if (s.birthYear !== undefined && (typeof s.birthYear !== 'number' || s.birthYear < 1900 || s.birthYear > 2100)) return false
-    if (s.annualReturnPct !== undefined && (typeof s.annualReturnPct !== 'number' || s.annualReturnPct < -100 || s.annualReturnPct > 1000)) return false
-  }
   return true
+}
+
+/**
+ * Strips invalid fields from a settings object instead of rejecting the whole
+ * object. Valid fields are preserved; invalid or unrecognised fields are dropped.
+ * The result is merged onto DEFAULT_SETTINGS to ensure all required fields exist.
+ */
+function sanitizeSettingsForRestore(raw: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {}
+  if (VALID_CURRENCY_CODES.has(raw.currency as string)) out.currency = raw.currency
+  if (typeof raw.showCents === 'boolean') out.showCents = raw.showCents
+  if (typeof raw.birthYear === 'number' && raw.birthYear >= 1900 && raw.birthYear <= 2100) out.birthYear = raw.birthYear
+  if (typeof raw.annualReturnPct === 'number' && raw.annualReturnPct >= -100 && raw.annualReturnPct <= 1000) out.annualReturnPct = raw.annualReturnPct
+  return out
 }
 
 const SELECT_CLASS = 'w-full rounded-lg border border-surface-border bg-surface-muted px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none'
@@ -168,12 +175,19 @@ export default function SettingsPage() {
         let restored = 0
         for (const key of ALL_STORAGE_KEYS) {
           const value = (data as Record<string, unknown>)[key]
-          if (value !== null && value !== undefined && isSafeToRestore(key, value)) {
-            // Scalar string keys are stored as raw strings — no JSON layer.
-            // FileReader.onload only runs in the browser, so no SSR guard needed.
-            window.localStorage.setItem(key, STRING_KEYS.has(key) ? (value as string) : JSON.stringify(value))
-            restored++
+          if (value === null || value === undefined) continue
+          if (!isSafeToRestore(key, value)) continue
+          // Settings: sanitize individual fields rather than accepting/rejecting all-or-nothing.
+          // Invalid fields are stripped; valid fields are preserved.
+          let toWrite: unknown = value
+          if (key === STORAGE_KEYS.settings) {
+            toWrite = sanitizeSettingsForRestore(value as Record<string, unknown>)
+            if (Object.keys(toWrite as object).length === 0) continue
           }
+          // Scalar string keys are stored as raw strings — no JSON layer.
+          // FileReader.onload only runs in the browser, so no SSR guard needed.
+          window.localStorage.setItem(key, STRING_KEYS.has(key) ? (toWrite as string) : JSON.stringify(toWrite))
+          restored++
         }
         setImportStatus({ type: 'success', message: `${restored} data section${restored !== 1 ? 's' : ''} restored. Reloading…` })
         setTimeout(() => window.location.reload(), 1200)
@@ -190,6 +204,7 @@ export default function SettingsPage() {
   const debugRefresh  = readBenchmarkRefreshState()
   const debugHealth   = getBenchmarkHealthStatus(debugCaps, debugFallback)
   const debugMode     = readScalar(STORAGE_KEYS.rankComparisonMode) ?? 'individual'
+  const debugActiveMeta = getActiveBenchmarkMeta()
 
   return (
     <div className="space-y-6">
@@ -449,9 +464,9 @@ export default function SettingsPage() {
             {' · '}
             <span className={debugCaps.supportsReturn    ? 'text-gray-400' : 'text-red-400'}>return {debugCaps.supportsReturn    ? '✓' : '✗'}</span>
           </p>
-          {/* Reference metadata */}
-          <p><span className="inline-block w-36 text-gray-600">Version</span>{BENCHMARK_META.version}</p>
-          <p><span className="inline-block w-36 text-gray-600">Updated</span>{BENCHMARK_META.updatedAt}</p>
+          {/* Reference metadata — reflects active source, not always the mock default */}
+          <p><span className="inline-block w-36 text-gray-600">Version</span>{debugActiveMeta.version}</p>
+          <p><span className="inline-block w-36 text-gray-600">Updated</span>{debugActiveMeta.updatedAt}</p>
           {debugRefresh.lastApplied ? (
             <p>
               <span className="inline-block w-36 text-gray-600">Last applied</span>

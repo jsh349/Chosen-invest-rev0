@@ -45,6 +45,8 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
         setMembers(stored)
       }
       setIsLoaded(true)
+    }).catch(() => {
+      if (!cancelled) setIsLoaded(true)
     })
     return () => { cancelled = true }
   }, [])

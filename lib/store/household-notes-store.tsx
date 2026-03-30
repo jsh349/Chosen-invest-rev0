@@ -44,6 +44,8 @@ export function HouseholdNotesProvider({ children }: { children: ReactNode }) {
         setNotes(stored)
       }
       setIsLoaded(true)
+    }).catch(() => {
+      if (!cancelled) setIsLoaded(true)
     })
     return () => { cancelled = true }
   }, [])

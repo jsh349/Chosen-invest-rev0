@@ -44,6 +44,8 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
       if (cancelled) return
       if (stored.length > 0) setAssetsState(stored)
       setIsLoaded(true)
+    }).catch(() => {
+      if (!cancelled) setIsLoaded(true)
     })
     return () => { cancelled = true }
   }, [])

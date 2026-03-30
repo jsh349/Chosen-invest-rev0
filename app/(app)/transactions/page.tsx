@@ -87,8 +87,8 @@ export default function TransactionsPage() {
 
   const sorted = [...filtered].sort((a, b) => {
     switch (sortKey) {
-      case 'date-desc':   return b.date.localeCompare(a.date)
-      case 'date-asc':    return a.date.localeCompare(b.date)
+      case 'date-desc':   return new Date(b.date).getTime() - new Date(a.date).getTime()
+      case 'date-asc':    return new Date(a.date).getTime() - new Date(b.date).getTime()
       case 'amount-desc': return Math.abs(b.amount) - Math.abs(a.amount)
       case 'amount-asc':  return Math.abs(a.amount) - Math.abs(b.amount)
       default:            return 0

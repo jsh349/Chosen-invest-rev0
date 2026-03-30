@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { cn } from '@/lib/utils/cn'
 import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
+import { percentileColor } from '@/lib/utils/rank-format'
 import { ROUTES } from '@/lib/constants/routes'
 import type { RankResult } from '@/lib/types/rank'
 
@@ -35,13 +36,6 @@ function PercentileBar({ percentile, tall }: { percentile: number; tall?: boolea
   )
 }
 
-function topPctColor(topPct: number): string {
-  if (topPct <= 25) return 'text-emerald-400'
-  if (topPct <= 50) return 'text-brand-400'
-  if (topPct <= 70) return 'text-amber-400'
-  return 'text-gray-400'
-}
-
 function RankTile({ result }: { result: RankResult }) {
   const hasPct = result.percentile != null
   const topPct = hasPct ? 100 - result.percentile! : null
@@ -52,7 +46,7 @@ function RankTile({ result }: { result: RankResult }) {
         {result.label}
       </p>
       {topPct != null ? (
-        <p className={cn('text-2xl font-bold tracking-tight', topPctColor(topPct))}>
+        <p className={cn('text-2xl font-bold tracking-tight', percentileColor(100 - topPct))}>
           Top {topPct}%
         </p>
       ) : (
@@ -81,7 +75,7 @@ export function RankOverviewCard({ rank, ageRank, ageGenderRank, returnRank, tot
             Overall Wealth Rank
           </p>
           {overallTop != null ? (
-            <p className={cn('text-5xl font-extrabold tracking-tight', topPctColor(overallTop))}>
+            <p className={cn('text-5xl font-extrabold tracking-tight', percentileColor(100 - overallTop))}>
               Top {overallTop}%
             </p>
           ) : (

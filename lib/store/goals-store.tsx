@@ -42,6 +42,8 @@ export function GoalsProvider({ children }: { children: ReactNode }) {
       if (cancelled) return
       if (stored.length > 0) setGoalsState(stored)
       setIsLoaded(true)
+    }).catch(() => {
+      if (!cancelled) setIsLoaded(true)
     })
     return () => { cancelled = true }
   }, [])

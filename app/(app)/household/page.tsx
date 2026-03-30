@@ -74,10 +74,15 @@ export default function HouseholdPage() {
     e.preventDefault()
     if (!isRequired(form.name)) { setError('Name is required.'); return }
     if (!isBasicEmail(form.email)) { setError('A valid email is required.'); return }
+    const normalizedEmail = form.email.trim().toLowerCase()
+    if (members.some((m) => m.email.toLowerCase() === normalizedEmail)) {
+      setError('This email address is already in the household.')
+      return
+    }
     addMember({
       id:        crypto.randomUUID(),
       name:      form.name.trim(),
-      email:     form.email.trim().toLowerCase(),
+      email:     normalizedEmail,
       role:      form.role,
       createdAt: new Date().toISOString(),
     })
