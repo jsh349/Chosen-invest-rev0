@@ -609,7 +609,7 @@ export default function RankPage() {
               <div className="flex items-center justify-between gap-3">
                 <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Review Summary</p>
                 <span className="text-[10px] text-amber-500/70">
-                  {reviewVisible ? 'Inputs changed' : 'Review pending'}
+                  Review pending
                 </span>
               </div>
               <ul className="space-y-2.5">
