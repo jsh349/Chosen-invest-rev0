@@ -20,6 +20,12 @@ export async function generatePortfolioSummary(prompt: string): Promise<string> 
   try {
     const result = await Promise.race([geminiFlash.generateContent(prompt), timeout])
     return result.response.text()
+  } catch (err) {
+    // Log only the message — never the full SDK error object, which may carry
+    // request headers (Authorization), prompt text, or response metadata.
+    const message = err instanceof Error ? err.message : String(err)
+    console.error(`[gemini] generatePortfolioSummary failed: ${message}`)
+    throw new Error(`[gemini] ${message}`)
   } finally {
     clearTimeout(timeoutId!)
   }
