@@ -516,8 +516,12 @@ export default function RankPage() {
             rankAllocationInsight={rankAllocationInsight}
           />
 
-          {/* 4. Narrative summary — synthesis after the core numbers and hints */}
-          {narrativeSummary && (
+          {/* 4. Narrative summary — synthesis after the core numbers and hints.
+               Suppressed in low-data mode (availableCount <= 1): the primary rank
+               highlight already communicates the same signal, and the explanation
+               block covers next steps — adding narrative here implies more
+               confidence than the limited data warrants. */}
+          {narrativeSummary && availableCount > 1 && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3">
               <p className="text-sm text-gray-300 leading-relaxed">{narrativeSummary}</p>
             </div>
