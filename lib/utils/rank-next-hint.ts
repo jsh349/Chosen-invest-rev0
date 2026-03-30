@@ -1,5 +1,6 @@
 import type { RankResult } from '@/lib/types/rank'
 import { ROUTES } from '@/lib/constants/routes'
+import { indexRanks } from '@/lib/utils/rank-index'
 
 export type RankHint = {
   text: string
@@ -49,8 +50,8 @@ export function getNextRankHint(profile: {
  *   1. Missing age    → Settings
  *   2. Missing gender → Settings
  *   3. Missing return → Settings
- *   4. No goals set   → Goals
- *   5. Low wealth rank (< 40th percentile) → Portfolio
+ *   4. Low wealth rank (< 40th percentile) → Portfolio
+ *   5. No goals set   → Goals
  *
  * Returns null when no action is needed.
  */
@@ -62,20 +63,20 @@ export function getPrimaryRankNextAction(
   const profileHint = getNextRankHint(profile)
   if (profileHint !== null) return profileHint
 
+  // Low wealth rank — suggest portfolio review (matches getRankChecklist priority)
+  const { overall } = indexRanks(ranks)
+  if (overall?.percentile !== null && overall?.percentile !== undefined && overall.percentile < 40) {
+    return {
+      text: 'Review your portfolio allocation to improve your rank position.',
+      href: ROUTES.portfolioList,
+    }
+  }
+
   // No goals set — prompt to define one
   if (!profile.hasGoals) {
     return {
       text: 'Set a financial goal to build on your wealth rank.',
       href: ROUTES.goals,
-    }
-  }
-
-  // Low wealth rank — suggest portfolio review
-  const overall = ranks.find((r) => r.type === 'overall_wealth')
-  if (overall?.percentile !== undefined && overall.percentile !== null && overall.percentile < 40) {
-    return {
-      text: 'Review your portfolio allocation to improve your rank position.',
-      href: ROUTES.portfolioList,
     }
   }
 
