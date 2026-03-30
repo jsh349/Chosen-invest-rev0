@@ -205,6 +205,12 @@ export default function SettingsPage() {
   const debugHealth   = getBenchmarkHealthStatus(debugCaps, debugFallback)
   const debugMode     = readScalar(STORAGE_KEYS.rankComparisonMode) ?? 'individual'
   const debugActiveMeta = getActiveBenchmarkMeta()
+  const debugReady =
+    !!(BENCHMARK_META.version && BENCHMARK_META.updatedAt && BENCHMARK_META.sourceLabel) &&
+    !debugCaps.isFallbackOnly &&
+    debugCaps.supportsWealth && debugCaps.supportsAge && debugCaps.supportsAgeGender && debugCaps.supportsReturn &&
+    debugHealth.status !== 'invalid' &&
+    !debugRefresh.hasPending
 
   return (
     <div className="space-y-6">
@@ -479,53 +485,14 @@ export default function SettingsPage() {
           {debugRefresh.hasPending && (
             <p><span className="inline-block w-36 text-gray-600">Pending</span>{debugRefresh.pendingSource ?? '—'}</p>
           )}
+          <p>
+            <span className="inline-block w-36 text-gray-600">Readiness</span>
+            <span className={debugReady ? 'text-emerald-400' : 'text-amber-400'}>
+              {debugReady ? '● Ready' : '● Not ready'}
+            </span>
+          </p>
         </div>
       </details>
-
-      {/* Rollout readiness — internal-only, collapsed by default */}
-      {(() => {
-        const checks = [
-          {
-            label: 'Benchmark metadata defined',
-            pass:  !!(BENCHMARK_META.version && BENCHMARK_META.updatedAt && BENCHMARK_META.sourceLabel),
-          },
-          {
-            label: 'Active source is not a stub',
-            pass:  !debugCaps.isFallbackOnly,
-          },
-          {
-            label: 'Full capability coverage',
-            pass:  debugCaps.supportsWealth && debugCaps.supportsAge && debugCaps.supportsAgeGender && debugCaps.supportsReturn,
-          },
-          {
-            label: 'Source health known',
-            pass:  debugHealth.status !== 'invalid',
-          },
-          {
-            label: 'No staged update pending',
-            pass:  !debugRefresh.hasPending,
-          },
-        ]
-        const allReady = checks.every((c) => c.pass)
-        return (
-          <details className="rounded-xl border border-surface-border bg-surface-card px-4 py-3">
-            <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wide text-gray-600 select-none">
-              Rollout Readiness <span className="normal-case font-normal text-gray-700">(internal)</span>
-            </summary>
-            <div className="mt-3 space-y-1.5 font-mono text-[11px]">
-              <p className={allReady ? 'text-emerald-400' : 'text-amber-400'}>
-                {allReady ? '● All checks pass' : '● Not ready — see below'}
-              </p>
-              {checks.map((c) => (
-                <p key={c.label} className="flex items-center gap-2 text-gray-500">
-                  <span className={c.pass ? 'text-emerald-400' : 'text-red-400'}>{c.pass ? '✓' : '✗'}</span>
-                  {c.label}
-                </p>
-              ))}
-            </div>
-          </details>
-        )
-      })()}
 
       {/* Reset */}
       <div className="flex items-center justify-between rounded-xl border border-surface-border bg-surface-card px-4 py-3">
