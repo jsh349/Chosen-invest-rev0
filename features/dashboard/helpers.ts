@@ -9,6 +9,17 @@ export function buildPortfolioSummary(
 ): PortfolioSummary {
   const totalAssetValue = assets.reduce((sum, a) => sum + a.value, 0)
 
+  // Multi-currency guard: summing values across different currencies is not valid.
+  // FX conversion is not implemented — flag the condition so the UI can warn users.
+  const currencies = new Set(assets.map((a) => a.currency).filter(Boolean))
+  const hasMixedCurrencies = currencies.size > 1
+  if (hasMixedCurrencies && process.env.NODE_ENV !== 'production') {
+    console.warn(
+      `[buildPortfolioSummary] Assets span ${currencies.size} currencies (${[...currencies].join(', ')}). ` +
+      'totalAssetValue is not FX-normalized. Display total as approximate only.'
+    )
+  }
+
   const grouped = assets.reduce<Record<string, number>>((acc, asset) => {
     acc[asset.category] = (acc[asset.category] ?? 0) + asset.value
     return acc
@@ -42,5 +53,6 @@ export function buildPortfolioSummary(
     categoryBreakdown,
     largestAsset: largest ? { name: largest.name, value: largest.value } : null,
     generatedAt: new Date().toISOString(),
+    ...(hasMixedCurrencies ? { hasMixedCurrencies: true } : {}),
   }
 }

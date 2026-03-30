@@ -9,7 +9,7 @@ interface DashboardOverviewProps {
 }
 
 export function DashboardOverview({ summary }: DashboardOverviewProps) {
-  const { totalAssetValue, assetCount, categoryBreakdown, largestAsset } = summary
+  const { totalAssetValue, assetCount, categoryBreakdown, largestAsset, hasMixedCurrencies } = summary
   const topCategory = categoryBreakdown[0]
   const { fmt } = useFormatCurrency()
 
@@ -20,7 +20,10 @@ export function DashboardOverview({ summary }: DashboardOverviewProps) {
         <p className="text-2xl font-bold text-white">
           {fmt(totalAssetValue)}
         </p>
-        <p className="text-xs text-gray-500">Across {assetCount} positions</p>
+        {hasMixedCurrencies
+          ? <p className="text-xs text-yellow-500/80">Multi-currency — total not normalized</p>
+          : <p className="text-xs text-gray-500">Across {assetCount} positions</p>
+        }
       </Card>
 
       <Card className="flex flex-col gap-1">
