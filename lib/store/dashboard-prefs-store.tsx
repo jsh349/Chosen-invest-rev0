@@ -63,9 +63,18 @@ export function DashboardPrefsProvider({ children }: { children: ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
-    const stored = readJSON<Record<string, boolean>>(LS_KEY, {})
+    const stored = readJSON<Record<string, unknown>>(LS_KEY, {})
     if (stored && Object.keys(stored).length > 0) {
-      setPrefs({ ...DEFAULT_PREFS, ...stored })
+      // Only accept known card keys with boolean values — guards against
+      // type drift (e.g. stored string where boolean expected).
+      const VALID_KEYS = new Set<string>(Object.keys(DEFAULT_PREFS))
+      const sanitized: Partial<Record<DashboardCardKey, boolean>> = {}
+      for (const [key, value] of Object.entries(stored)) {
+        if (VALID_KEYS.has(key) && typeof value === 'boolean') {
+          sanitized[key as DashboardCardKey] = value
+        }
+      }
+      setPrefs({ ...DEFAULT_PREFS, ...sanitized })
     }
     setIsLoaded(true)
   }, [])

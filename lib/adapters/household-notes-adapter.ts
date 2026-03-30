@@ -13,7 +13,14 @@ export type HouseholdNotesAdapter = {
 /** Local implementation backed by localStorage. */
 export const householdNotesAdapter: HouseholdNotesAdapter = {
   async getAll() {
-    return readJSON<HouseholdNote[]>(LS_KEY, [])
+    const data = readJSON<HouseholdNote[]>(LS_KEY, [])
+    return data.filter((n) => {
+      if (!n.id || !n.title || !n.message) {
+        console.warn('[householdNotesAdapter] Skipping malformed note — missing id, title, or message.', n)
+        return false
+      }
+      return true
+    })
   },
 
   async saveAll(notes) {

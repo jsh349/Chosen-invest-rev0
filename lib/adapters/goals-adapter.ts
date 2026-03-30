@@ -1,4 +1,12 @@
-import type { Goal } from '@/lib/types/goal'
+import type { Goal, GoalType } from '@/lib/types/goal'
+
+const VALID_GOAL_TYPES = new Set<string>([
+  'savings', 'investment', 'retirement', 'purchase', 'debt', 'other',
+])
+
+function isValidGoalType(t: string): t is GoalType {
+  return VALID_GOAL_TYPES.has(t)
+}
 
 /** Async adapter interface — decouples stores from the underlying data source. */
 export type GoalsAdapter = {
@@ -11,7 +19,18 @@ export const goalsAdapter: GoalsAdapter = {
   async getAll() {
     const res = await fetch('/api/goals', { credentials: 'include' })
     if (!res.ok) throw new Error(`[goalsAdapter] getAll failed: ${res.status}`)
-    return res.json() as Promise<Goal[]>
+    const data = await res.json() as Goal[]
+    return data.filter((g) => {
+      if (!g.id || !g.name || typeof g.targetAmount !== 'number' || typeof g.currentAmount !== 'number') {
+        console.warn('[goalsAdapter] Skipping malformed goal — missing required fields.', g)
+        return false
+      }
+      if (!isValidGoalType(g.type)) {
+        console.warn(`[goalsAdapter] Unknown goal type "${g.type}" on goal "${g.id}" — skipped.`)
+        return false
+      }
+      return true
+    })
   },
 
   async saveAll(goals) {

@@ -49,6 +49,7 @@ const OBJECT_KEYS: ReadonlySet<string> = new Set([
 ])
 
 const VALID_CURRENCY_CODES = new Set<string>(['USD', 'EUR', 'GBP', 'JPY', 'KRW'])
+const VALID_GENDER_VALUES  = new Set<string>(['male', 'female', 'other', 'undisclosed'])
 
 function isSafeToRestore(key: string, value: unknown): boolean {
   if (ARRAY_KEYS.has(key) && !Array.isArray(value)) return false
@@ -67,6 +68,7 @@ function sanitizeSettingsForRestore(raw: Record<string, unknown>): Record<string
   if (VALID_CURRENCY_CODES.has(raw.currency as string)) out.currency = raw.currency
   if (typeof raw.showCents === 'boolean') out.showCents = raw.showCents
   if (typeof raw.birthYear === 'number' && raw.birthYear >= 1900 && raw.birthYear <= 2100) out.birthYear = raw.birthYear
+  if (typeof raw.gender === 'string' && VALID_GENDER_VALUES.has(raw.gender)) out.gender = raw.gender
   if (typeof raw.annualReturnPct === 'number' && raw.annualReturnPct >= -100 && raw.annualReturnPct <= 1000) out.annualReturnPct = raw.annualReturnPct
   return out
 }

@@ -20,7 +20,7 @@ export function PersistErrorBanner() {
   return (
     <div className="flex items-center justify-between gap-3 bg-red-950 border-b border-red-800 px-4 py-2">
       <p className="text-xs text-red-300">
-        Failed to save — your browser storage may be full. Export your data to avoid losing changes.
+        Failed to save — your changes may not have been persisted. Try again or export your data as a backup.
       </p>
       <button
         onClick={() => setVisible(false)}
