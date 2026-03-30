@@ -25,7 +25,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   callbacks: {
     async session({ session, token }) {
-      if (session.user && token.sub) {
+      if (session.user) {
+        if (!token.sub) {
+          // token.sub must always be present for Google OAuth sessions.
+          // A missing sub means identity is unresolvable — fail loudly rather
+          // than silently producing an undefined user ID in DB queries.
+          throw new Error('[auth] session callback: token.sub is missing — cannot assign session.user.id')
+        }
         session.user.id = token.sub
       }
       return session
