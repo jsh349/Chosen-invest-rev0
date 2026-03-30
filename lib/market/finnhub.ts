@@ -5,7 +5,7 @@ import { serverEnv } from '@/lib/env/server'
 const FINNHUB_BASE = 'https://finnhub.io/api/v1'
 const API_KEY = serverEnv.FINNHUB_API_KEY
 
-export async function getQuote(symbol: string): Promise<{
+export type Quote = {
   c: number  // current price
   d: number  // change
   dp: number // change %
@@ -13,7 +13,9 @@ export async function getQuote(symbol: string): Promise<{
   l: number  // low
   o: number  // open
   pc: number // previous close
-}> {
+}
+
+export async function getQuote(symbol: string): Promise<Quote | null> {
   if (!symbol || typeof symbol !== 'string') {
     throw new Error('[getQuote] symbol is required')
   }
@@ -21,9 +23,13 @@ export async function getQuote(symbol: string): Promise<{
     `${FINNHUB_BASE}/quote?symbol=${encodeURIComponent(symbol)}&token=${API_KEY}`,
     { next: { revalidate: 60 } } // cache 60s
   )
+  if (res.status === 429) {
+    console.warn(`[finnhub] getQuote rate limited: symbol=${symbol}`)
+    return null
+  }
   if (!res.ok) {
     console.error(`[finnhub] getQuote failed: symbol=${symbol} status=${res.status}`)
-    throw new Error('Market data temporarily unavailable')
+    return null
   }
   return res.json()
 }
@@ -38,9 +44,13 @@ export async function searchSymbol(query: string): Promise<{
     `${FINNHUB_BASE}/search?q=${encodeURIComponent(query)}&token=${API_KEY}`,
     { next: { revalidate: 300 } } // cache 5 min — symbol lists are effectively static
   )
+  if (res.status === 429) {
+    console.warn(`[finnhub] searchSymbol rate limited: query=${query}`)
+    return { result: [] }
+  }
   if (!res.ok) {
     console.error(`[finnhub] searchSymbol failed: query=${query} status=${res.status}`)
-    throw new Error('Market data temporarily unavailable')
+    return { result: [] }
   }
   return res.json()
 }
