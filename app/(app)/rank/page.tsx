@@ -327,6 +327,14 @@ export default function RankPage() {
     ? getRankAllocationInsight(ranks, summary.categoryBreakdown)
     : null
 
+  // Suppress action links whose topic is already covered by a bridge insight shown above.
+  // Follows the same pattern as the existing rankGoalInsight/nextHint suppression.
+  const visibleRankActions = rankActions.filter((action) => {
+    if (action.href === ROUTES.goals && rankGoalInsight !== null) return false
+    if (action.href === ROUTES.portfolioList && rankAllocationInsight !== null) return false
+    return true
+  })
+
   const confidenceNote = isFullyLoaded && summary.assetCount > 0
     ? getRankConfidenceNote({ benchmarkHealthStatus: benchmarkHealth.status })
     : null
@@ -547,10 +555,12 @@ export default function RankPage() {
 
           {/* Rank actions — contextual navigation links derived from rank state.
               Suppressed when checklist is active: both surfaces guide toward the
-              same destinations and showing both adds density without extra value. */}
-          {rankActions.length > 0 && rankChecklist.length === 0 && (
+              same destinations and showing both adds density without extra value.
+              visibleRankActions further filters out links already covered by
+              bridge insights shown in the explanation block above. */}
+          {visibleRankActions.length > 0 && rankChecklist.length === 0 && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3 flex flex-wrap gap-x-5 gap-y-2">
-              {rankActions.map((action) => (
+              {visibleRankActions.map((action) => (
                 <Link
                   key={action.label}
                   href={action.href}
