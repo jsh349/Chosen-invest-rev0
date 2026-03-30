@@ -888,11 +888,6 @@ export default function RankPage() {
           {BENCHMARK_META.notes && (
             <span className="text-[10px] text-gray-600 w-full">{BENCHMARK_META.notes}</span>
           )}
-          {usingFallbackBenchmark && (
-            <span className="text-[10px] text-amber-500/70 w-full">
-              Results are based on built-in reference data. Check the benchmark source in Settings.
-            </span>
-          )}
           {getBenchmarkSourceNote(activeBenchmarkSource, benchmarkCaps.isFallbackOnly) && (
             <span className="text-[10px] text-gray-500 w-full">
               {getBenchmarkSourceNote(activeBenchmarkSource, benchmarkCaps.isFallbackOnly)}
