@@ -436,18 +436,17 @@ export default function SettingsPage() {
       <details className="rounded-xl border border-surface-border bg-surface-card px-4 py-3">
         <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wide text-gray-600 select-none">
           Benchmark Diagnostics <span className="normal-case font-normal text-gray-700">(internal)</span>
+          <span className={debugReady ? 'ml-2 normal-case font-normal text-emerald-500' : 'ml-2 normal-case font-normal text-amber-500'}>
+            · {debugReady ? 'ready' : 'not ready'}
+          </span>
         </summary>
         <div className="mt-3 space-y-1.5 font-mono text-[11px] text-gray-500">
-          {/* Priority fields — scan these first */}
-          <p><span className="inline-block w-36 text-gray-600">Comparison mode</span>{debugMode}</p>
-          <p><span className="inline-block w-36 text-gray-600">Active source</span>{debugSrcId}</p>
+          {/* Status group — go/no-go signals */}
           <p>
-            <span className="inline-block w-36 text-gray-600">Fallback</span>
-            {debugFallback
-              ? 'active'
-              : debugCaps.isFallbackOnly
-                ? 'stub'
-                : 'none'}
+            <span className="inline-block w-36 text-gray-600">Readiness</span>
+            <span className={debugReady ? 'text-emerald-400' : 'text-amber-400'}>
+              {debugReady ? 'ready' : 'not ready'}
+            </span>
           </p>
           <p>
             <span className="inline-block w-36 text-gray-600">Health</span>
@@ -462,6 +461,14 @@ export default function SettingsPage() {
             <span className="ml-2 text-gray-600">{debugHealth.note}</span>
           </p>
           <p>
+            <span className="inline-block w-36 text-gray-600">Fallback</span>
+            {debugFallback
+              ? 'active'
+              : debugCaps.isFallbackOnly
+                ? 'stub'
+                : 'none'}
+          </p>
+          <p>
             <span className="inline-block w-36 text-gray-600">Capabilities</span>
             <span className={debugCaps.supportsWealth    ? 'text-gray-400' : 'text-red-400'}>wealth {debugCaps.supportsWealth    ? '✓' : '✗'}</span>
             {' · '}
@@ -471,7 +478,12 @@ export default function SettingsPage() {
             {' · '}
             <span className={debugCaps.supportsReturn    ? 'text-gray-400' : 'text-red-400'}>return {debugCaps.supportsReturn    ? '✓' : '✗'}</span>
           </p>
-          {/* Reference metadata — reflects active source, not always the mock default */}
+          {/* Context group — what source and mode */}
+          <div className="border-t border-surface-border/50 my-1" />
+          <p><span className="inline-block w-36 text-gray-600">Active source</span>{debugSrcId}</p>
+          <p><span className="inline-block w-36 text-gray-600">Comparison mode</span>{debugMode}</p>
+          {/* Metadata group — when was it updated */}
+          <div className="border-t border-surface-border/50 my-1" />
           <p><span className="inline-block w-36 text-gray-600">Version</span>{debugActiveMeta.version}</p>
           <p><span className="inline-block w-36 text-gray-600">Updated</span>{debugActiveMeta.updatedAt}</p>
           {debugRefresh.lastApplied ? (
@@ -486,12 +498,6 @@ export default function SettingsPage() {
           {debugRefresh.hasPending && (
             <p><span className="inline-block w-36 text-gray-600">Pending</span>{debugRefresh.pendingSource ?? '—'}</p>
           )}
-          <p>
-            <span className="inline-block w-36 text-gray-600">Readiness</span>
-            <span className={debugReady ? 'text-emerald-400' : 'text-amber-400'}>
-              {debugReady ? 'ready' : 'not ready'}
-            </span>
-          </p>
         </div>
       </details>
 
