@@ -41,7 +41,8 @@ import { getRankNarrativeSummary } from '@/lib/utils/rank-narrative-summary'
 import { getPrimaryRank } from '@/lib/utils/rank-priority'
 import { getRankReviewSummary } from '@/lib/utils/rank-review-summary'
 import { getRankReviewFingerprint, checkRankReviewDue, dismissRankReview } from '@/lib/utils/rank-review'
-import type { RankResult } from '@/lib/types/rank'
+import type { RankResult, RankType } from '@/lib/types/rank'
+import type { BenchmarkSourceCapabilities } from '@/lib/utils/benchmark-capabilities'
 
 type RankMode = 'individual' | 'household'
 
@@ -52,6 +53,21 @@ function readPersistedMode(): RankMode {
   return (stored && (RANK_MODES as string[]).includes(stored))
     ? (stored as RankMode)
     : 'individual'
+}
+
+/**
+ * Returns a short coverage note when the active source does not fully support
+ * this rank type, or null when support is complete (healthy path — no note shown).
+ */
+function getRankCoverageNote(type: RankType, caps: BenchmarkSourceCapabilities): string | null {
+  if (caps.isFallbackOnly) return 'Built-in reference data'
+  const supported: Record<RankType, boolean> = {
+    overall_wealth:    caps.supportsWealth,
+    age_based:         caps.supportsAge,
+    age_gender:        caps.supportsAgeGender,
+    investment_return: caps.supportsReturn,
+  }
+  return supported[type] ? null : 'Not supported by active source'
 }
 
 function rankCompleteness(availableCount: number): { label: string; color: string } {
@@ -83,7 +99,7 @@ function PercentileBar({ percentile }: { percentile: number }) {
   )
 }
 
-function RankRow({ result }: { result: RankResult }) {
+function RankRow({ result, coverageNote }: { result: RankResult; coverageNote?: string }) {
   const hasPct = result.percentile != null
 
   return (
@@ -122,6 +138,11 @@ function RankRow({ result }: { result: RankResult }) {
               <p className="text-[11px] text-gray-500">
                 <span className="text-gray-600">Band matched: </span>{result.detail.bandLabel}
               </p>
+              {coverageNote && (
+                <p className="text-[11px] text-amber-500/70">
+                  <span className="text-gray-600">Coverage: </span>{coverageNote}
+                </p>
+              )}
             </div>
           )}
         </div>
@@ -564,7 +585,11 @@ export default function RankPage() {
           {summary.assetCount > 0 && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5">
               {ranks.map((r) => (
-                <RankRow key={r.type} result={r} />
+                <RankRow
+                  key={r.type}
+                  result={r}
+                  coverageNote={getRankCoverageNote(r.type, benchmarkCaps) ?? undefined}
+                />
               ))}
             </div>
           )}
