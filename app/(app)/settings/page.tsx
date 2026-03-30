@@ -444,10 +444,10 @@ export default function SettingsPage() {
           <p>
             <span className="inline-block w-36 text-gray-600">Fallback</span>
             {debugFallback
-              ? 'active — preferred source unavailable'
+              ? 'active'
               : debugCaps.isFallbackOnly
-                ? 'stub source'
-                : 'no'}
+                ? 'stub'
+                : 'none'}
           </p>
           <p>
             <span className="inline-block w-36 text-gray-600">Health</span>
@@ -489,7 +489,7 @@ export default function SettingsPage() {
           <p>
             <span className="inline-block w-36 text-gray-600">Readiness</span>
             <span className={debugReady ? 'text-emerald-400' : 'text-amber-400'}>
-              {debugReady ? '● Ready' : '● Not ready'}
+              {debugReady ? 'ready' : 'not ready'}
             </span>
           </p>
         </div>
