@@ -13,6 +13,16 @@ if (!AUTH_GOOGLE_ID || !AUTH_GOOGLE_SECRET) {
   )
 }
 
+// AUTH_TRUST_HOST=true disables OAuth callback host validation.
+// Safe in local development; dangerous in production (Host header spoofing risk).
+if (process.env.NODE_ENV === 'production' && process.env.AUTH_TRUST_HOST === 'true') {
+  throw new Error(
+    '[auth] AUTH_TRUST_HOST=true must not be set in production.\n' +
+    'Remove AUTH_TRUST_HOST and set AUTH_URL to your production base URL instead.\n' +
+    'Example: AUTH_URL=https://yourdomain.com',
+  )
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Google({
