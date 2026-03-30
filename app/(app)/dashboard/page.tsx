@@ -1,11 +1,13 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, Suspense, lazy } from 'react'
 import Link from 'next/link'
 import { PlusCircle, BarChart2, SlidersHorizontal, Trophy, Info } from 'lucide-react'
 import { DashboardOverview } from '@/components/dashboard/dashboard-overview'
 import { AllocationChartCard } from '@/components/dashboard/allocation-chart-card'
-import { AISummaryCard } from '@/components/dashboard/ai-summary-card'
+// Lazy-loaded so the AI section is code-split and wrapped in a Suspense
+// boundary — one slow or failing AI render cannot block the rest of the page.
+const AISummaryCard = lazy(() => import('@/components/dashboard/ai-summary-card'))
 import { HealthCardsGrid } from '@/components/dashboard/health-cards-grid'
 import { PortfolioStatusCard } from '@/components/dashboard/portfolio-status-card'
 import { GoalsSummaryCard } from '@/components/dashboard/goals-summary-card'
@@ -32,6 +34,21 @@ import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { useSettings } from '@/lib/store/settings-store'
 
 const CARD_KEYS = Object.keys(CARD_LABELS) as DashboardCardKey[]
+
+// Shown while AISummaryCard's lazy chunk is loading or while the AI
+// computation suspends in a future async integration.
+function AISummarySkeleton() {
+  return (
+    <div className="rounded-2xl border border-surface-border bg-surface-card p-5 animate-pulse">
+      <div className="mb-4 h-4 w-28 rounded bg-surface-border" />
+      <div className="space-y-2">
+        <div className="h-3 w-full rounded bg-surface-border" />
+        <div className="h-3 w-4/5 rounded bg-surface-border" />
+        <div className="h-3 w-3/5 rounded bg-surface-border" />
+      </div>
+    </div>
+  )
+}
 
 function EmptyState() {
   return (
@@ -190,7 +207,11 @@ export default function DashboardPage() {
         {show('allocation') && <AllocationChartCard slices={summary.categoryBreakdown} />}
         <div className="flex flex-col gap-6">
           {show('portfolioStatus') && <PortfolioStatusCard summary={summary} />}
-          {show('advisor') && <AISummaryCard analysis={aiAnalysis} />}
+          {show('advisor') && (
+            <Suspense fallback={<AISummarySkeleton />}>
+              <AISummaryCard analysis={aiAnalysis} />
+            </Suspense>
+          )}
         </div>
       </div>
 

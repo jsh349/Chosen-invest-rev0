@@ -53,3 +53,5 @@ export function AISummaryCard({ analysis }: AISummaryCardProps) {
     </Card>
   )
 }
+
+export default AISummaryCard
