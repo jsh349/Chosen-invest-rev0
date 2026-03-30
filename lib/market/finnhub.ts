@@ -35,7 +35,8 @@ export async function searchSymbol(query: string): Promise<{
     throw new Error('[searchSymbol] query is required')
   }
   const res = await fetch(
-    `${FINNHUB_BASE}/search?q=${encodeURIComponent(query)}&token=${API_KEY}`
+    `${FINNHUB_BASE}/search?q=${encodeURIComponent(query)}&token=${API_KEY}`,
+    { next: { revalidate: 300 } } // cache 5 min — symbol lists are effectively static
   )
   if (!res.ok) {
     console.error(`[finnhub] searchSymbol failed: query=${query} status=${res.status}`)
