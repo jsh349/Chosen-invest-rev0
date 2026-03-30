@@ -271,7 +271,7 @@ export default function HouseholdPage() {
             <div className="px-4 py-8 text-center space-y-2">
               <p className="text-sm text-gray-500">No shared goals yet.</p>
               <p className="text-xs text-gray-600">
-                Enable "Share with household" when adding or editing a goal.
+                Enable &quot;Share with household&quot; when adding or editing a goal.
               </p>
               <Link href={ROUTES.goals} className="inline-block text-xs text-brand-400 hover:text-brand-300 transition-colors">
                 Go to Goals →

@@ -12,7 +12,7 @@ import { currentYearMonth } from '@/lib/utils/current-month'
 
 export function TransactionSummaryCard() {
   const { transactions, isLoaded } = useTransactions()
-  const { fmt, symbol } = useFormatCurrency()
+  const { fmt } = useFormatCurrency()
   const formatAmount = (amount: number) => {
     const prefix = amount >= 0 ? '+' : '-'
     return `${prefix}${fmt(Math.abs(amount))}`

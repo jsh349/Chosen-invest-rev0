@@ -21,7 +21,6 @@ import { BENCHMARK_META } from '@/lib/mock/rank-benchmarks'
 import { getActiveBenchmarkSourceId, isUsingFallbackBenchmark, getActiveBenchmarkMeta } from '@/lib/adapters/rank-benchmarks-adapter'
 import { percentileBandLabel } from '@/lib/utils/percentile-label'
 import { getRankInsight } from '@/lib/utils/rank-insight'
-import { getRankBadges } from '@/lib/utils/rank-badges'
 import { getRankActions } from '@/lib/utils/rank-actions'
 import { getRankGoalInsight } from '@/lib/utils/rank-goal-insight'
 import { buildMonthlySummary } from '@/lib/utils/rank-monthly-summary'
@@ -266,10 +265,6 @@ export default function RankPage() {
   const rankInsight = isFullyLoaded && summary.assetCount > 0
     ? getRankInsight(ranks)
     : null
-
-  const rankBadges = isFullyLoaded && summary.assetCount > 0
-    ? getRankBadges(ranks)
-    : []
 
   const milestoneHistory = isFullyLoaded && snapshotsLoaded
     ? buildMilestoneHistory(snapshots)

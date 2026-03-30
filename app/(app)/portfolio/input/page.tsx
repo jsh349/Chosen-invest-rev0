@@ -46,10 +46,10 @@ export default function PortfolioInputPage() {
 
   // isLoaded is the intentional one-shot trigger. Adding assets/hasCustomAssets
   // would reset the form and lose in-progress edits whenever the store updates.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!isLoaded) return
     setEntries(hasCustomAssets ? assets.map(assetToFormEntry) : [blankEntry()])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded])
 
   if (!isLoaded || entries === null) {

@@ -23,7 +23,6 @@
  */
 
 if (process.env.NODE_ENV === 'production') {
-  // eslint-disable-next-line no-console
   console.warn(
     '[mock-guard] A page or hook is importing mock data in a production build. ' +
     "Search for \"@/lib/mock/guard\" to find all import sites that need a real data source.",

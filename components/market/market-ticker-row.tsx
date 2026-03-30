@@ -32,7 +32,6 @@ function formatChange(change: number, symbol: string): string {
 export function MarketTickerRow({ ticker }: MarketTickerRowProps) {
   const isPositive = ticker.changePercent >= 0
   const changeColor = isPositive ? 'text-emerald-400' : 'text-red-400'
-  const changeBg    = isPositive ? 'bg-emerald-950/60 border-emerald-900/40' : 'bg-red-950/60 border-red-900/40'
 
   return (
     <div className="flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-surface-muted/50">
