@@ -703,6 +703,9 @@ export default function RankPage() {
           <p className="text-xs text-gray-600 leading-relaxed border-t border-surface-border pt-2">
             {monthlySummary.note}
           </p>
+          {monthlySummary.reasonHint && (
+            <p className="text-[10px] text-gray-500 leading-relaxed">{monthlySummary.reasonHint}</p>
+          )}
           {versionNote && (
             <p className="text-[10px] text-amber-500/70 leading-relaxed">{versionNote}</p>
           )}

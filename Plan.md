@@ -1,39 +1,47 @@
-# Plan.md — Phase 156: Rank Report Interpretation Slot Refinement
+# Plan.md — Phase 157: Rank Change Reason Hint
 
 ## Task Summary
-Replace getRankInterpretation() in the compact rank report's explanation
-slot with highlight.message — the rank-type-specific contextual message
-already computed in the RankResult.
+Add a `reasonHint` field to MonthlySummary that shows a brief, cautious hint
+about why the overall rank changed between the two compared snapshots.
+Shown only when delta !== null && delta !== 0.
 
 ## Goal
-Slot 2 (explanation) currently shows a generic band label
-("Above the benchmark midpoint.") that lacks rank-type context.
-highlight.message already contains the specific, contextual version:
-"Top 30% nationally — above the median benchmark."
+Surface non-obvious change reasons (benchmark updated, profile expanded)
+as a one-line hint in the Rank Change card. Asset total change is included
+as the fallback reason when nothing more specific is detectable.
 
-## Before / After
-Before: explanation = getRankInterpretation(highlight.percentile)
-After:  explanation = highlight.message
+## Reason Detection Rules (first match wins)
+1. benchmarkSource differs between snapshots → "Benchmark reference source changed since last comparison."
+2. benchmarkVersion differs (same source)   → "Benchmark reference ranges were updated since last comparison."
+3. Profile expanded (age/return went null→non-null) → "Comparison depth expanded — a new rank category became available."
+4. totalAssetValue differs → "Asset total changed since last comparison."
+5. None detectable → null (no hint shown)
 
-## Non-Goals
-- No changes to getRankInterpretation (still used elsewhere)
-- No changes to rank/page.tsx
-- No changes to comparisonNote, nextAction, highlight slots
-- No new interpretation logic
+Guard: reasonHint is only computed when delta !== null && delta !== 0.
+If benchmarkVersion/Source are absent (older snapshots), those rules skip
+safely (both sides must be defined).
 
 ## Affected Files
+### New
+- `lib/utils/rank-change-reason.ts`
+  — `getRankChangeReason(current, previous): string | null`
+
 ### Modified
-- `components/rank/rank-report-section.tsx`
-  — in composeRankReport: use highlight.message instead of getRankInterpretation
-  — remove now-unused getRankInterpretation import
+- `lib/utils/rank-monthly-summary.ts`
+  — add `reasonHint: string | null` to MonthlySummary type
+  — compute it from snapshots when delta is non-zero
+
+- `app/(app)/rank/page.tsx`
+  — render `monthlySummary.reasonHint` below the existing note line
 
 ## Risks
-- Minimal. highlight.message is typed as non-optional string.
-  composeRankReport already guards that highlight.percentile !== null,
-  so message is always a fully computed contextual string at this point.
+- Minimal. Additive only. reasonHint is null-guarded.
+- Existing delta/note/versionNote display unchanged.
+- Older snapshots without benchmarkSource/Version → those rules skip safely.
 
 ## Validation Steps
 1. TypeScript: npx tsc --noEmit → 0 errors
-2. Slot 2 shows rank-specific context ("nationally", "aged X–Y", etc.)
-3. Slot 1 (Top X%) and Slot 2 are complementary, not duplicative
-4. No regression in other slots (comparisonNote, nextAction, footer)
+2. No prior snapshot → reasonHint null (no hint)
+3. Same state revisit → delta = 0 → reasonHint null
+4. Asset change → "Asset total changed since last comparison."
+5. Benchmark source change → source reason shown, asset reason suppressed
