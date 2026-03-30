@@ -11,12 +11,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
 import type { TransactionCategory } from '@/lib/types/transaction'
+import { TRANSACTION_CATEGORIES } from '@/lib/types/transaction'
 import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
-
-const CATEGORIES: TransactionCategory[] = [
-  'Income', 'Housing', 'Groceries', 'Utilities', 'Subscriptions',
-  'Transport', 'Travel', 'Family', 'Taxes', 'Investments', 'Other',
-]
 
 type SortKey = 'date-desc' | 'date-asc' | 'amount-desc' | 'amount-asc'
 
@@ -129,7 +125,7 @@ export default function TransactionsPage() {
               <div className="space-y-1">
                 <label className="text-xs text-gray-400">Category *</label>
                 <select name="category" value={form.category} onChange={handleChange} className={cn(SELECT_CLASS, 'w-full')}>
-                  {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                  {TRANSACTION_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
               <div className="space-y-1 sm:col-span-2">
@@ -210,7 +206,7 @@ export default function TransactionsPage() {
                 className={cn(SELECT_CLASS, 'text-xs py-1 px-2')}
               >
                 <option value="All">All categories</option>
-                {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                {TRANSACTION_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
               <select
                 value={sortKey}

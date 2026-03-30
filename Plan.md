@@ -1,47 +1,51 @@
-# Plan.md — Phase 134: Rank Trust/Confidence Note
+# Plan.md — Category Consistency Pass
 
 ## Task Summary
-Add a single compact note in the rank summary strip that communicates
-benchmark trust level when a concern exists (fallback active, partial source).
-When no concern exists, preserve the existing inputExplanation line.
+Eliminate duplicate transaction category constants and add missing asset
+category validation at read time, so both adapters behave consistently
+before real API data is introduced.
 
 ## Goal
-Fill the gap: benchmark fallback/health is currently only visible in Settings
-diagnostics. Users on the rank page have no indication when their preferred
-source failed or when some rank categories are unsupported.
+Single source of truth for each category list; both adapters validate
+categories when reading from localStorage (or eventually an API).
 
 ## Non-Goals
-- No new scoring engine
-- No methodology change
-- No redesign
-- No AI API
-- No additional UI sections or new cards
+- No rename of category IDs (asset slugs are already correct)
+- No redesign of UI
+- No schema migration
+- No new features
 
-## Signal Priority (first match wins — one note at a time)
-1. isUsingFallback / status 'fallback' → level 'low'   (amber)
-2. benchmarkHealth 'invalid'           → level 'low'   (amber)
-3. benchmarkHealth 'partial'           → level 'moderate' (gray, softer)
-4. benchmarkHealth 'healthy'           → null (show inputExplanation as usual)
+## Findings
+Asset categories are already correctly separated (slug ID stored, label
+displayed via CATEGORY_MAP). Two concrete problems remain:
+
+1. `TransactionCategory` values are defined as a union type in
+   `lib/types/transaction.ts` but the equivalent runtime array is
+   duplicated: once as `CATEGORIES` in `transactions/page.tsx` and once
+   as `VALID_CATEGORIES` in `transactions-adapter.ts`. One constant,
+   one source of truth.
+
+2. `assets-adapter.ts` has no category validation on `getAll()` read.
+   The transactions adapter gained this in the last bug fix pass.
+   Assets should be consistent.
 
 ## Affected Files
-### New
-- `lib/utils/rank-confidence-note.ts`
-- `__tests__/lib/utils/rank-confidence-note.test.ts`
-
 ### Modified
-- `app/(app)/rank/page.tsx`
-  - Import getBenchmarkCapabilities, getBenchmarkHealthStatus, getRankConfidenceNote
-  - Add benchmarkCaps + benchmarkHealth memos
-  - Add confidenceNote computation
-  - Summary strip: show confidenceNote (amber) ?? inputExplanation (gray)
+- `lib/types/transaction.ts`
+  — export `TRANSACTION_CATEGORIES` array (runtime companion to the union type)
+- `lib/adapters/transactions-adapter.ts`
+  — import from types; remove local `VALID_CATEGORIES` Set
+- `app/(app)/transactions/page.tsx`
+  — import from types; remove local `CATEGORIES` array
+- `lib/adapters/assets-adapter.ts`
+  — add `getAll()` filter using `ASSET_CATEGORIES` keys; warn on unknown
 
 ## Risks
-- Low. Display-only change. Existing inputExplanation still shows when no
-  benchmark concern exists. No logic changes to rank computation.
+- Low. No stored data changes. No UI changes. Adapters become stricter on
+  read, matching existing behaviour for transactions.
 
 ## Validation Steps
 1. All tests pass (jest)
-2. Default source, all inputs → inputExplanation shown (no amber)
-3. Fallback active → amber note "built-in reference data" shown instead
-4. Partial source → gray note about unavailable categories shown
-5. No assets → no note shown
+2. Portfolio page loads existing assets without any console warns
+3. Transactions page: existing transactions load, filter dropdown works
+4. Invalid category in localStorage → skipped with console.warn, rest loads

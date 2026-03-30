@@ -1,13 +1,11 @@
 import type { Transaction, TransactionCategory } from '@/lib/types/transaction'
+import { TRANSACTION_CATEGORIES } from '@/lib/types/transaction'
 import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
 import { readJSON, writeJSON } from '@/lib/utils/local-storage'
 
 const LS_KEY = STORAGE_KEYS.transactions
 
-const VALID_CATEGORIES = new Set<string>([
-  'Income', 'Housing', 'Groceries', 'Utilities', 'Subscriptions',
-  'Transport', 'Travel', 'Family', 'Taxes', 'Investments', 'Other',
-])
+const VALID_CATEGORIES = new Set<string>(TRANSACTION_CATEGORIES)
 
 function isValidCategory(cat: string): cat is TransactionCategory {
   return VALID_CATEGORIES.has(cat)
