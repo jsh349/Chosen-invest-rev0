@@ -21,7 +21,10 @@ export async function getQuote(symbol: string): Promise<{
     `${FINNHUB_BASE}/quote?symbol=${encodeURIComponent(symbol)}&token=${API_KEY}`,
     { next: { revalidate: 60 } } // cache 60s
   )
-  if (!res.ok) throw new Error(`Finnhub quote error: ${res.status}`)
+  if (!res.ok) {
+    console.error(`[finnhub] getQuote failed: symbol=${symbol} status=${res.status}`)
+    throw new Error('Market data temporarily unavailable')
+  }
   return res.json()
 }
 
@@ -34,6 +37,9 @@ export async function searchSymbol(query: string): Promise<{
   const res = await fetch(
     `${FINNHUB_BASE}/search?q=${encodeURIComponent(query)}&token=${API_KEY}`
   )
-  if (!res.ok) throw new Error(`Finnhub search error: ${res.status}`)
+  if (!res.ok) {
+    console.error(`[finnhub] searchSymbol failed: query=${query} status=${res.status}`)
+    throw new Error('Market data temporarily unavailable')
+  }
   return res.json()
 }
