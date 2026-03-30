@@ -190,19 +190,20 @@ export function isUsingFallbackBenchmark(): boolean {
  *
  * Always returns a valid object — never throws.
  */
-export function getActiveBenchmarkMeta(): { version: string; updatedAt: string } {
+export function getActiveBenchmarkMeta(): { version: string; updatedAt: string; sourceLabel: string } {
   const sourceId = getActiveBenchmarkSourceId()
   if (sourceId === 'default') {
-    return { version: BENCHMARK_META.version, updatedAt: BENCHMARK_META.updatedAt }
+    return { version: BENCHMARK_META.version, updatedAt: BENCHMARK_META.updatedAt, sourceLabel: BENCHMARK_META.sourceLabel }
   }
   const lastApplied = getLastAppliedBenchmark()
   if (lastApplied) {
     return {
-      version:   `${lastApplied.source} (${lastApplied.vintageYear})`,
-      updatedAt: lastApplied.appliedAt.slice(0, 10),
+      version:     `${lastApplied.source} (${lastApplied.vintageYear})`,
+      updatedAt:   lastApplied.appliedAt.slice(0, 10),
+      sourceLabel: lastApplied.source,
     }
   }
-  return { version: BENCHMARK_META.version, updatedAt: BENCHMARK_META.updatedAt }
+  return { version: BENCHMARK_META.version, updatedAt: BENCHMARK_META.updatedAt, sourceLabel: BENCHMARK_META.sourceLabel }
 }
 
 /** Active adapter — resolved from stored preference at module load. */
