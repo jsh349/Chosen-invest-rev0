@@ -2,6 +2,7 @@ import type { RankResult } from '@/lib/types/rank'
 import type { RankHint } from '@/lib/utils/rank-next-hint'
 import { getPrimaryRank } from '@/lib/utils/rank-priority'
 import { getRankInsight } from '@/lib/utils/rank-insight'
+import { ROUTES } from '@/lib/constants/routes'
 
 /**
  * The four content slots of a compact rank report, in canonical display order.
@@ -36,10 +37,15 @@ export function composeRankReport(
   const highlight = getPrimaryRank(ranks)
   if (!highlight || highlight.percentile === null) return null
 
+  // Only surface profile-completeness actions (Settings) in compact reports.
+  // Portfolio/goals actions need the surrounding context of the full rank page
+  // to be actionable — showing them here without that context is low confidence.
+  const nextAction = nextHint?.href === ROUTES.settings ? nextHint : null
+
   return {
     highlight,
     explanation:    highlight.message,
     comparisonNote: getRankInsight(ranks),
-    nextAction:     nextHint ?? null,
+    nextAction,
   }
 }
