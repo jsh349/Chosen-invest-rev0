@@ -462,22 +462,30 @@ export default function RankPage() {
               <p className="text-xs text-brand-300 leading-relaxed">
                 Your rank inputs have changed — review your updated insights.
               </p>
-              <button
-                onClick={() => {
-                  const fp = getRankReviewFingerprint({
-                    totalAssetValue:      summary.totalAssetValue,
-                    birthYear:            settings.birthYear,
-                    gender:               settings.gender,
-                    annualReturnPct:      settings.annualReturnPct,
-                    benchmarkFingerprint: getBenchmarkFingerprint(),
-                  })
-                  dismissRankReview(fp)
-                  setReviewVisible(false)
-                }}
-                className="shrink-0 text-[10px] text-gray-500 hover:text-gray-300 transition-colors"
-              >
-                Dismiss
-              </button>
+              <div className="flex items-center gap-3 shrink-0">
+                <Link
+                  href={ROUTES.settings}
+                  className="text-[10px] text-brand-400 hover:text-brand-300 transition-colors"
+                >
+                  Review inputs →
+                </Link>
+                <button
+                  onClick={() => {
+                    const fp = getRankReviewFingerprint({
+                      totalAssetValue:      summary.totalAssetValue,
+                      birthYear:            settings.birthYear,
+                      gender:               settings.gender,
+                      annualReturnPct:      settings.annualReturnPct,
+                      benchmarkFingerprint: getBenchmarkFingerprint(),
+                    })
+                    dismissRankReview(fp)
+                    setReviewVisible(false)
+                  }}
+                  className="text-[10px] text-gray-500 hover:text-gray-300 transition-colors"
+                >
+                  Dismiss
+                </button>
+              </div>
             </div>
           )}
 
