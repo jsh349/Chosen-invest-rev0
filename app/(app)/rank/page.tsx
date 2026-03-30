@@ -837,6 +837,9 @@ export default function RankPage() {
               Preferred source unavailable — built-in reference data is active.
             </p>
           )}
+          <p className="text-[11px] text-gray-600 leading-relaxed">
+            Rank comparisons remain benchmark-based regardless of which source is active.
+          </p>
         </div>
       )}
 
