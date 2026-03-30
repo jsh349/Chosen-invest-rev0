@@ -11,6 +11,26 @@ export function generateHealthCards(summary: PortfolioSummary): FinancialHealthC
   const now = new Date().toISOString()
   const { categoryBreakdown, totalAssetValue, assetCount } = summary
 
+  // Guard: empty portfolio or all-zero values produce undefined scores and
+  // misleading messages (e.g. "Only 0 category", "Cash is under 5%").
+  // Return stable, neutral cards instead of running the scoring logic.
+  if (assetCount === 0 || totalAssetValue === 0) {
+    const placeholder = (key: string, title: string): FinancialHealthCard => ({
+      key,
+      title,
+      status: 'attention',
+      message: 'Add assets to see this analysis.',
+      score: 0,
+      generatedAt: now,
+    })
+    return [
+      placeholder('diversification', 'Diversification'),
+      placeholder('concentration', 'Concentration Risk'),
+      placeholder('liquidity', 'Liquidity'),
+      placeholder('balance', 'Growth Balance'),
+    ]
+  }
+
   // Diversification: number of categories
   const categoryCount = categoryBreakdown.length
   const diversificationScore = Math.min(100, categoryCount * 16)
