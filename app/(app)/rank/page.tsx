@@ -225,6 +225,9 @@ export default function RankPage() {
   const [benchmarkTransitionNote, setBenchmarkTransitionNote] = useState<string | null>(null)
   const [sourceSummary, setSourceSummary] = useState<BenchmarkSourceSummary | null>(null)
   const [reviewVisible, setReviewVisible] = useState(false)
+  // Tracks an in-session dismiss — suppresses the review summary card immediately
+  // after the banner is dismissed, preventing two review surfaces in quick succession.
+  const [reviewDismissed, setReviewDismissed] = useState(false)
 
   const isFullyLoaded = assetsLoaded && householdLoaded && settingsLoaded && snapshotsLoaded && goalsLoaded
   // Read once at mount — source preference requires page reload to change.
@@ -544,6 +547,7 @@ export default function RankPage() {
                     })
                     dismissRankReview(fp)
                     setReviewVisible(false)
+                    setReviewDismissed(true)
                   }}
                   className="text-[10px] text-gray-500 hover:text-gray-300 transition-colors"
                 >
@@ -596,7 +600,7 @@ export default function RankPage() {
               Suppressed while reviewVisible is true: the banner above is the primary
               prompt when inputs have just changed. Once the banner is dismissed,
               this card becomes the ongoing review reference. */}
-          {rankReviewSummary && !reviewVisible && (
+          {rankReviewSummary && !reviewVisible && !reviewDismissed && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-3">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Review Summary</p>
