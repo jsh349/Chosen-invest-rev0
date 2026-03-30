@@ -9,7 +9,8 @@
     "lint": "next lint",
     "test": "jest",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate"
+    "db:migrate": "drizzle-kit migrate",
+    "security": "npm audit --audit-level=high"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
