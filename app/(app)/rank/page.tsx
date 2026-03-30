@@ -747,7 +747,9 @@ export default function RankPage() {
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">How this works</p>
         <p className="text-xs text-gray-400 leading-relaxed">
           Rank estimates are based on local reference benchmark ranges, not real-time government or market data.
-          Results depend on your total asset value and any profile inputs you have set (birth year, gender, estimated return).
+          {mode === 'individual'
+            ? ' Results reflect your individual portfolio value and any profile inputs you have set (birth year, gender, estimated return).'
+            : ' Household rank comparison is not yet available — individual portfolio data is shown as a reference.'}
         </p>
         <p className="text-xs text-gray-600">
           Missing profile fields will show an unavailable state rather than an estimate. These are estimates only and not financial advice.
