@@ -25,7 +25,7 @@ import { getRankActions } from '@/lib/utils/rank-actions'
 import { getRankGoalInsight } from '@/lib/utils/rank-goal-insight'
 import { buildMonthlySummary } from '@/lib/utils/rank-monthly-summary'
 import { buildMilestoneHistory } from '@/lib/utils/rank-milestone-history'
-import { checkBenchmarkChanged, dismissBenchmarkAlert, benchmarkVersionNote, getBenchmarkFingerprint } from '@/lib/utils/benchmark-change-alert'
+import { checkBenchmarkChanged, dismissBenchmarkAlert, benchmarkVersionNote, getBenchmarkFingerprint, getBenchmarkTransitionNote } from '@/lib/utils/benchmark-change-alert'
 import { getNextRankHint } from '@/lib/utils/rank-next-hint'
 import { getRankInterpretation } from '@/lib/utils/rank-interpretation'
 import { getRankInputExplanation } from '@/lib/utils/rank-input-explanation'
@@ -223,6 +223,7 @@ export default function RankPage() {
   const { goals, isLoaded: goalsLoaded } = useGoals()
   const [mode, setMode] = useState<RankMode>(readPersistedMode)
   const [benchmarkAlertVisible, setBenchmarkAlertVisible] = useState(false)
+  const [benchmarkTransitionNote, setBenchmarkTransitionNote] = useState<string | null>(null)
   const [reviewVisible, setReviewVisible] = useState(false)
 
   const isFullyLoaded = assetsLoaded && householdLoaded && settingsLoaded && snapshotsLoaded && goalsLoaded
@@ -341,6 +342,11 @@ export default function RankPage() {
   }, [isFullyLoaded, summary.totalAssetValue, userAge, settings.gender, settings.annualReturnPct])
 
   useEffect(() => {
+    // getBenchmarkTransitionNote must be called before checkBenchmarkChanged writes
+    // the initial fingerprint on first visit (checkBenchmarkChanged returns false on
+    // first visit, so ordering only matters for the note — but keeping them together
+    // ensures both read the same stored value).
+    setBenchmarkTransitionNote(getBenchmarkTransitionNote())
     setBenchmarkAlertVisible(checkBenchmarkChanged())
   }, [])
 
@@ -753,7 +759,7 @@ export default function RankPage() {
       {benchmarkAlertVisible && (
         <div className="flex items-start justify-between gap-3 rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3">
           <p className="text-xs text-amber-300 leading-relaxed">
-            Benchmark reference ranges were updated.
+            {benchmarkTransitionNote ?? 'Benchmark reference ranges were updated.'}
           </p>
           <button
             onClick={() => {

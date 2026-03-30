@@ -52,3 +52,23 @@ export function dismissBenchmarkAlert(): void {
   if (typeof window === 'undefined') return
   writeScalar(LS_KEY, getBenchmarkFingerprint())
 }
+
+/**
+ * Returns a compact note when the benchmark *source* specifically changed
+ * since the user last visited. Returns null when the source is unchanged,
+ * on first visit (no stored fingerprint), or on the server.
+ *
+ * Must be called before dismissBenchmarkAlert() to access the previous fingerprint.
+ */
+export function getBenchmarkTransitionNote(): string | null {
+  if (typeof window === 'undefined') return null
+  const stored = readScalar(LS_KEY)
+  if (stored === null) return null
+  const prevSource = stored.split('::')[1] ?? null
+  if (prevSource === null) return null
+  const currentSource = getActiveBenchmarkSourceId()
+  if (prevSource === currentSource) return null
+  const from = prevSource === 'curated' ? 'curated dataset' : 'built-in reference'
+  const to   = currentSource === 'curated' ? 'curated dataset' : 'built-in reference'
+  return `Benchmark source changed from ${from} to ${to} — reference ranges may differ from your previous visit.`
+}
