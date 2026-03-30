@@ -24,7 +24,7 @@ export function getRankChangeReason(
     previous.benchmarkSource &&
     current.benchmarkSource !== previous.benchmarkSource
   ) {
-    return 'Benchmark reference source changed since last comparison.'
+    return 'Benchmark source changed since last comparison.'
   }
 
   // 2. Benchmark version updated (same source, different version)
@@ -33,7 +33,7 @@ export function getRankChangeReason(
     previous.benchmarkVersion &&
     current.benchmarkVersion !== previous.benchmarkVersion
   ) {
-    return 'Benchmark reference ranges were updated since last comparison.'
+    return 'Benchmark data was updated since last comparison.'
   }
 
   // 3. Profile comparison expanded (new rank category unlocked)
@@ -41,7 +41,7 @@ export function getRankChangeReason(
     (previous.agePercentile    === null && current.agePercentile    !== null) ||
     (previous.returnPercentile === null && current.returnPercentile !== null)
   if (profileExpanded) {
-    return 'Comparison depth expanded — a new rank category became available.'
+    return 'A new rank category became available since last comparison.'
   }
 
   // 4. Asset total changed
