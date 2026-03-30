@@ -86,20 +86,30 @@ export default function DashboardPage() {
   const ageRank = useMemo(() => computeAgeBasedRank(summary.totalAssetValue, userAge), [summary.totalAssetValue, userAge])
   const ageGenderRank = useMemo(() => computeAgeGenderRank(summary.totalAssetValue, userAge, settings.gender), [summary.totalAssetValue, userAge, settings.gender])
   const returnRank = useMemo(() => computeReturnRank(settings.annualReturnPct), [settings.annualReturnPct])
-  const aiAnalysis = useMemo(
-    () => generateAISummary({
-      ...baseCtx,
-      rankSummary: {
-        overallPercentile: overallRank.percentile,
-        agePercentile: ageRank.percentile,
-        returnPercentile: returnRank.percentile,
-      },
-      currencySymbol: getCurrencySymbol(settings.currency),
-      showCents: settings.showCents,
-    }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [baseCtx, overallRank.percentile, ageRank.percentile, returnRank.percentile, settings.currency, settings.showCents]
-  )
+  const aiAnalysis = useMemo(() => {
+    try {
+      return generateAISummary({
+        ...baseCtx,
+        rankSummary: {
+          overallPercentile: overallRank.percentile,
+          agePercentile: ageRank.percentile,
+          returnPercentile: returnRank.percentile,
+        },
+        currencySymbol: getCurrencySymbol(settings.currency),
+        showCents: settings.showCents,
+      })
+    } catch {
+      return {
+        userId: baseCtx.portfolio.userId,
+        summaryText: 'Your summary is temporarily unavailable. Your portfolio data is still accessible above.',
+        keyPoints: [],
+        suggestedActions: [{ label: 'View portfolio details', href: ROUTES.portfolioList }],
+        inputSnapshot: { totalValue: 0, assetCount: 0, topCategory: '' },
+        generatedAt: new Date().toISOString(),
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [baseCtx, overallRank.percentile, ageRank.percentile, returnRank.percentile, settings.currency, settings.showCents])
 
   if (!isLoaded || !prefsLoaded || !goalsLoaded || !txLoaded || !settingsLoaded) {
     return (
