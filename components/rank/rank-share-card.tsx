@@ -13,6 +13,7 @@ const SECONDARY_TYPES = ['age_based', 'investment_return'] as const
 
 type Props = {
   ranks: RankResult[]
+  mode?: 'individual' | 'household'
 }
 
 
@@ -22,7 +23,7 @@ type Props = {
  * image capture without importing an export library here.
  */
 export const RankShareCard = forwardRef<HTMLDivElement, Props>(
-  function RankShareCard({ ranks }, ref) {
+  function RankShareCard({ ranks, mode = 'individual' }, ref) {
     const hero      = ranks.find((r) => r.type === HERO_TYPE) ?? null
     const secondary = SECONDARY_TYPES
       .map((type) => ranks.find((r) => r.type === type))
@@ -49,7 +50,10 @@ export const RankShareCard = forwardRef<HTMLDivElement, Props>(
       >
         {/* Header */}
         <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Rank Summary</p>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Rank Summary</p>
+            <p className="mt-0.5 text-[10px] capitalize text-gray-600">{mode} · benchmark reference</p>
+          </div>
           <span className="text-[10px] text-gray-600">{dateStr}</span>
         </div>
 
