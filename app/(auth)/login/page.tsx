@@ -2,12 +2,23 @@
 
 import { signIn } from 'next-auth/react'
 import { useState } from 'react'
-import { Chrome } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
+import { Chrome, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ROUTES } from '@/lib/constants/routes'
 
+function oauthErrorMessage(code: string | null): string | null {
+  if (!code) return null
+  if (code === 'AccessDenied') return 'Access was denied. Please try again or use a different account.'
+  if (code === 'OAuthAccountNotLinked') return 'This email is already linked to another sign-in method.'
+  // Covers OAuthSignin, OAuthCallback, Configuration, Default, and unknown codes
+  return 'Sign-in failed. Please try again.'
+}
+
 export default function LoginPage() {
   const [loading, setLoading] = useState(false)
+  const searchParams = useSearchParams()
+  const errorMessage = oauthErrorMessage(searchParams.get('error'))
 
   async function handleGoogleSignIn() {
     setLoading(true)
@@ -25,6 +36,13 @@ export default function LoginPage() {
       </div>
 
       <div className="rounded-2xl border border-surface-border bg-surface-card p-8 space-y-4">
+        {errorMessage && (
+          <div className="flex items-start gap-2 rounded-lg border border-red-900/50 bg-red-950/40 px-3 py-2.5 text-xs text-red-300">
+            <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-red-400" />
+            {errorMessage}
+          </div>
+        )}
+
         <Button
           size="lg"
           variant="outline"
