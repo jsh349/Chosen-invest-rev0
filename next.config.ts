@@ -28,6 +28,12 @@ const SECURITY_HEADERS = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   // Send origin+path on same-origin requests; send only origin on cross-origin; nothing on downgrade.
   { key: 'Referrer-Policy',        value: 'strict-origin-when-cross-origin' },
+  // Enforce HTTPS for 2 years and include subdomains.
+  // Browsers ignore this header on http://localhost so local dev is unaffected.
+  { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains' },
+  // Explicitly revoke browser features this app does not use.
+  // Reduces attack surface if any third-party script is ever injected.
+  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), payment=(), usb=()' },
   // CSP in report-only mode — logs violations to DevTools, never blocks.
   { key: 'Content-Security-Policy-Report-Only', value: CSP_REPORT_ONLY },
 ]

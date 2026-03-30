@@ -28,6 +28,19 @@ describe('HTTP security headers — next.config.ts', () => {
     expect(headers['Referrer-Policy']).toBe('strict-origin-when-cross-origin')
   })
 
+  it('sets Strict-Transport-Security (HSTS)', () => {
+    expect(headers['Strict-Transport-Security']).toContain('max-age=')
+    expect(headers['Strict-Transport-Security']).toContain('includeSubDomains')
+  })
+
+  it('sets Permissions-Policy restricting unused browser features', () => {
+    const pp = headers['Permissions-Policy']
+    expect(pp).toBeTruthy()
+    expect(pp).toContain('camera=()')
+    expect(pp).toContain('microphone=()')
+    expect(pp).toContain('geolocation=()')
+  })
+
   it('sets Content-Security-Policy-Report-Only (present and non-empty)', () => {
     const csp = headers['Content-Security-Policy-Report-Only']
     expect(csp).toBeTruthy()

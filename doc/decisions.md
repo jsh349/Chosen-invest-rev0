@@ -101,7 +101,7 @@
 **결정:** 주식/ETF 실시간 시세 및 심볼 검색에 Finnhub 사용
 
 **이유:**
-- `NEXT_PUBLIC_FINNHUB_API_KEY` 이미 설정됨
+- `FINNHUB_API_KEY` 이미 설정됨 (server-only — NEXT_PUBLIC_ prefix 절대 사용 금지)
 - 무료 플랜으로 기본 시세 조회 가능
 - Phase 2 자산 입력 시 실시간 가격 제안 기능에 활용 예정
 
