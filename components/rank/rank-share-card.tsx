@@ -5,7 +5,6 @@ import Link from 'next/link'
 import type { RankResult } from '@/lib/types/rank'
 import { cn } from '@/lib/utils/cn'
 import { ROUTES } from '@/lib/constants/routes'
-import { getRankInterpretation } from '@/lib/utils/rank-interpretation'
 
 // Overall shown as hero; age + return shown as secondary rows
 const HERO_TYPE      = 'overall_wealth'
@@ -83,7 +82,7 @@ export const RankShareCard = forwardRef<HTMLDivElement, Props>(
                       </span>
                     </div>
                     <p className="mt-1.5 text-[11px] text-gray-500 leading-relaxed">
-                      {getRankInterpretation(hero.percentile)}
+                      {hero.message}
                     </p>
                   </>
                 ) : (

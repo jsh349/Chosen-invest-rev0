@@ -1,47 +1,43 @@
-# Plan.md — Phase 157: Rank Change Reason Hint
+# Plan.md — Phase 158: Rank Surface Parity Pass
 
 ## Task Summary
-Add a `reasonHint` field to MonthlySummary that shows a brief, cautious hint
-about why the overall rank changed between the two compared snapshots.
-Shown only when delta !== null && delta !== 0.
+Align the explanation text in RankShareCard with RankReportSection.
+After Phase 156, RankReportSection uses highlight.message for the
+explanation slot. RankShareCard still uses getRankInterpretation(),
+giving generic text on one surface and specific contextual text on the other.
 
-## Goal
-Surface non-obvious change reasons (benchmark updated, profile expanded)
-as a one-line hint in the Rank Change card. Asset total change is included
-as the fallback reason when nothing more specific is detectable.
+## Parity Gap
+RankReportSection explanation: "Top 30% nationally — above the median benchmark."
+RankShareCard explanation:     "Above the benchmark midpoint."
 
-## Reason Detection Rules (first match wins)
-1. benchmarkSource differs between snapshots → "Benchmark reference source changed since last comparison."
-2. benchmarkVersion differs (same source)   → "Benchmark reference ranges were updated since last comparison."
-3. Profile expanded (age/return went null→non-null) → "Comparison depth expanded — a new rank category became available."
-4. totalAssetValue differs → "Asset total changed since last comparison."
-5. None detectable → null (no hint shown)
+Both surfaces show the same percentile — the contextual explanation
+should be consistent.
 
-Guard: reasonHint is only computed when delta !== null && delta !== 0.
-If benchmarkVersion/Source are absent (older snapshots), those rules skip
-safely (both sides must be defined).
+## Fix
+Replace getRankInterpretation(hero.percentile) with hero.message
+in the hero block of RankShareCard. Remove now-unused import.
+
+## Non-Goals
+- No change to hero rank selection (overall_wealth is intentional for share card)
+- No change to secondary rank rows
+- No change to footer link copy ("Full breakdown →" suits the share card's purpose)
+- No change to partial data note
+- No changes to RankReportSection
 
 ## Affected Files
-### New
-- `lib/utils/rank-change-reason.ts`
-  — `getRankChangeReason(current, previous): string | null`
-
 ### Modified
-- `lib/utils/rank-monthly-summary.ts`
-  — add `reasonHint: string | null` to MonthlySummary type
-  — compute it from snapshots when delta is non-zero
-
-- `app/(app)/rank/page.tsx`
-  — render `monthlySummary.reasonHint` below the existing note line
+- `components/rank/rank-share-card.tsx`
+  — hero explanation: getRankInterpretation(hero.percentile) → hero.message
+  — remove getRankInterpretation import (now unused)
 
 ## Risks
-- Minimal. Additive only. reasonHint is null-guarded.
-- Existing delta/note/versionNote display unchanged.
-- Older snapshots without benchmarkSource/Version → those rules skip safely.
+- Minimal. hero.message is always a non-empty string on RankResult.
+  hero is only rendered when hero.percentile != null, which is also
+  when computeOverallWealthRank produces a specific message.
 
 ## Validation Steps
 1. TypeScript: npx tsc --noEmit → 0 errors
-2. No prior snapshot → reasonHint null (no hint)
-3. Same state revisit → delta = 0 → reasonHint null
-4. Asset change → "Asset total changed since last comparison."
-5. Benchmark source change → source reason shown, asset reason suppressed
+2. Hero explanation shows rank-specific text ("nationally", etc.)
+3. Secondary rows unchanged
+4. Partial data note unchanged
+5. Footer unchanged
