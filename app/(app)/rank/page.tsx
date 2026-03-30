@@ -423,7 +423,24 @@ export default function RankPage() {
       {/* Individual mode content */}
       {mode === 'individual' && (
         <>
-          {/* Summary strip */}
+          {/* No assets */}
+          {summary.assetCount === 0 && (
+            <div className="rounded-xl border border-dashed border-surface-border py-16 text-center">
+              <p className="text-sm font-medium text-gray-400">No assets recorded</p>
+              <p className="mt-1 text-xs text-gray-600">Add your portfolio to see wealth rank comparisons.</p>
+              <Link
+                href={ROUTES.portfolioInput}
+                className="mt-4 inline-block text-xs text-brand-400 hover:text-brand-300 transition-colors"
+              >
+                Add assets →
+              </Link>
+            </div>
+          )}
+
+          {/* 1. Primary rank highlight — most relevant rank, shown first */}
+          {summary.assetCount > 0 && <PrimaryRankHighlight ranks={ranks} />}
+
+          {/* 2. Summary strip — comparison context after the user sees the number */}
           {summary.assetCount > 0 && (
             <div className="flex flex-wrap gap-4 rounded-xl border border-surface-border bg-surface-card px-5 py-4">
               <div>
@@ -463,24 +480,15 @@ export default function RankPage() {
             </div>
           )}
 
-          {/* No assets */}
-          {summary.assetCount === 0 && (
-            <div className="rounded-xl border border-dashed border-surface-border py-16 text-center">
-              <p className="text-sm font-medium text-gray-400">No assets recorded</p>
-              <p className="mt-1 text-xs text-gray-600">Add your portfolio to see wealth rank comparisons.</p>
-              <Link
-                href={ROUTES.portfolioInput}
-                className="mt-4 inline-block text-xs text-brand-400 hover:text-brand-300 transition-colors"
-              >
-                Add assets →
-              </Link>
-            </div>
-          )}
+          {/* 3. Explanation + next-step hint — immediately follows highlight and context */}
+          <RankDetailExplanationBlock
+            nextHint={nextHint}
+            rankInsight={rankInsight}
+            rankGoalInsight={rankGoalInsight}
+            rankAllocationInsight={rankAllocationInsight}
+          />
 
-          {/* Primary rank highlight — most relevant available rank, prominently displayed */}
-          {summary.assetCount > 0 && <PrimaryRankHighlight ranks={ranks} />}
-
-          {/* Narrative summary — one or two sentences synthesising available rank signals */}
+          {/* 4. Narrative summary — synthesis after the core numbers and hints */}
           {narrativeSummary && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3">
               <p className="text-sm text-gray-300 leading-relaxed">{narrativeSummary}</p>
@@ -519,14 +527,6 @@ export default function RankPage() {
               </div>
             </div>
           )}
-
-          {/* Grouped explanation block — shows at most 2 lines in priority order */}
-          <RankDetailExplanationBlock
-            nextHint={nextHint}
-            rankInsight={rankInsight}
-            rankGoalInsight={rankGoalInsight}
-            rankAllocationInsight={rankAllocationInsight}
-          />
 
           {/* Rank actions — contextual navigation links derived from rank state.
               Suppressed when checklist is active: both surfaces guide toward the
