@@ -16,7 +16,6 @@
 
 import fs from 'fs'
 import path from 'path'
-import { glob } from 'glob'
 
 const ROOT = path.resolve(__dirname, '../..')
 
@@ -35,28 +34,38 @@ const SERVER_ONLY_SECRETS = [
   'AUTH_GOOGLE_ID',
 ]
 
-const SOURCE_GLOBS = [
-  'app/**/*.{ts,tsx}',
-  'lib/**/*.{ts,tsx}',
-  'features/**/*.{ts,tsx}',
-  'components/**/*.{ts,tsx}',
-  '*.{ts,tsx,js,mjs}',
-  '.env.local.example',
-]
+/** Directories to scan for source files (relative to ROOT). */
+const SOURCE_DIRS = ['app', 'lib', 'features', 'components']
+/** Top-level files to include directly. */
+const EXTRA_FILES = ['.env.local.example']
 
-function readSourceFiles(): Array<{ file: string; content: string }> {
-  const files: Array<{ file: string; content: string }> = []
-  for (const pattern of SOURCE_GLOBS) {
-    const matches = glob.sync(pattern, { cwd: ROOT, absolute: true })
-    for (const file of matches) {
-      try {
-        files.push({ file: path.relative(ROOT, file), content: fs.readFileSync(file, 'utf8') })
-      } catch {
-        // ignore unreadable files
-      }
+function walkDir(dir: string): string[] {
+  const results: string[] = []
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name)
+    if (entry.isDirectory()) {
+      results.push(...walkDir(full))
+    } else if (/\.(ts|tsx|js|mjs)$/.test(entry.name)) {
+      results.push(full)
     }
   }
-  return files
+  return results
+}
+
+function readSourceFiles(): Array<{ file: string; content: string }> {
+  const paths: string[] = []
+  for (const dir of SOURCE_DIRS) {
+    const abs = path.join(ROOT, dir)
+    if (fs.existsSync(abs)) paths.push(...walkDir(abs))
+  }
+  for (const extra of EXTRA_FILES) {
+    const abs = path.join(ROOT, extra)
+    if (fs.existsSync(abs)) paths.push(abs)
+  }
+  return paths.map(abs => ({
+    file: path.relative(ROOT, abs),
+    content: fs.readFileSync(abs, 'utf8'),
+  }))
 }
 
 describe('secret leakage — NEXT_PUBLIC_ prefix on server-only names', () => {
