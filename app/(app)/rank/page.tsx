@@ -169,7 +169,7 @@ function RankRow({ result, coverageNote }: { result: RankResult; coverageNote?: 
  * Shows the band label prominently + one supporting interpretation line.
  * Returns null when no rank is available.
  */
-function PrimaryRankHighlight({ ranks }: { ranks: RankResult[] }) {
+function PrimaryRankHighlight({ ranks, mode }: { ranks: RankResult[]; mode: RankMode }) {
   const primary = getPrimaryRank(ranks)
   if (!primary) return null
   return (
@@ -186,6 +186,7 @@ function PrimaryRankHighlight({ ranks }: { ranks: RankResult[] }) {
       {primary.detail && (
         <p className="text-[11px] text-gray-600">{primary.detail.comparisonBasis}</p>
       )}
+      <p className="text-[10px] capitalize text-gray-600">{mode} · benchmark reference</p>
     </div>
   )
 }
@@ -455,7 +456,7 @@ export default function RankPage() {
           )}
 
           {/* 1. Primary rank highlight — most relevant rank, shown first */}
-          {summary.assetCount > 0 && <PrimaryRankHighlight ranks={ranks} />}
+          {summary.assetCount > 0 && <PrimaryRankHighlight ranks={ranks} mode={mode} />}
 
           {/* 2. Summary strip — comparison context after the user sees the number */}
           {summary.assetCount > 0 && (
