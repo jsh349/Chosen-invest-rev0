@@ -508,19 +508,12 @@ export default function SettingsPage() {
             {' · '}
             <span className={debugCaps.supportsReturn    ? 'text-gray-400' : 'text-red-400'}>return {debugCaps.supportsReturn    ? '✓' : '✗'}</span>
           </p>
-          <p>
-            <span className="inline-block w-36 text-gray-600">Readiness</span>
-            <span className={debugReady ? 'text-emerald-400' : 'text-amber-400'}>
-              {debugReady ? 'ready' : 'not ready'}
-            </span>
-          </p>
           {/* Context group — user preference and metadata */}
           <div className="border-t border-surface-border/50 my-1" />
           <p><span className="inline-block w-36 text-gray-600">Comparison mode</span>{debugMode}</p>
-          {/* Metadata group — when was it updated */}
+          {/* Metadata group — version · updated date on one line */}
           <div className="border-t border-surface-border/50 my-1" />
-          <p><span className="inline-block w-36 text-gray-600">Version</span>{debugActiveMeta.version}</p>
-          <p><span className="inline-block w-36 text-gray-600">Updated</span>{debugActiveMeta.updatedAt}</p>
+          <p><span className="inline-block w-36 text-gray-600">Version</span>{debugActiveMeta.version} · {debugActiveMeta.updatedAt}</p>
           {debugRefresh.lastApplied ? (
             <p>
               <span className="inline-block w-36 text-gray-600">Last applied</span>
