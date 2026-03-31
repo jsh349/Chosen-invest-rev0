@@ -41,18 +41,20 @@ export function getRankActions(
     actions.push({ label: 'Review portfolio allocation', href: ROUTES.portfolioList })
   }
 
-  // Rule 3: overall rank available but no goals set
-  if (actions.length < 2 && overallPct !== null && !hasGoals) {
-    actions.push({ label: 'Set a financial goal', href: ROUTES.goals })
-  }
-
-  // Rule 4: return estimate missing and not already linking to Settings
+  // Rule 3: return estimate missing and not already linking to Settings.
+  // Evaluated before goals (Rule 4) to match checklist priority order:
+  // data completeness (age → gender → return) before contextual actions (goals).
   if (
     actions.length < 2 &&
     returnMissing &&
     !actions.some((a) => a.href === ROUTES.settings)
   ) {
     actions.push({ label: 'Add return estimate for investment rank', href: ROUTES.settings })
+  }
+
+  // Rule 4: overall rank available but no goals set
+  if (actions.length < 2 && overallPct !== null && !hasGoals) {
+    actions.push({ label: 'Set a financial goal', href: ROUTES.goals })
   }
 
   return actions.slice(0, 2)
