@@ -119,6 +119,7 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
       window.dispatchEvent(new CustomEvent('persist-error'))
       throw err
     })
+    assetsRef.current = []
     setAssetsState([])
   }, [])
 

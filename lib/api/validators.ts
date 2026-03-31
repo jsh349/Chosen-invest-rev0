@@ -1,11 +1,16 @@
 import { z } from 'zod'
+import { ASSET_CATEGORIES } from '@/lib/constants/asset-categories'
 
 // ── Assets ────────────────────────────────────────────────────────────────────
+
+// Derived from ASSET_CATEGORIES so adding a new category only requires
+// updating the constant — no need to edit this file separately.
+const ASSET_CATEGORY_KEYS = ASSET_CATEGORIES.map((c) => c.key) as [string, ...string[]]
 
 const AssetSchema = z.object({
   id:        z.string().min(1).max(100),
   name:      z.string().min(1).max(200).trim(),
-  category:  z.enum(['cash', 'stock', 'etf', 'crypto', 'retirement', 'real_estate', 'other']),
+  category:  z.enum(ASSET_CATEGORY_KEYS),
   value:     z.number().finite().nonnegative(),
   currency:  z.string().min(1).max(10),
   createdAt: z.string().min(1),

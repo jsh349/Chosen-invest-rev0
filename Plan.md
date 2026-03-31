@@ -55,3 +55,37 @@ from REAL to INTEGER must happen before any data is written, not after.
 3. Sign in → add assets via portfolio input → reload dashboard → data persists
 4. `GET /api/assets` in DevTools Network → correct JSON returned
 5. `npm test -- --ci` → all tests pass
+
+---
+
+# Addendum: Debugging Audit Fixes
+
+## Task Summary
+Apply the 5 confirmed bugs from the debugging audit. No new features. Minimal diffs only.
+
+## Goal
+Eliminate silent failures, missing error states, and structural fragility identified during the audit.
+
+## Non-Goals
+- No new UI surfaces or features
+- No refactor of unrelated files
+- Do not add the persist-error listener (PersistErrorBanner already exists and is wired into AppShell)
+- Do not fix low-severity issues (direct localStorage in benchmark files, use-current-user-id race)
+
+## Affected Files
+- `lib/store/household-store.tsx`        — add isLoadError flag
+- `lib/store/assets-store.tsx`           — reset assetsRef.current in clearAssets
+- `lib/store/settings-store.tsx`         — move dispatchEvent outside setState updater
+- `app/(app)/dashboard/page.tsx`         — check isLoadError from goals + transactions
+- `lib/api/validators.ts`               — derive asset category enum from ASSET_CATEGORIES
+
+## Risks
+- household-store: adding isLoadError to context type requires updating HouseholdContextType and default value — low risk
+- dashboard: adding two more isLoadError checks widens the existing error banner condition — no behavior change unless goals/tx actually fail to load
+- validators.ts: category enum order must match; derive from ASSET_CATEGORIES key order
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. Household page: simulate load failure → should show error state
+3. Dashboard: goals/tx load error → error banner appears instead of zero-state
+4. Add new asset category to ASSET_CATEGORIES → validators.ts picks it up automatically

@@ -6,6 +6,7 @@ import {
   useState,
   useEffect,
   useCallback,
+  useRef,
   type ReactNode,
 } from 'react'
 
@@ -63,24 +64,29 @@ const SettingsContext = createContext<SettingsContextType>({
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
   const [isLoaded, setIsLoaded] = useState(false)
+  // Ref mirrors state so the update callback can merge without using the
+  // setState updater form — updaters are double-invoked in React Strict Mode,
+  // which would fire dispatchEvent twice per failed write in development.
+  const settingsRef = useRef<AppSettings>(DEFAULT_SETTINGS)
 
   useEffect(() => {
     const stored = readJSON<Record<string, unknown>>(LS_KEY, {})
     if (stored && Object.keys(stored).length > 0) {
-      setSettings({ ...DEFAULT_SETTINGS, ...sanitizeStoredSettings(stored) })
+      const merged = { ...DEFAULT_SETTINGS, ...sanitizeStoredSettings(stored) }
+      settingsRef.current = merged
+      setSettings(merged)
     }
     setIsLoaded(true)
   }, [])
 
   const update = useCallback((patch: Partial<AppSettings>) => {
-    setSettings((prev) => {
-      const updated = { ...prev, ...patch }
-      if (!writeJSON(LS_KEY, updated)) {
-        console.error('[settings] save failed')
-        window.dispatchEvent(new CustomEvent('persist-error'))
-      }
-      return updated
-    })
+    const updated = { ...settingsRef.current, ...patch }
+    settingsRef.current = updated
+    setSettings(updated)
+    if (!writeJSON(LS_KEY, updated)) {
+      console.error('[settings] save failed')
+      window.dispatchEvent(new CustomEvent('persist-error'))
+    }
   }, [])
 
   return (

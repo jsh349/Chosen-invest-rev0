@@ -17,6 +17,8 @@ import { useCurrentUserId } from '@/lib/hooks/use-current-user-id'
 type HouseholdContextType = {
   members: HouseholdMember[]
   isLoaded: boolean
+  /** True when the initial load failed. isLoaded is also true in this state. */
+  isLoadError: boolean
   addMember: (member: HouseholdMember) => void
   removeMember: (id: string) => void
 }
@@ -24,6 +26,7 @@ type HouseholdContextType = {
 const HouseholdContext = createContext<HouseholdContextType>({
   members: [],
   isLoaded: false,
+  isLoadError: false,
   addMember: () => {},
   removeMember: () => {},
 })
@@ -31,6 +34,7 @@ const HouseholdContext = createContext<HouseholdContextType>({
 export function HouseholdProvider({ children }: { children: ReactNode }) {
   const [members, setMembers] = useState<HouseholdMember[]>([])
   const [isLoaded, setIsLoaded] = useState(false)
+  const [isLoadError, setIsLoadError] = useState(false)
   const currentUserId = useCurrentUserId()
   // Ref mirrors state so callbacks can build the updated array without
   // putting async side-effects inside the setState updater (which React
@@ -47,7 +51,10 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
       }
       setIsLoaded(true)
     }).catch(() => {
-      if (!cancelled) setIsLoaded(true)
+      if (!cancelled) {
+        setIsLoadError(true)
+        setIsLoaded(true)
+      }
     })
     return () => { cancelled = true }
   }, [])
@@ -71,7 +78,7 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <HouseholdContext.Provider value={{ members, isLoaded, addMember, removeMember }}>
+    <HouseholdContext.Provider value={{ members, isLoaded, isLoadError, addMember, removeMember }}>
       {children}
     </HouseholdContext.Provider>
   )

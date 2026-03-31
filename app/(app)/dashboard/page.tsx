@@ -111,8 +111,8 @@ function EmptyState() {
 
 export default function DashboardPage() {
   const { assets, hasCustomAssets, isLoaded, isLoadError } = useAssets()
-  const { goals, isLoaded: goalsLoaded } = useGoals()
-  const { transactions, isLoaded: txLoaded } = useTransactions()
+  const { goals, isLoaded: goalsLoaded, isLoadError: goalsLoadError } = useGoals()
+  const { transactions, isLoaded: txLoaded, isLoadError: txLoadError } = useTransactions()
   const { prefs, isLoaded: prefsLoaded, toggle } = useDashboardPrefs()
   const { settings, isLoaded: settingsLoaded } = useSettings()
   const currentUserId = useCurrentUserId()
@@ -183,7 +183,7 @@ export default function DashboardPage() {
     )
   }
 
-  if (isLoadError) {
+  if (isLoadError || goalsLoadError || txLoadError) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center text-center px-4">
         <p className="text-sm font-medium text-gray-400">Failed to load your data</p>
