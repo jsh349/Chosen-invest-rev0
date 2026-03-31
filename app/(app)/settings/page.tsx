@@ -443,12 +443,15 @@ export default function SettingsPage() {
           </span>
         </summary>
         <div className="mt-3 space-y-1.5 font-mono text-[11px] text-gray-500">
-          {/* Status group — go/no-go signals */}
+          {/* Source group — active source → fallback → health → capabilities → readiness */}
+          <p><span className="inline-block w-36 text-gray-600">Active source</span>{debugSrcId}</p>
           <p>
-            <span className="inline-block w-36 text-gray-600">Readiness</span>
-            <span className={debugReady ? 'text-emerald-400' : 'text-amber-400'}>
-              {debugReady ? 'ready' : 'not ready'}
-            </span>
+            <span className="inline-block w-36 text-gray-600">Fallback</span>
+            {debugFallback
+              ? 'active'
+              : debugCaps.isFallbackOnly
+                ? 'stub'
+                : 'none'}
           </p>
           <p>
             <span className="inline-block w-36 text-gray-600">Health</span>
@@ -463,14 +466,6 @@ export default function SettingsPage() {
             <span className="ml-2 text-gray-600">{debugHealth.note}</span>
           </p>
           <p>
-            <span className="inline-block w-36 text-gray-600">Fallback</span>
-            {debugFallback
-              ? 'active'
-              : debugCaps.isFallbackOnly
-                ? 'stub'
-                : 'none'}
-          </p>
-          <p>
             <span className="inline-block w-36 text-gray-600">Capabilities</span>
             <span className={debugCaps.supportsWealth    ? 'text-gray-400' : 'text-red-400'}>wealth {debugCaps.supportsWealth    ? '✓' : '✗'}</span>
             {' · '}
@@ -480,9 +475,14 @@ export default function SettingsPage() {
             {' · '}
             <span className={debugCaps.supportsReturn    ? 'text-gray-400' : 'text-red-400'}>return {debugCaps.supportsReturn    ? '✓' : '✗'}</span>
           </p>
-          {/* Context group — what source and mode */}
+          <p>
+            <span className="inline-block w-36 text-gray-600">Readiness</span>
+            <span className={debugReady ? 'text-emerald-400' : 'text-amber-400'}>
+              {debugReady ? 'ready' : 'not ready'}
+            </span>
+          </p>
+          {/* Context group — user preference and metadata */}
           <div className="border-t border-surface-border/50 my-1" />
-          <p><span className="inline-block w-36 text-gray-600">Active source</span>{debugSrcId}</p>
           <p><span className="inline-block w-36 text-gray-600">Comparison mode</span>{debugMode}</p>
           {/* Metadata group — when was it updated */}
           <div className="border-t border-surface-border/50 my-1" />
