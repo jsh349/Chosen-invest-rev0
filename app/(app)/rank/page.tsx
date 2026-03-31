@@ -462,7 +462,7 @@ export default function RankPage() {
             <div className="flex flex-wrap gap-4 rounded-xl border border-surface-border bg-surface-card px-5 py-4">
               <div>
                 <p className="text-xs text-gray-500">Comparison</p>
-                <p className="mt-0.5 text-sm font-semibold text-white">Individual</p>
+                <p className="mt-0.5 text-sm font-semibold capitalize text-white">{mode}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-500">Total Assets</p>
