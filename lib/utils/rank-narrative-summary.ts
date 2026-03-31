@@ -34,7 +34,7 @@ export function getRankNarrativeSummary(ranks: RankResult[]): string {
   // No overall data — nothing meaningful to say yet
   if (overallPct === null) {
     return profileIncomplete
-      ? 'Rank comparisons require additional profile details.'
+      ? 'Rank comparisons are not yet available — add profile details to unlock more comparisons.'
       : 'Overall wealth rank is unavailable with current portfolio data.'
   }
 
@@ -50,12 +50,17 @@ export function getRankNarrativeSummary(ranks: RankResult[]): string {
     opening = 'Your overall asset position is below the benchmark median.'
   }
 
-  // Optional second sentence — return gap takes priority over profile note
+  // Optional second sentence — return gap takes priority; profile note is fallback.
+  // Priority order: wealth > return gap → return > wealth gap → profile incomplete.
   let second = ''
   if (retPct !== null && overallPct - retPct >= RANK_GAP_THRESHOLD) {
     second = ' Your investment return rank is notably lower than your wealth rank.'
   } else if (retPct !== null && retPct - overallPct >= RANK_GAP_THRESHOLD) {
     second = ' Your investment return rank is notably stronger than your wealth rank.'
+  } else if (profileIncomplete) {
+    // Aligns narrative with the profile-completion hint shown in the explanation block:
+    // both acknowledge that the current view is based on partial profile inputs.
+    second = ' Some comparisons are unavailable based on current profile inputs.'
   }
 
   return opening + second
