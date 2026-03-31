@@ -14,6 +14,12 @@ const SECONDARY_TYPES = ['overall_wealth', 'age_based', 'age_gender', 'investmen
 type Props = {
   ranks: RankResult[]
   mode?: 'individual' | 'household'
+  /**
+   * Optional compact source/fallback note shown in the card footer.
+   * Pass the text from getRankConfidenceNote() when the benchmark source
+   * is degraded (fallback, partial, or invalid). Null → footer is clean.
+   */
+  sourceNote?: string | null
 }
 
 
@@ -23,7 +29,7 @@ type Props = {
  * image capture without importing an export library here.
  */
 export const RankShareCard = forwardRef<HTMLDivElement, Props>(
-  function RankShareCard({ ranks, mode = 'individual' }, ref) {
+  function RankShareCard({ ranks, mode = 'individual', sourceNote = null }, ref) {
     const hero      = getPrimaryRank(ranks)
     const secondary = SECONDARY_TYPES
       .filter((type) => type !== hero?.type)
@@ -111,6 +117,13 @@ export const RankShareCard = forwardRef<HTMLDivElement, Props>(
               </p>
             )}
           </>
+        )}
+
+        {/* Compact source/fallback note — shown only when benchmark source is degraded.
+            Provides standalone source context for screenshot/share scenarios where
+            the rank page summary strip is not visible. */}
+        {sourceNote && (
+          <p className="text-[10px] text-gray-500">{sourceNote}</p>
         )}
 
         {/* Disclaimer + optional review hint */}

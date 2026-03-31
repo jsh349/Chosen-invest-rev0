@@ -693,7 +693,7 @@ export default function RankPage() {
           )}
 
           {/* Share card — compact summary preview */}
-          {summary.assetCount > 0 && <RankShareCard ranks={ranks} mode={mode} />}
+          {summary.assetCount > 0 && <RankShareCard ranks={ranks} mode={mode} sourceNote={confidenceNote?.text ?? null} />}
         </>
       )}
 
