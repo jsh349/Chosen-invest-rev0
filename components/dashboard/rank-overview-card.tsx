@@ -113,7 +113,7 @@ export function RankOverviewCard({ rank, ageRank, ageGenderRank, returnRank, tot
       {/* Footer */}
       <div className="flex items-center justify-between gap-4">
         <p className="text-[10px] text-gray-600">
-          Benchmark-based estimate · not financial advice
+          Estimate · not financial advice · Chosen Invest
         </p>
         <Link
           href={ROUTES.rank}
