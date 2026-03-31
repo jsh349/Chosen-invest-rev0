@@ -71,11 +71,12 @@ export function generateAISummary(ctx: AdvisorContext): AIAnalysisResult {
   }
 
   // Retirement signal
-  const hasRetirement = categoryBreakdown.some((s) => s.category === 'retirement')
-  if (hasRetirement) {
-    const ret = categoryBreakdown.find((s) => s.category === 'retirement')!
-    lines.push(`Retirement savings are present at ${ret.percentage.toFixed(0)}% — a strong long-term foundation.`)
-    keyPoints.push(`Retirement at ${ret.percentage.toFixed(0)}% — solid base`)
+  // Single .find() replaces the .some() + .find()! pattern — eliminates the
+  // non-null assertion and the redundant linear scan.
+  const retirementSlice = categoryBreakdown.find((s) => s.category === 'retirement')
+  if (retirementSlice) {
+    lines.push(`Retirement savings are present at ${retirementSlice.percentage.toFixed(0)}% — a strong long-term foundation.`)
+    keyPoints.push(`Retirement at ${retirementSlice.percentage.toFixed(0)}% — solid base`)
   } else {
     lines.push('No retirement assets detected. Adding retirement savings can significantly improve long-term security.')
     keyPoints.push('No retirement savings — consider adding')

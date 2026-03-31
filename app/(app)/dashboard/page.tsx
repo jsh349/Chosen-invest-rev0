@@ -160,7 +160,7 @@ export default function DashboardPage() {
         summaryText: 'Your summary is temporarily unavailable. Your portfolio data is still accessible above.',
         keyPoints: [],
         suggestedActions: [{ label: 'View portfolio details', href: ROUTES.portfolioList }],
-        inputSnapshot: { totalValue: 0, assetCount: 0, topCategory: '' },
+        inputSnapshot: { totalValue: summary.totalAssetValue, assetCount: summary.assetCount, topCategory: summary.categoryBreakdown[0]?.label ?? '' },
         generatedAt: new Date().toISOString(),
       }
     }
