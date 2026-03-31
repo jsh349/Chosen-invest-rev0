@@ -581,9 +581,16 @@ export default function RankPage() {
           {/* Rank checklist — up to 4 prioritised actions to improve rank quality.
                Suppressed in low-data mode (availableCount <= 1): RankDetailExplanationBlock
                already shows the single highest-priority next action via nextHint.
-               The checklist is most useful when partial rank data exists and a
-               roadmap of remaining steps adds value beyond the primary hint. */}
-          {rankChecklist.length > 0 && availableCount > 1 && (
+               Suppressed when the review summary card is actively shown
+               (!rankReviewSummary || reviewVisible || reviewDismissed): the review
+               card already enumerates the same profile-gap and portfolio-standing
+               items (birth year, gender, return, low wealth). Showing both on screen
+               at the same time repeats the same destinations in two formats.
+               When the banner is showing or was dismissed this session, the checklist
+               is restored — it is the only remaining guidance surface in those states. */}
+          {rankChecklist.length > 0 && availableCount > 1
+            && (!rankReviewSummary || reviewVisible || reviewDismissed)
+            && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-3">
               <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Improve Your Rank</p>
               <ul className="space-y-2">
