@@ -52,19 +52,23 @@ export function RankReportSection({ ranks, nextHint }: Props) {
 
       {/* Slot 3 — comparison note (omitted when null) */}
       {comparisonNote && (
-        <p className="border-t border-surface-border pt-2 text-xs text-gray-500 leading-relaxed">
+        <p className="border-t border-surface-border pt-2 text-xs text-gray-400 leading-relaxed">
           {comparisonNote}
         </p>
       )}
 
-      {/* Slot 4 — next action (omitted when null) */}
+      {/* Slot 4 — next action (omitted when null).
+          Layout matches the detail surface: prose text + short link label,
+          rather than the full sentence as link text. composeRankReport ensures
+          nextAction.href is always ROUTES.settings here. */}
       {nextAction && (
-        <div className="border-t border-surface-border pt-2">
+        <div className="border-t border-surface-border pt-2 flex items-start justify-between gap-3">
+          <p className="text-xs text-gray-400 leading-relaxed">{nextAction.text}</p>
           <Link
             href={nextAction.href}
-            className="text-xs text-brand-400 hover:text-brand-300 transition-colors"
+            className="shrink-0 text-xs text-brand-400 hover:text-brand-300 transition-colors"
           >
-            {nextAction.text}
+            Settings →
           </Link>
         </div>
       )}
