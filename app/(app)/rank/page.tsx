@@ -115,7 +115,7 @@ function RankRow({ result, coverageNote }: { result: RankResult; coverageNote?: 
           )}
           <p className="text-sm text-gray-400 leading-relaxed">{result.message}</p>
           {hasPct && (
-            <p className="text-[11px] text-gray-500">{getRankInterpretation(result.percentile!)}</p>
+            <p className="text-[11px] text-gray-600">{getRankInterpretation(result.percentile!)}</p>
           )}
           {hasPct && (
             <div className="pt-1">
@@ -515,8 +515,11 @@ export default function RankPage() {
                Suppressed in low-data mode (availableCount <= 1): the primary rank
                highlight already communicates the same signal, and the explanation
                block covers next steps — adding narrative here implies more
-               confidence than the limited data warrants. */}
-          {narrativeSummary && availableCount > 1 && (
+               confidence than the limited data warrants.
+               Also suppressed when the review summary card is active: the review
+               card already provides a structured breakdown of wealth and return
+               standing, making the narrative's synthesis sentence redundant. */}
+          {narrativeSummary && availableCount > 1 && !rankReviewSummary && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3">
               <p className="text-sm text-gray-300 leading-relaxed">{narrativeSummary}</p>
             </div>
