@@ -33,8 +33,19 @@ export function RankDetailExplanationBlock({ nextHint, rankInsight, rankGoalInsi
   if (rankGoalInsight)       candidates.push({ key: 'goal',       text: rankGoalInsight })
   if (rankAllocationInsight) candidates.push({ key: 'allocation', text: rankAllocationInsight })
 
-  // Show at most 2 items
-  const visible = candidates.slice(0, 2)
+  // Show at most 2 items, balanced: at most one action and one interpretation.
+  // When slot 1 is the next-step hint (action, has link), restrict slot 2 to
+  // the rank insight (interpretation) only — skipping goal/allocation bridge
+  // items that are also action-adjacent. This prevents two action-nudges from
+  // appearing together. When slot 1 is an interpretation item, the existing
+  // order is preserved (interpretation → bridge insight).
+  let visible: typeof candidates
+  if (candidates[0]?.key === 'hint') {
+    const interpretation = candidates.find((c) => c.key === 'insight') ?? null
+    visible = interpretation ? [candidates[0], interpretation] : [candidates[0]]
+  } else {
+    visible = candidates.slice(0, 2)
+  }
   if (visible.length === 0) return null
 
   return (
