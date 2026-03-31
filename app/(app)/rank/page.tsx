@@ -395,19 +395,24 @@ export default function RankPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-white">Wealth Rank</h1>
-          <p className="mt-0.5 text-sm text-gray-500">
-            {mode === 'individual'
-              ? 'Your individual portfolio ranked against reference benchmarks'
-              : 'Combined household wealth ranked against reference benchmarks'}
-          </p>
-          <span className="mt-1.5 inline-block rounded-full border border-surface-border bg-surface-muted px-2.5 py-0.5 text-[10px] font-medium text-gray-400">
-            {mode === 'individual' ? 'Individual' : 'Household'} · {(activeBenchmarkSource === 'default' || usingFallbackBenchmark) ? 'Built-in reference' : 'Curated data'}
-          </span>
+      <div>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-xl font-bold text-white">Wealth Rank</h1>
+            <p className="mt-0.5 text-sm text-gray-500">
+              {mode === 'individual'
+                ? 'Your individual portfolio ranked against reference benchmarks'
+                : 'Combined household wealth ranked against reference benchmarks'}
+            </p>
+          </div>
+          <ModeToggle mode={mode} onChange={(m) => { setMode(m); writeScalar(STORAGE_KEYS.rankComparisonMode, m) }} />
         </div>
-        <ModeToggle mode={mode} onChange={(m) => { setMode(m); writeScalar(STORAGE_KEYS.rankComparisonMode, m) }} />
+        {/* Context chip — sits below the full title+toggle row as a page-state
+            indicator, so it contextualises the content below without competing
+            with the page title or the mode toggle. */}
+        <span className="mt-2 inline-block rounded-full border border-surface-border bg-surface-muted px-2.5 py-0.5 text-[10px] font-medium text-gray-400">
+          {mode === 'individual' ? 'Individual' : 'Household'} · {(activeBenchmarkSource === 'default' || usingFallbackBenchmark) ? 'Built-in reference' : 'Curated data'}
+        </span>
       </div>
 
       {/* Household mode — informational state */}
