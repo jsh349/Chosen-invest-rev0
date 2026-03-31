@@ -42,10 +42,17 @@ export function composeRankReport(
   // to be actionable — showing them here without that context is low confidence.
   const nextAction = nextHint?.href === ROUTES.settings ? nextHint : null
 
+  // comparisonNote (slot 3) is suppressed when nextAction (slot 4) is present.
+  // When a profile-completeness action is already shown, getRankInsight's profile-gap
+  // notes (Rules 3 & 4 — "add birth year/gender in Settings") would duplicate the same
+  // remediation in two adjacent slots. Gap-analysis notes (Rules 1 & 2) are also
+  // premature when the profile is incomplete — ranks will shift once gaps are filled.
+  const comparisonNote = nextAction !== null ? null : getRankInsight(ranks)
+
   return {
     highlight,
-    explanation:    highlight.message,
-    comparisonNote: getRankInsight(ranks),
+    explanation: highlight.message,
+    comparisonNote,
     nextAction,
   }
 }
