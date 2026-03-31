@@ -201,7 +201,7 @@ function PrimaryRankHighlight({ ranks, mode }: { ranks: RankResult[]; mode: Rank
       {primary.detail && (
         <p className="text-[11px] text-gray-600">{primary.detail.comparisonBasis}</p>
       )}
-      <p className="text-[10px] capitalize text-gray-600">{mode} · benchmark reference</p>
+      <p className="text-[10px] capitalize text-gray-600">{mode} · local benchmark</p>
     </div>
   )
 }

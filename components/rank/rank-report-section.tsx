@@ -36,7 +36,7 @@ export function RankReportSection({ ranks, nextHint }: Props) {
       className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-3"
     >
       <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Rank Report</p>
-      <p className="text-[10px] text-gray-600">benchmark reference</p>
+      <p className="text-[10px] text-gray-600">local benchmark</p>
 
       {/* Slot 1 — primary rank highlight */}
       <div className="space-y-0.5">
