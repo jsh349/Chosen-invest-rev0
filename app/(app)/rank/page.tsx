@@ -726,8 +726,12 @@ export default function RankPage() {
             </div>
           )}
 
-          {/* Share card — compact summary preview */}
-          {summary.assetCount > 0 && <RankShareCard ranks={ranks} mode={mode} sourceNote={confidenceNote?.text ?? null} />}
+          {/* Share card — compact summary preview.
+               sourceNote intentionally omitted: the summary strip directly above
+               already shows confidenceNote.text when the benchmark source is
+               degraded. Passing it here would duplicate the same line on the
+               same page. The prop is preserved on RankShareCard for standalone use. */}
+          {summary.assetCount > 0 && <RankShareCard ranks={ranks} mode={mode} sourceNote={null} />}
         </>
       )}
 
