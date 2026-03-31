@@ -84,6 +84,34 @@ The ≥75 and <25 bands use "reference group" while the middle three bands use "
 
 ---
 
+# Addendum: P242 — Rank summary context compression
+
+## Task Summary
+Remove two redundant micro-signals from rank summary surfaces.
+
+## Goal
+PrimaryRankHighlight shows comparisonBasis below interpretation — duplicates the detail rows.
+RankReportSection Slot 1 shows raw `Xth percentile` below `Top X%` — same position twice.
+
+## Non-Goals
+- No layout changes
+- No logic changes
+- No other files
+
+## Affected Files
+- `app/(app)/rank/page.tsx`              — remove comparisonBasis from PrimaryRankHighlight
+- `components/rank/rank-report-section.tsx` — remove Xth percentile line from Slot 1
+
+## Risks
+- None — display-only removals
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. Rank page primary highlight: label → band label → interpretation → mode chip (no basis line)
+3. Rank report section: label → Top X% → explanation (no raw percentile line)
+
+---
+
 # Addendum: Debugging Audit Fixes
 
 ## Task Summary

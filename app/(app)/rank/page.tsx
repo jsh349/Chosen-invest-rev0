@@ -198,9 +198,6 @@ function PrimaryRankHighlight({ ranks, mode }: { ranks: RankResult[]; mode: Rank
       <p className="text-xs text-gray-500 leading-relaxed">
         {getRankInterpretation(primary.percentile!)}
       </p>
-      {primary.detail && (
-        <p className="text-[11px] text-gray-600">{primary.detail.comparisonBasis}</p>
-      )}
       <p className="text-[10px] capitalize text-gray-600">{mode} · local benchmark</p>
     </div>
   )

@@ -55,7 +55,6 @@ export function RankReportSection({ ranks, nextHint, sourceNote = null }: Props)
         <p className={cn('text-2xl font-bold tabular-nums leading-none', percentileColor(highlight.percentile!))}>
           Top {topPctLabel(highlight.percentile!)}
         </p>
-        <p className="text-xs tabular-nums text-gray-600">{highlight.percentile}th percentile</p>
       </div>
 
       {/* Slot 2 — short explanation */}
