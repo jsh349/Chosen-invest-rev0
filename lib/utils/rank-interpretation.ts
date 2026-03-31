@@ -8,9 +8,9 @@
  * @param percentile  The user's percentile score (0–100).
  */
 export function getRankInterpretation(percentile: number): string {
-  if (percentile >= 75) return 'Compares favorably against the reference group.'
+  if (percentile >= 75) return 'Well above the benchmark median.'
   if (percentile >= 50) return 'Above the benchmark median.'
   if (percentile >= 40) return 'Near the benchmark median.'
   if (percentile >= 25) return 'Below the benchmark median.'
-  return 'In the lower range of the reference group.'
+  return 'Well below the benchmark median.'
 }

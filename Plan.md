@@ -58,6 +58,32 @@ from REAL to INTEGER must happen before any data is written, not after.
 
 ---
 
+# Addendum: P241 — Interpretation headline wording refinement
+
+## Task Summary
+Align all five `getRankInterpretation` bands to consistent `benchmark median` framing.
+
+## Goal
+The ≥75 and <25 bands use "reference group" while the middle three bands use "benchmark median". Make all five consistent and directionally clear.
+
+## Non-Goals
+- No change to percentile thresholds
+- No new tiers
+- No UI layout changes
+- No changes to any other file
+
+## Affected Files
+- `lib/utils/rank-interpretation.ts` — wording only
+
+## Risks
+- None — pure wording change, no logic
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. Rank page: all five bands render the updated text correctly
+
+---
+
 # Addendum: Debugging Audit Fixes
 
 ## Task Summary
