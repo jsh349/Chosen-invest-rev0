@@ -31,7 +31,7 @@ import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
 const BENCHMARK_SOURCE_LS_KEY = STORAGE_KEYS.benchmarkSource
 
 export type BenchmarkSource = {
-  id: 'default' | 'curated'
+  id: KnownBenchmarkSourceId
   label: string
 }
 
@@ -153,6 +153,15 @@ function resolveAdapter(): RankBenchmarksAdapter {
     }
     // Curated was requested but could not be loaded — flag the fallback
     _isUsingFallback = true
+  }
+
+  // External source selected but not yet connected to a live data feed.
+  // Treat as an explicit fallback so confidence notes and health status
+  // fire correctly (same as curated when unavailable).
+  if (pref === 'external') {
+    console.warn('[BenchmarkAdapter] External source selected but not yet connected. Using built-in defaults.')
+    _isUsingFallback = true
+    return buildDefaultAdapter()
   }
 
   return buildDefaultAdapter()

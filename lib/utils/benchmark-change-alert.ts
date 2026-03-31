@@ -54,6 +54,18 @@ export function dismissBenchmarkAlert(): void {
 }
 
 /**
+ * Maps a source id to its human-readable display label.
+ * Centralised so all source-change surfaces use consistent terminology —
+ * previously the label derivation was inlined and duplicated, and neither
+ * copy handled the 'external' source introduced in BENCHMARK_SOURCE_PRECEDENCE.
+ */
+function sourceLabelFor(sourceId: string): string {
+  if (sourceId === 'curated')  return 'Curated dataset'
+  if (sourceId === 'external') return 'External source'
+  return 'Built-in reference'
+}
+
+/**
  * Returns a compact note when the benchmark *source* specifically changed
  * since the user last visited. Returns null when the source is unchanged,
  * on first visit (no stored fingerprint), or on the server.
@@ -68,8 +80,8 @@ export function getBenchmarkTransitionNote(): string | null {
   if (prevSource === null) return null
   const currentSource = getActiveBenchmarkSourceId()
   if (prevSource === currentSource) return null
-  const from = prevSource === 'curated' ? 'curated dataset' : 'built-in reference'
-  const to   = currentSource === 'curated' ? 'curated dataset' : 'built-in reference'
+  const from = sourceLabelFor(prevSource).toLowerCase()
+  const to   = sourceLabelFor(currentSource).toLowerCase()
   return `Benchmark source changed from ${from} to ${to} — reference ranges may differ from your previous visit.`
 }
 
@@ -96,14 +108,14 @@ export type BenchmarkSourceSummary = {
 export function getBenchmarkSourceSummary(fallbackActive: boolean): BenchmarkSourceSummary | null {
   if (typeof window === 'undefined') return null
   const currentSource = getActiveBenchmarkSourceId()
-  const currentLabel = currentSource === 'curated' ? 'Curated dataset' : 'Built-in reference'
+  const currentLabel = sourceLabelFor(currentSource)
 
   let previousLabel: string | null = null
   const stored = readScalar(LS_KEY)
   if (stored !== null) {
     const prevSource = stored.split('::')[1] ?? null
     if (prevSource !== null && prevSource !== currentSource) {
-      previousLabel = prevSource === 'curated' ? 'Curated dataset' : 'Built-in reference'
+      previousLabel = sourceLabelFor(prevSource)
     }
   }
 
