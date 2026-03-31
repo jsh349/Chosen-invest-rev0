@@ -59,7 +59,7 @@ export const RankShareCard = forwardRef<HTMLDivElement, Props>(
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Rank Summary</p>
-            <p className="mt-0.5 text-[10px] capitalize text-gray-600">{mode} · benchmark reference</p>
+            <p className="mt-0.5 text-[10px] capitalize text-gray-600">{mode} · local benchmark</p>
           </div>
           <span className="text-[10px] text-gray-600">{dateStr}</span>
         </div>
