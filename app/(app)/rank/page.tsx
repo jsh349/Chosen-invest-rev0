@@ -275,18 +275,19 @@ export default function RankPage() {
     ? getRankActions(ranks, { hasGoals: goals.length > 0 })
     : []
 
+  // Derived profile booleans — computed once and shared across all rank utilities
+  // that need the same shape. Adding a new profile field only requires one change here.
+  const profileInputs = {
+    hasAge:    !!settings.birthYear,
+    hasGender: !!settings.gender,
+    hasReturn: settings.annualReturnPct !== undefined,
+    hasGoals:  goals.length > 0,
+  }
+
   // nextHint must be computed before rankGoalInsight so we can suppress the
   // goal insight when the next-step slot already covers the same topic.
   const nextHint = isFullyLoaded && goalsLoaded && summary.assetCount > 0
-    ? getPrimaryRankNextAction(
-        {
-          hasAge:    !!settings.birthYear,
-          hasGender: !!settings.gender,
-          hasReturn: settings.annualReturnPct !== undefined,
-          hasGoals:  goals.length > 0,
-        },
-        ranks,
-      )
+    ? getPrimaryRankNextAction(profileInputs, ranks)
     : null
 
   // Suppress goal insight when the next-step slot already points to Goals —
@@ -307,19 +308,11 @@ export default function RankPage() {
     : null
 
   const rankReviewSummary = isFullyLoaded && summary.assetCount > 0
-    ? getRankReviewSummary(ranks, {
-        hasAge:    !!settings.birthYear,
-        hasGender: !!settings.gender,
-        hasReturn: settings.annualReturnPct !== undefined,
-      })
+    ? getRankReviewSummary(ranks, profileInputs)
     : null
 
   const inputExplanation = isFullyLoaded && summary.assetCount > 0
-    ? getRankInputExplanation({
-        hasAge:    !!settings.birthYear,
-        hasGender: !!settings.gender,
-        hasReturn: settings.annualReturnPct !== undefined,
-      })
+    ? getRankInputExplanation(profileInputs)
     : null
 
   const rankAllocationInsight = isFullyLoaded && summary.assetCount > 0
@@ -343,15 +336,7 @@ export default function RankPage() {
     : null
 
   const rankChecklist = isFullyLoaded && goalsLoaded && summary.assetCount > 0
-    ? getRankChecklist(
-        {
-          hasAge:    !!settings.birthYear,
-          hasGender: !!settings.gender,
-          hasReturn: settings.annualReturnPct !== undefined,
-          hasGoals:  goals.length > 0,
-        },
-        ranks,
-      )
+    ? getRankChecklist(profileInputs, ranks)
     : []
 
   // Rules of Hooks: useEffect must be before any conditional return.
@@ -365,7 +350,7 @@ export default function RankPage() {
     // All three reads must happen before checkBenchmarkChanged() may write the
     // current fingerprint — they rely on the previously stored value.
     setBenchmarkTransitionNote(getBenchmarkTransitionNote())
-    setSourceSummary(getBenchmarkSourceSummary(isUsingFallbackBenchmark()))
+    setSourceSummary(getBenchmarkSourceSummary(usingFallbackBenchmark))
     setBenchmarkAlertVisible(checkBenchmarkChanged())
   }, [])
 
@@ -385,6 +370,7 @@ export default function RankPage() {
   if (!isFullyLoaded) return <LoadingSpinner />
 
   const availableCount = ranks.filter((r) => r.percentile != null).length
+  const completeness = rankCompleteness(availableCount, ranks.length)
   const hasHouseholdMembers = members.length > 0
 
   return (
@@ -487,8 +473,8 @@ export default function RankPage() {
               </div>
               <div>
                 <p className="text-xs text-gray-500">Profile</p>
-                <p className={cn('mt-0.5 text-sm font-semibold', rankCompleteness(availableCount, ranks.length).color)}>
-                  {rankCompleteness(availableCount, ranks.length).label}
+                <p className={cn('mt-0.5 text-sm font-semibold', completeness.color)}>
+                  {completeness.label}
                 </p>
               </div>
               {(confidenceNote ?? inputExplanation ?? sourceExplanation) && (
@@ -870,10 +856,6 @@ export default function RankPage() {
           Missing profile fields will show an unavailable state rather than an estimate. These are estimates only and not financial advice.
         </p>
         <div className="mt-2 border-t border-surface-border pt-2 flex flex-wrap gap-x-4 gap-y-1">
-          <span className="text-[10px] text-gray-600">
-            <span className="text-gray-500">Benchmark: </span>
-            {activeBenchmarkMeta.sourceLabel}
-          </span>
           <span className="text-[10px] text-gray-600">
             <span className="text-gray-500">Version: </span>
             {activeBenchmarkMeta.version}
