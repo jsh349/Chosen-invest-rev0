@@ -25,7 +25,7 @@ import { getRankActions } from '@/lib/utils/rank-actions'
 import { getRankGoalInsight } from '@/lib/utils/rank-goal-insight'
 import { buildMonthlySummary } from '@/lib/utils/rank-monthly-summary'
 import { buildMilestoneHistory } from '@/lib/utils/rank-milestone-history'
-import { checkBenchmarkChanged, dismissBenchmarkAlert, benchmarkVersionNote, getBenchmarkFingerprint, getBenchmarkTransitionNote, getBenchmarkSourceSummary, type BenchmarkSourceSummary } from '@/lib/utils/benchmark-change-alert'
+import { checkBenchmarkChanged, dismissBenchmarkAlert, benchmarkVersionNote, getBenchmarkFingerprint, getBenchmarkTransitionNote, getBenchmarkSourceSummary, getBenchmarkSourceImpactNote, type BenchmarkSourceSummary } from '@/lib/utils/benchmark-change-alert'
 import { getPrimaryRankNextAction } from '@/lib/utils/rank-next-hint'
 import { getRankInterpretation } from '@/lib/utils/rank-interpretation'
 import { getRankInputExplanation } from '@/lib/utils/rank-input-explanation'
@@ -394,6 +394,10 @@ export default function RankPage() {
   const availableCount = ranks.filter((r) => r.percentile != null).length
   const completeness = rankCompleteness(availableCount, ranks.length)
   const hasHouseholdMembers = members.length > 0
+  const sourceImpactNote =
+    sourceSummary !== null && sourceSummary.previousLabel !== null
+      ? getBenchmarkSourceImpactNote(snapshots.length > 0)
+      : null
 
   return (
     <div className="space-y-6">
@@ -891,6 +895,9 @@ export default function RankPage() {
           <p className="text-[11px] text-gray-600 leading-relaxed">
             Rank comparisons remain benchmark-based regardless of which source is active.
           </p>
+          {sourceImpactNote && (
+            <p className="text-[11px] text-gray-500 leading-relaxed">{sourceImpactNote}</p>
+          )}
         </div>
       )}
 

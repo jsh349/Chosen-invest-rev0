@@ -105,6 +105,20 @@ export type BenchmarkSourceSummary = {
  *
  * Returns null on the server (SSR-safe).
  */
+/**
+ * Returns a short interpretive note explaining the potential impact of a
+ * benchmark source change on stored rank data.
+ *
+ * Only meaningful when prior snapshots exist — without them there is no
+ * historical comparison affected. Returns null otherwise.
+ *
+ * Wording is intentionally cautious: no numerical causality implied.
+ */
+export function getBenchmarkSourceImpactNote(hasPriorSnapshots: boolean): string | null {
+  if (!hasPriorSnapshots) return null
+  return 'Prior snapshots were recorded under different reference ranges and may not compare directly to current values.'
+}
+
 export function getBenchmarkSourceSummary(fallbackActive: boolean): BenchmarkSourceSummary | null {
   if (typeof window === 'undefined') return null
   const currentSource = getActiveBenchmarkSourceId()
