@@ -29,14 +29,14 @@ export function getRankConfidenceNote(params: {
 
   if (benchmarkHealthStatus === 'fallback') {
     return {
-      text:  'Using built-in reference data — preferred source unavailable.',
+      text:  'Preferred source unavailable — using built-in reference ranges.',
       level: 'low',
     }
   }
 
   if (benchmarkHealthStatus === 'invalid') {
     return {
-      text:  'This benchmark source is not yet connected — rank comparisons use built-in reference data.',
+      text:  'Selected source not yet connected — using built-in reference ranges.',
       level: 'low',
     }
   }

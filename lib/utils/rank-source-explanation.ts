@@ -15,9 +15,9 @@ export function getRankSourceExplanation(
   // Stub / not connected — confidenceNote already surfaces this state
   if (isFallbackOnly) return null
 
-  if (sourceId === 'curated') {
-    return 'Compared against your curated benchmark dataset.'
-  }
+  // Curated source is already identified by the Benchmark chip in the summary
+  // strip — a separate note here would duplicate that label. Return null so
+  // the note slot is clean when the source is healthy and the profile is complete.
 
   // Default source is the baseline — no note needed in the confidence slot.
   return null

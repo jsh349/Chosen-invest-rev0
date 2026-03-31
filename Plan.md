@@ -84,6 +84,40 @@ The ≥75 and <25 bands use "reference group" while the middle three bands use "
 
 ---
 
+# Addendum: P243 — Source/confidence co-framing pass
+
+## Task Summary
+Separate source framing from confidence framing in the rank summary strip.
+
+## Goal
+- Confidence notes currently lead with "built-in reference data" which duplicates
+  the Benchmark chip in the same strip.
+- The curated sourceExplanation duplicates the chip label for healthy curated source.
+- Fix: confidence notes should express the condition, not restate the source identity.
+  Source explanation for curated returns null (chip already identifies it).
+
+## Non-Goals
+- No layout changes
+- No priority chain changes
+- No other files
+
+## Affected Files
+- `lib/utils/rank-confidence-note.ts` — reword fallback + invalid texts
+- `lib/utils/rank-source-explanation.ts` — return null for curated case
+
+## Risks
+- confidence note texts used elsewhere: currently only in the summary strip
+  (share card receives sourceNote={null} explicitly). Safe to reword.
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. Fallback state: note says "Preferred source unavailable" (not "Using built-in reference data")
+3. Invalid state: note says "Selected source not yet connected" (not "rank comparisons use built-in reference data")
+4. Healthy curated + complete profile: no note in the strip (chip already identifies source)
+5. Partial state: note unchanged
+
+---
+
 # Addendum: P242 — Rank summary context compression
 
 ## Task Summary
