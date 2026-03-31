@@ -80,7 +80,7 @@ export function getPrimaryRankNextAction(
     return {
       href: ROUTES.settings,
       text: isLowConfidence
-        ? 'Add your gender in Settings for a more detailed comparison.'
+        ? 'Add your gender in Settings for a more detailed age and gender comparison.'
         : 'Add your gender in Settings for a more detailed age and gender comparison.',
     }
   }

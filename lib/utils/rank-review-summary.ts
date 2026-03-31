@@ -106,13 +106,13 @@ export function getRankReviewSummary(
       return {
         topic: 'return', label: 'Return rank',
         status: 'review',
-        note: 'Estimated return is below the median investor benchmark.',
+        note: 'Estimated return is below the benchmark median.',
       }
     }
     return {
       topic: 'return', label: 'Return rank',
       status: 'ok',
-      note: 'Estimated return is at or above the median investor benchmark.',
+      note: 'Estimated return is at or above the benchmark median.',
     }
   })()
 
