@@ -599,8 +599,14 @@ export default function RankPage() {
               Suppressed when checklist is active: both surfaces guide toward the
               same destinations and showing both adds density without extra value.
               visibleRankActions further filters out links already covered by
-              bridge insights shown in the explanation block above. */}
-          {visibleRankActions.length > 0 && rankChecklist.length === 0 && (
+              bridge insights shown in the explanation block above.
+              Also suppressed while the review banner is visible (banner is the
+              primary CTA in that state) and while the review summary card is
+              active and not dismissed (the summary already covers the same
+              destinations — showing both creates duplicate strong review CTAs). */}
+          {visibleRankActions.length > 0 && rankChecklist.length === 0
+            && !reviewVisible && (!rankReviewSummary || reviewDismissed)
+            && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3 flex flex-wrap gap-x-5 gap-y-2">
               {visibleRankActions.map((action) => (
                 <Link
