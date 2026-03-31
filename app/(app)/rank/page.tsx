@@ -521,6 +521,11 @@ export default function RankPage() {
             </div>
           )}
 
+          {/* 3–4. Insight cluster — explanation and narrative share the same "what
+               does this rank mean" intent and read more clearly with tighter
+               internal spacing than the default page gap. */}
+          <div className="space-y-3">
+
           {/* 3. Explanation + next-step hint — immediately follows highlight and context.
                nextHint is suppressed while the review banner is visible: the banner
                already covers the same action-oriented message and showing a second
@@ -545,6 +550,8 @@ export default function RankPage() {
               <p className="text-sm text-gray-300 leading-relaxed">{narrativeSummary}</p>
             </div>
           )}
+
+          </div>{/* end insight cluster */}
 
           {/* Rank review prompt — shown when rank-relevant inputs have changed since last dismissal */}
           {reviewVisible && (
@@ -579,6 +586,10 @@ export default function RankPage() {
               </div>
             </div>
           )}
+
+          {/* 6–8. Action cluster — rank actions, checklist, and advisor review share
+               the same "what to do" intent and are grouped with tighter spacing. */}
+          <div className="space-y-3">
 
           {/* Rank actions — contextual navigation links derived from rank state.
               Suppressed when checklist is active: both surfaces guide toward the
@@ -661,9 +672,11 @@ export default function RankPage() {
             </div>
           )}
 
-          {/* Rank rows */}
+          </div>{/* end action cluster */}
+
+          {/* Rank rows — detailed breakdown, visually separated from the advice cluster above */}
           {summary.assetCount > 0 && (
-            <div className="rounded-xl border border-surface-border bg-surface-card px-5">
+            <div className="!mt-8 rounded-xl border border-surface-border bg-surface-card px-5">
               {ranks.map((r) => (
                 <RankRow
                   key={r.type}
@@ -882,7 +895,7 @@ export default function RankPage() {
       )}
 
       {/* Methodology note */}
-      <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-1.5">
+      <div className="!mt-8 rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-1.5">
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">How this works</p>
         <p className="text-xs text-gray-400 leading-relaxed">
           Rank estimates are based on local reference benchmark ranges, not real-time government or market data.
