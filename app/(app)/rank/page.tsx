@@ -79,6 +79,21 @@ function rankCompleteness(availableCount: number, total: number): { label: strin
   return                                { label: 'Complete', color: 'text-emerald-400' }
 }
 
+/**
+ * Escalation rule for source-related notes in the summary strip.
+ *
+ * Three levels, in descending prominence:
+ *   fallback / invalid  ('low')      → amber   — source degraded; user should be aware
+ *   partial             ('moderate') → gray-500 — caution; partial category coverage
+ *   informational only  (no note)    → gray-600 — supplementary context; no concern
+ *
+ * Healthy local source with no informational note → no line rendered (caller guards on null).
+ */
+function sourceNoteColor(note: { level: string } | null): string {
+  if (!note) return 'text-gray-600'
+  return note.level === 'low' ? 'text-amber-500' : 'text-gray-500'
+}
+
 
 function PercentileBar({ percentile }: { percentile: number }) {
   const color =
@@ -486,9 +501,7 @@ export default function RankPage() {
               {(confidenceNote ?? inputExplanation ?? sourceExplanation) && (
                 <p className={cn(
                   'w-full border-t border-surface-border pt-3 text-xs',
-                  confidenceNote
-                    ? confidenceNote.level === 'low' ? 'text-amber-500' : 'text-gray-500'
-                    : 'text-gray-500',
+                  sourceNoteColor(confidenceNote),
                 )}>
                   {confidenceNote?.text ?? inputExplanation ?? sourceExplanation}
                 </p>
