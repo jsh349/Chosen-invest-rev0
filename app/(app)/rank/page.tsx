@@ -518,9 +518,12 @@ export default function RankPage() {
             </div>
           )}
 
-          {/* 3. Explanation + next-step hint — immediately follows highlight and context */}
+          {/* 3. Explanation + next-step hint — immediately follows highlight and context.
+               nextHint is suppressed while the review banner is visible: the banner
+               already covers the same action-oriented message and showing a second
+               Settings hint below it creates redundant duplication. */}
           <RankDetailExplanationBlock
-            nextHint={nextHint}
+            nextHint={reviewVisible ? null : nextHint}
             rankInsight={rankInsight}
             rankGoalInsight={rankGoalInsight}
             rankAllocationInsight={rankAllocationInsight}
@@ -604,7 +607,7 @@ export default function RankPage() {
                When the banner is showing or was dismissed this session, the checklist
                is restored — it is the only remaining guidance surface in those states. */}
           {rankChecklist.length > 0 && availableCount > 1
-            && (!rankReviewSummary || reviewVisible || reviewDismissed)
+            && (!rankReviewSummary || reviewDismissed) && !reviewVisible
             && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-3">
               <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Improve Your Rank</p>
