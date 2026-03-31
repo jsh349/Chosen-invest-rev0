@@ -16,6 +16,13 @@ type Props = {
   ranks: RankResult[]
   /** Pre-computed next-step hint — pass null when all profile fields are filled. */
   nextHint?: RankHint | null
+  /**
+   * Optional compact source/fallback note shown before the footer.
+   * Pass the text from getRankConfidenceNote() when the benchmark source
+   * is degraded (fallback, partial, or invalid). Null → slot is clean.
+   * Mirrors the same prop on RankShareCard for consistent source framing.
+   */
+  sourceNote?: string | null
 }
 
 /**
@@ -23,7 +30,7 @@ type Props = {
  * Slots 3 and 4 (comparisonNote, nextAction) are omitted when null.
  * Returns null when no rank data is available.
  */
-export function RankReportSection({ ranks, nextHint }: Props) {
+export function RankReportSection({ ranks, nextHint, sourceNote = null }: Props) {
   const report = composeRankReport(ranks, nextHint)
   if (!report) return null
 
@@ -82,6 +89,13 @@ export function RankReportSection({ ranks, nextHint }: Props) {
         <p className="text-[10px] text-gray-600">
           {availableCount} of {ranks.length} ranks available — some inputs are missing.
         </p>
+      )}
+
+      {/* Compact source/fallback note — shown only when benchmark source is degraded.
+          Mirrors the same pattern in RankShareCard for consistent source framing
+          across standalone compact report surfaces. */}
+      {sourceNote && (
+        <p className="text-[10px] text-gray-500">{sourceNote}</p>
       )}
 
       {/* Footer — benchmark framing + detail link */}
