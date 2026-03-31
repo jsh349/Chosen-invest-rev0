@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
 import { Download, Upload, History } from 'lucide-react'
 import { useSettings, DEFAULT_SETTINGS, type CurrencyCode } from '@/lib/store/settings-store'
 import type { GenderOption } from '@/lib/types/rank'
@@ -21,6 +22,7 @@ import '@/lib/mock/guard'
 import { BENCHMARK_META } from '@/lib/mock/rank-benchmarks'
 import { readBenchmarkRefreshState } from '@/lib/utils/benchmark-refresh'
 import { readScalar } from '@/lib/utils/local-storage'
+import { ROUTES } from '@/lib/constants/routes'
 
 /** Keys whose stored value must be an array. Non-array values are skipped on import. */
 const ARRAY_KEYS: ReadonlySet<string> = new Set([
@@ -319,6 +321,13 @@ export default function SettingsPage() {
           />
           {returnError && <p className="mt-1 text-xs text-red-400">{returnError}</p>}
         </Row>
+        {/* These three fields directly control rank comparisons — link back to rank
+            so the user can review the effect of their changes without hunting for the page. */}
+        <div className="border-t border-surface-border py-2.5 text-right">
+          <Link href={ROUTES.rank} className="text-[10px] text-brand-400 hover:text-brand-300 transition-colors">
+            View rank comparisons →
+          </Link>
+        </div>
       </div>
 
       {/* Data export / import */}
