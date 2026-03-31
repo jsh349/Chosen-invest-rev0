@@ -113,7 +113,7 @@ export const RankShareCard = forwardRef<HTMLDivElement, Props>(
             {/* Partial data note */}
             {isPartial && (
               <p className="text-[10px] text-gray-600">
-                {availableCount} of {totalCount} ranks available — complete your profile for full results.
+                {availableCount} of {totalCount} ranks available — some inputs are missing.
               </p>
             )}
           </>

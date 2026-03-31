@@ -72,9 +72,11 @@ export function TaxOpportunityCard({ assets }: { assets: Asset[] }) {
           This is informational only. Chosen Invest does not execute trades or provide personalised tax advice. Consult a qualified tax professional before making any decisions.
         </p>
 
-        <Link href={ROUTES.taxOpportunity} className="text-xs text-brand-400 hover:text-brand-300 transition-colors">
-          View details →
-        </Link>
+        {status === 'review' && (
+          <Link href={ROUTES.taxOpportunity} className="text-xs text-brand-400 hover:text-brand-300 transition-colors">
+            View details →
+          </Link>
+        )}
 
       </CardContent>
     </Card>
