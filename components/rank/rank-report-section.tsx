@@ -36,6 +36,7 @@ export function RankReportSection({ ranks, nextHint }: Props) {
       className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-3"
     >
       <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Rank Report</p>
+      <p className="text-[10px] text-gray-600">benchmark reference</p>
 
       {/* Slot 1 — primary rank highlight */}
       <div className="space-y-0.5">
@@ -71,7 +72,7 @@ export function RankReportSection({ ranks, nextHint }: Props) {
       {/* Footer — benchmark framing + detail link */}
       <div className="border-t border-surface-border pt-2 flex items-center justify-between gap-3">
         <p className="text-[10px] text-gray-600">
-          Benchmark-based estimate · not financial advice
+          Estimate · not financial advice · Chosen Invest
         </p>
         <Link
           href={ROUTES.rank}

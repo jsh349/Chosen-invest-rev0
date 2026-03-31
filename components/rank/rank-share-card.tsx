@@ -119,7 +119,7 @@ export const RankShareCard = forwardRef<HTMLDivElement, Props>(
         {/* Disclaimer */}
         <div className="pt-1 border-t border-surface-border">
           <p className="text-[10px] text-gray-600 leading-relaxed">
-            Benchmark-based estimate · not financial advice · Chosen Invest
+            Estimate · not financial advice · Chosen Invest
           </p>
         </div>
       </div>
