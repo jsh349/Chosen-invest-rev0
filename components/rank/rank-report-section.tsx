@@ -98,7 +98,9 @@ export function RankReportSection({ ranks, nextHint, sourceNote = null }: Props)
         <p className="text-[10px] text-gray-500">{sourceNote}</p>
       )}
 
-      {/* Footer — benchmark framing + detail link */}
+      {/* Footer — benchmark framing + detail link.
+           Link label matches RankShareCard parity: "View full ranking →" when
+           partial (signals this is a partial view), "Review in full →" otherwise. */}
       <div className="border-t border-surface-border pt-2 flex items-center justify-between gap-3">
         <p className="text-[10px] text-gray-600">
           Estimate · not financial advice · Chosen Invest
@@ -107,7 +109,7 @@ export function RankReportSection({ ranks, nextHint, sourceNote = null }: Props)
           href={ROUTES.rank}
           className="shrink-0 text-[10px] text-brand-400 hover:text-brand-300 transition-colors"
         >
-          Review in full →
+          {isPartial ? 'View full ranking →' : 'Review in full →'}
         </Link>
       </div>
     </div>
