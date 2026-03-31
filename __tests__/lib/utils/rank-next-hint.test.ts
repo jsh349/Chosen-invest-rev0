@@ -1,4 +1,9 @@
-import { getNextRankHint } from '@/lib/utils/rank-next-hint'
+import { getNextRankHint, getPrimaryRankNextAction } from '@/lib/utils/rank-next-hint'
+import type { RankResult } from '@/lib/types/rank'
+
+function overall(pct: number | null): RankResult {
+  return { type: 'overall_wealth', label: 'Overall', percentile: pct, message: '' }
+}
 
 const ALL_PRESENT = { hasAge: true, hasGender: true, hasReturn: true }
 
@@ -48,5 +53,52 @@ describe('getNextRankHint', () => {
       expect(typeof hint!.href).toBe('string')
       expect(hint!.href.length).toBeGreaterThan(0)
     }
+  })
+})
+
+// ---------------------------------------------------------------------------
+// getPrimaryRankNextAction — confidence-sensitive wording
+// ---------------------------------------------------------------------------
+
+const fullProfile = { hasAge: true, hasGender: true, hasReturn: true, hasGoals: true }
+
+describe('getPrimaryRankNextAction — confidence-sensitive wording', () => {
+  it('uses strong wording for portfolio action in normal confidence', () => {
+    const hint = getPrimaryRankNextAction({ ...fullProfile }, [overall(30)])
+    expect(hint).not.toBeNull()
+    expect(hint!.text).toMatch(/to improve your rank position/)
+  })
+
+  it('uses soft wording for portfolio action when isLowConfidence', () => {
+    const hint = getPrimaryRankNextAction({ ...fullProfile }, [overall(30)], { isLowConfidence: true })
+    expect(hint).not.toBeNull()
+    expect(hint!.text).toMatch(/consider reviewing/i)
+    expect(hint!.text).not.toMatch(/to improve your rank position/)
+  })
+
+  it('uses strong wording for goals action in normal confidence', () => {
+    const hint = getPrimaryRankNextAction({ ...fullProfile, hasGoals: false }, [overall(80)])
+    expect(hint).not.toBeNull()
+    expect(hint!.text).toMatch(/to build on your wealth rank/)
+  })
+
+  it('uses soft wording for goals action when isLowConfidence', () => {
+    const hint = getPrimaryRankNextAction({ ...fullProfile, hasGoals: false }, [overall(80)], { isLowConfidence: true })
+    expect(hint).not.toBeNull()
+    expect(hint!.text).toMatch(/consider setting/i)
+    expect(hint!.text).not.toMatch(/to build on your wealth rank/)
+  })
+
+  it('profile-completion hints are unchanged regardless of confidence level', () => {
+    const highConf = getPrimaryRankNextAction({ ...fullProfile, hasAge: false }, [], { isLowConfidence: false })
+    const lowConf  = getPrimaryRankNextAction({ ...fullProfile, hasAge: false }, [], { isLowConfidence: true })
+    expect(highConf!.text).toBe(lowConf!.text)
+  })
+
+  it('portfolio and goals hints preserve their route regardless of confidence', () => {
+    const port = getPrimaryRankNextAction({ ...fullProfile }, [overall(30)], { isLowConfidence: true })
+    const goal = getPrimaryRankNextAction({ ...fullProfile, hasGoals: false }, [overall(80)], { isLowConfidence: true })
+    expect(port!.href).toContain('portfolio')
+    expect(goal!.href).toContain('goal')
   })
 })

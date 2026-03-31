@@ -53,29 +53,42 @@ export function getNextRankHint(profile: {
  *   4. Low wealth rank (< 40th percentile) → Portfolio
  *   5. No goals set   → Goals
  *
+ * @param options.isLowConfidence  When true (fallback or invalid benchmark source),
+ *   portfolio and goals action wording is softened — "Consider..." rather than
+ *   "Review... to improve...". Profile-completion hints are always direct since
+ *   they are about data quality, not about what the rank signal says.
+ *
  * Returns null when no action is needed.
  */
 export function getPrimaryRankNextAction(
   profile: { hasAge: boolean; hasGender: boolean; hasReturn: boolean; hasGoals: boolean },
   ranks: RankResult[],
+  { isLowConfidence = false }: { isLowConfidence?: boolean } = {},
 ): RankHint | null {
-  // Profile completeness hints take priority (existing logic unchanged)
+  // Profile completeness hints are always direct — not confidence-gated.
+  // They address data quality regardless of how reliable the benchmark is.
   const profileHint = getNextRankHint(profile)
   if (profileHint !== null) return profileHint
 
-  // Low wealth rank — suggest portfolio review (matches getRankChecklist priority)
+  // Low wealth rank — suggest portfolio review (matches getRankChecklist priority).
+  // Wording is softened in low-confidence states: the rank itself may shift once
+  // the benchmark source is restored, so outcome claims are removed.
   const { overall } = indexRanks(ranks)
   if (overall?.percentile !== null && overall?.percentile !== undefined && overall.percentile < 40) {
     return {
-      text: 'Review your portfolio allocation to improve your rank position.',
+      text: isLowConfidence
+        ? 'Consider reviewing your portfolio allocation.'
+        : 'Review your portfolio allocation to improve your rank position.',
       href: ROUTES.portfolioList,
     }
   }
 
-  // No goals set — prompt to define one
+  // No goals set — prompt to define one.
   if (!profile.hasGoals) {
     return {
-      text: 'Set a financial goal to build on your wealth rank.',
+      text: isLowConfidence
+        ? 'Consider setting a financial goal.'
+        : 'Set a financial goal to build on your wealth rank.',
       href: ROUTES.goals,
     }
   }

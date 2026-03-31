@@ -302,7 +302,11 @@ export default function RankPage() {
   // nextHint must be computed before rankGoalInsight so we can suppress the
   // goal insight when the next-step slot already covers the same topic.
   const nextHint = isFullyLoaded && goalsLoaded && summary.assetCount > 0
-    ? getPrimaryRankNextAction(profileInputs, ranks)
+    ? getPrimaryRankNextAction(profileInputs, ranks, {
+        // Soften portfolio/goals wording when the benchmark source is degraded —
+        // the rank signal itself may not be reliable enough to imply strong outcomes.
+        isLowConfidence: benchmarkHealth.status === 'fallback' || benchmarkHealth.status === 'invalid',
+      })
     : null
 
   // Suppress goal insight when the next-step slot already points to Goals —
