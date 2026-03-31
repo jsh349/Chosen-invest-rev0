@@ -575,8 +575,12 @@ export default function RankPage() {
             </div>
           )}
 
-          {/* Rank checklist — up to 4 prioritised actions to improve rank quality */}
-          {rankChecklist.length > 0 && (
+          {/* Rank checklist — up to 4 prioritised actions to improve rank quality.
+               Suppressed in low-data mode (availableCount <= 1): RankDetailExplanationBlock
+               already shows the single highest-priority next action via nextHint.
+               The checklist is most useful when partial rank data exists and a
+               roadmap of remaining steps adds value beyond the primary hint. */}
+          {rankChecklist.length > 0 && availableCount > 1 && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-3">
               <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Improve Your Rank</p>
               <ul className="space-y-2">
