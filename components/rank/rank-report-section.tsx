@@ -29,6 +29,10 @@ export function RankReportSection({ ranks, nextHint }: Props) {
 
   const { highlight, explanation, comparisonNote, nextAction } = report
 
+  // Partial coverage — mirrors the same note in RankShareCard for parity.
+  const availableCount = ranks.filter((r) => r.percentile != null).length
+  const isPartial = availableCount > 0 && availableCount < ranks.length
+
   return (
     <div
       role="region"
@@ -71,6 +75,13 @@ export function RankReportSection({ ranks, nextHint }: Props) {
             Settings →
           </Link>
         </div>
+      )}
+
+      {/* Partial coverage note — parity with RankShareCard */}
+      {isPartial && (
+        <p className="text-[10px] text-gray-600">
+          {availableCount} of {ranks.length} ranks available — some inputs are missing.
+        </p>
       )}
 
       {/* Footer — benchmark framing + detail link */}
