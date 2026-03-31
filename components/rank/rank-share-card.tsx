@@ -1,10 +1,12 @@
 'use client'
 
 import { forwardRef } from 'react'
+import Link from 'next/link'
 import type { RankResult } from '@/lib/types/rank'
 import { topPctLabel, percentileColor } from '@/lib/utils/rank-format'
 import { cn } from '@/lib/utils/cn'
 import { getPrimaryRank } from '@/lib/utils/rank-priority'
+import { ROUTES } from '@/lib/constants/routes'
 
 // All four types are candidates for secondary; the primary is excluded at runtime.
 const SECONDARY_TYPES = ['overall_wealth', 'age_based', 'age_gender', 'investment_return'] as const
@@ -116,11 +118,22 @@ export const RankShareCard = forwardRef<HTMLDivElement, Props>(
           </>
         )}
 
-        {/* Disclaimer */}
-        <div className="pt-1 border-t border-surface-border">
+        {/* Disclaimer + optional review hint */}
+        <div className="pt-1 border-t border-surface-border flex items-center justify-between gap-3">
           <p className="text-[10px] text-gray-600 leading-relaxed">
             Estimate · not financial advice · Chosen Invest
           </p>
+          {/* Show a detail link when review adds value: incomplete profile or
+              primary rank below the median. Not shown when everything is strong
+              and complete — no additional review context to offer. */}
+          {(isPartial || (hero?.percentile != null && hero.percentile < 50)) && (
+            <Link
+              href={ROUTES.rank}
+              className="shrink-0 text-[10px] text-brand-400 hover:text-brand-300 transition-colors"
+            >
+              Review in detail →
+            </Link>
+          )}
         </div>
       </div>
     )
