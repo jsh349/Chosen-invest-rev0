@@ -53,10 +53,10 @@ export function getNextRankHint(profile: {
  *   4. Low wealth rank (< 40th percentile) → Portfolio
  *   5. No goals set   → Goals
  *
- * @param options.isLowConfidence  When true (fallback or invalid benchmark source),
- *   portfolio and goals action wording is softened — "Consider..." rather than
- *   "Review... to improve...". Profile-completion hints are always direct since
- *   they are about data quality, not about what the rank signal says.
+ * @param options.isLowConfidence  When true (fallback or invalid benchmark source):
+ *   - Portfolio and goals wording is softened ("Consider..." vs "Review... to improve...").
+ *   - Profile hints remove 'unlock' framing: the added rank category will also use
+ *     fallback data, so implying it will reliably improve accuracy overstates confidence.
  *
  * Returns null when no action is needed.
  */
@@ -65,10 +65,33 @@ export function getPrimaryRankNextAction(
   ranks: RankResult[],
   { isLowConfidence = false }: { isLowConfidence?: boolean } = {},
 ): RankHint | null {
-  // Profile completeness hints are always direct — not confidence-gated.
-  // They address data quality regardless of how reliable the benchmark is.
-  const profileHint = getNextRankHint(profile)
-  if (profileHint !== null) return profileHint
+  // Profile completeness hints — always shown, wording adapts to confidence level.
+  // In low-confidence states, 'unlock' framing is removed: the unlocked rank will
+  // also use fallback data, so outcome promises are replaced with neutral descriptions.
+  if (!profile.hasAge) {
+    return {
+      href: ROUTES.settings,
+      text: isLowConfidence
+        ? 'Add your birth year in Settings to include age in your comparison.'
+        : 'Add your birth year in Settings to unlock age-based rank comparison.',
+    }
+  }
+  if (!profile.hasGender) {
+    return {
+      href: ROUTES.settings,
+      text: isLowConfidence
+        ? 'Add your gender in Settings for a more detailed comparison.'
+        : 'Add your gender in Settings for a more detailed age and gender comparison.',
+    }
+  }
+  if (!profile.hasReturn) {
+    return {
+      href: ROUTES.settings,
+      text: isLowConfidence
+        ? 'Add an estimated annual return in Settings to include investment rank.'
+        : 'Add an estimated annual return in Settings to unlock investment rank.',
+    }
+  }
 
   // Low wealth rank — suggest portfolio review (matches getRankChecklist priority).
   // Wording is softened in low-confidence states: the rank itself may shift once
