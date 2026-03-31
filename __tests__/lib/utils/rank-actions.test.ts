@@ -49,13 +49,24 @@ describe('getRankActions', () => {
   })
 
   // Rule 2 — wealth below 75th → portfolio
-  it('Rule 2: wealth at 74th produces portfolio action', () => {
+  it('Rule 2: wealth at 74th produces portfolio action when profile is complete', () => {
     const actions = getRankActions(makeRanks({ overallPct: 74 }), { hasGoals: true })
     expect(actions.some((a) => a.href === ROUTES.portfolioList)).toBe(true)
   })
 
   it('Rule 2: wealth at 75th does NOT produce portfolio action', () => {
     const actions = getRankActions(makeRanks({ overallPct: 75 }), { hasGoals: true })
+    expect(actions.some((a) => a.href === ROUTES.portfolioList)).toBe(false)
+  })
+
+  it('Rule 2: portfolio action is suppressed when profile is incomplete (age missing)', () => {
+    // Unadjusted rank below 75th — but demographics absent, so action is premature
+    const actions = getRankActions(makeRanks({ overallPct: 60, ageMissing: true }), { hasGoals: true })
+    expect(actions.some((a) => a.href === ROUTES.portfolioList)).toBe(false)
+  })
+
+  it('Rule 2: portfolio action is suppressed when profile is incomplete (gender missing)', () => {
+    const actions = getRankActions(makeRanks({ overallPct: 60, genderMissing: true }), { hasGoals: true })
     expect(actions.some((a) => a.href === ROUTES.portfolioList)).toBe(false)
   })
 

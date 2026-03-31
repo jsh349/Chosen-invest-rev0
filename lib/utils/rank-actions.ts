@@ -32,8 +32,12 @@ export function getRankActions(
     actions.push({ label: 'Complete profile for full ranking', href: ROUTES.settings })
   }
 
-  // Rule 2: wealth rank below the 75th percentile → review portfolio
-  if (actions.length < 2 && overallPct !== null && overallPct < 75) {
+  // Rule 2: wealth rank below the 75th percentile → review portfolio.
+  // Gated on !profileIncomplete: portfolio review is only a meaningful signal
+  // when the rank is based on a complete profile (age + gender adjusted). An
+  // unadjusted rank may shift significantly once demographics are added — acting
+  // on it before the profile is complete implies more confidence than is warranted.
+  if (actions.length < 2 && overallPct !== null && overallPct < 75 && !profileIncomplete) {
     actions.push({ label: 'Review portfolio allocation', href: ROUTES.portfolioList })
   }
 
