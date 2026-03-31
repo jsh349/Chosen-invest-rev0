@@ -86,13 +86,17 @@ export default function TransactionsPage() {
     : transactions.filter((t) => t.category === filterCategory)
 
   const sorted = [...filtered].sort((a, b) => {
+    // Primary sort — then fall back to id comparison for a stable order when
+    // primary keys are equal (e.g. two transactions on the same date).
+    let primary: number
     switch (sortKey) {
-      case 'date-desc':   return new Date(b.date).getTime() - new Date(a.date).getTime()
-      case 'date-asc':    return new Date(a.date).getTime() - new Date(b.date).getTime()
-      case 'amount-desc': return Math.abs(b.amount) - Math.abs(a.amount)
-      case 'amount-asc':  return Math.abs(a.amount) - Math.abs(b.amount)
-      default:            return 0
+      case 'date-desc':   primary = new Date(b.date).getTime() - new Date(a.date).getTime(); break
+      case 'date-asc':    primary = new Date(a.date).getTime() - new Date(b.date).getTime(); break
+      case 'amount-desc': primary = Math.abs(b.amount) - Math.abs(a.amount); break
+      case 'amount-asc':  primary = Math.abs(a.amount) - Math.abs(b.amount); break
+      default:            primary = 0
     }
+    return primary !== 0 ? primary : a.id.localeCompare(b.id)
   })
 
   return (

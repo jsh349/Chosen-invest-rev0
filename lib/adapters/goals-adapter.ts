@@ -21,7 +21,7 @@ export const goalsAdapter: GoalsAdapter = {
     if (!res.ok) throw new Error(`[goalsAdapter] getAll failed: ${res.status}`)
     const data = await res.json() as Goal[]
     return data.filter((g) => {
-      if (!g.id || !g.name || typeof g.targetAmount !== 'number' || typeof g.currentAmount !== 'number') {
+      if (!g.id || !g.name || !Number.isFinite(g.targetAmount) || !Number.isFinite(g.currentAmount)) {
         console.warn('[goalsAdapter] Skipping malformed goal — missing required fields.', g)
         return false
       }

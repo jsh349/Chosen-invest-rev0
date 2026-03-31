@@ -22,6 +22,9 @@ type AssetsContextType = {
   removeAsset: (id: string) => void
   clearAssets: () => Promise<void>
   isLoaded: boolean
+  /** True when the initial load failed (network error, 401, 500, etc.).
+   *  isLoaded is also true in this state — the store has settled, just with no data. */
+  isLoadError: boolean
 }
 
 const AssetsContext = createContext<AssetsContextType>({
@@ -33,11 +36,13 @@ const AssetsContext = createContext<AssetsContextType>({
   removeAsset: () => {},
   clearAssets: () => Promise.resolve(),
   isLoaded: false,
+  isLoadError: false,
 })
 
 export function AssetsProvider({ children }: { children: ReactNode }) {
   const [assets, setAssetsState] = useState<Asset[]>([])
   const [isLoaded, setIsLoaded] = useState(false)
+  const [isLoadError, setIsLoadError] = useState(false)
   // Ref mirrors state so mutation callbacks can build the next array without
   // putting async side-effects inside the setState updater. React Strict Mode
   // double-invokes updater functions in development — calling saveAll() inside
@@ -54,7 +59,12 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
       }
       setIsLoaded(true)
     }).catch(() => {
-      if (!cancelled) setIsLoaded(true)
+      if (!cancelled) {
+        // Load failed (network error, auth error, etc.) — mark error so callers
+        // can distinguish "no data yet" from "failed to load existing data".
+        setIsLoadError(true)
+        setIsLoaded(true)
+      }
     })
     return () => { cancelled = true }
   }, [])
@@ -123,6 +133,7 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
         removeAsset,
         clearAssets,
         isLoaded,
+        isLoadError,
       }}
     >
       {children}

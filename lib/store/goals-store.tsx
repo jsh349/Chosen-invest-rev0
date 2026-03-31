@@ -17,6 +17,8 @@ type GoalsContextType = {
   goals: Goal[]
   hasGoals: boolean
   isLoaded: boolean
+  /** True when the initial load failed. isLoaded is also true in this state. */
+  isLoadError: boolean
   setGoals: (goals: Goal[]) => void
   addGoal: (goal: Goal) => void
   updateGoal: (id: string, patch: Partial<Omit<Goal, 'id' | 'createdAt'>>) => void
@@ -27,6 +29,7 @@ const GoalsContext = createContext<GoalsContextType>({
   goals: [],
   hasGoals: false,
   isLoaded: false,
+  isLoadError: false,
   setGoals: () => {},
   addGoal: () => {},
   updateGoal: () => {},
@@ -36,6 +39,7 @@ const GoalsContext = createContext<GoalsContextType>({
 export function GoalsProvider({ children }: { children: ReactNode }) {
   const [goals, setGoalsState] = useState<Goal[]>([])
   const [isLoaded, setIsLoaded] = useState(false)
+  const [isLoadError, setIsLoadError] = useState(false)
   // Ref mirrors state so mutation callbacks can build the next array without
   // putting async side-effects inside the setState updater (Strict Mode double-invoke).
   const goalsRef = useRef<Goal[]>([])
@@ -50,7 +54,10 @@ export function GoalsProvider({ children }: { children: ReactNode }) {
       }
       setIsLoaded(true)
     }).catch(() => {
-      if (!cancelled) setIsLoaded(true)
+      if (!cancelled) {
+        setIsLoadError(true)
+        setIsLoaded(true)
+      }
     })
     return () => { cancelled = true }
   }, [])
@@ -91,7 +98,7 @@ export function GoalsProvider({ children }: { children: ReactNode }) {
 
   return (
     <GoalsContext.Provider
-      value={{ goals, hasGoals: goals.length > 0, isLoaded, setGoals, addGoal, updateGoal, removeGoal }}
+      value={{ goals, hasGoals: goals.length > 0, isLoaded, isLoadError, setGoals, addGoal, updateGoal, removeGoal }}
     >
       {children}
     </GoalsContext.Provider>

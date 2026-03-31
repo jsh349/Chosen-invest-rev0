@@ -20,7 +20,7 @@ export const transactionsAdapter: TransactionsAdapter = {
     if (!res.ok) throw new Error(`[transactionsAdapter] getAll failed: ${res.status}`)
     const data = await res.json() as Transaction[]
     return data.filter((t) => {
-      if (!t.id || typeof t.amount !== 'number' || !t.date) {
+      if (!t.id || !Number.isFinite(t.amount) || !t.date) {
         console.warn('[transactionsAdapter] Skipping malformed transaction — missing id, amount, or date.', t)
         return false
       }

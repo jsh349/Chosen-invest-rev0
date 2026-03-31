@@ -6,12 +6,14 @@ export function formEntryToAsset(
   userId: string,
   id: string
 ): Asset {
+  const value = parseFloat(entry.value)
+  if (!Number.isFinite(value)) throw new Error(`[formEntryToAsset] Invalid value: "${entry.value}"`)
   return {
     id,
     userId,
     name: entry.name.trim(),
     category: entry.category,
-    value: parseFloat(entry.value),
+    value,
     currency: entry.currency || 'USD',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),

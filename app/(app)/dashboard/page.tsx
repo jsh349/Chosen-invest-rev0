@@ -110,7 +110,7 @@ function EmptyState() {
 }
 
 export default function DashboardPage() {
-  const { assets, hasCustomAssets, isLoaded } = useAssets()
+  const { assets, hasCustomAssets, isLoaded, isLoadError } = useAssets()
   const { goals, isLoaded: goalsLoaded } = useGoals()
   const { transactions, isLoaded: txLoaded } = useTransactions()
   const { prefs, isLoaded: prefsLoaded, toggle } = useDashboardPrefs()
@@ -180,6 +180,15 @@ export default function DashboardPage() {
   if (!isLoaded || !prefsLoaded || !goalsLoaded || !txLoaded || !settingsLoaded) {
     return (
       <LoadingSpinner />
+    )
+  }
+
+  if (isLoadError) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center text-center px-4">
+        <p className="text-sm font-medium text-gray-400">Failed to load your data</p>
+        <p className="mt-1 text-xs text-gray-600">Check your connection and try refreshing the page.</p>
+      </div>
     )
   }
 

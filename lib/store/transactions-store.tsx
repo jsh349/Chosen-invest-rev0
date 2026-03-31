@@ -16,6 +16,8 @@ import { transactionsAdapter } from '@/lib/adapters/transactions-adapter'
 type TransactionsContextType = {
   transactions: Transaction[]
   isLoaded: boolean
+  /** True when the initial load failed. isLoaded is also true in this state. */
+  isLoadError: boolean
   addTransaction: (t: Transaction) => void
   removeTransaction: (id: string) => void
 }
@@ -23,6 +25,7 @@ type TransactionsContextType = {
 const TransactionsContext = createContext<TransactionsContextType>({
   transactions: [],
   isLoaded: false,
+  isLoadError: false,
   addTransaction: () => {},
   removeTransaction: () => {},
 })
@@ -30,6 +33,7 @@ const TransactionsContext = createContext<TransactionsContextType>({
 export function TransactionsProvider({ children }: { children: ReactNode }) {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [isLoaded, setIsLoaded] = useState(false)
+  const [isLoadError, setIsLoadError] = useState(false)
   // Ref mirrors state so mutation callbacks can build the next array without
   // putting async side-effects inside the setState updater (Strict Mode double-invoke).
   const transactionsRef = useRef<Transaction[]>([])
@@ -44,7 +48,10 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
       }
       setIsLoaded(true)
     }).catch(() => {
-      if (!cancelled) setIsLoaded(true)
+      if (!cancelled) {
+        setIsLoadError(true)
+        setIsLoaded(true)
+      }
     })
     return () => { cancelled = true }
   }, [])
@@ -67,7 +74,7 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <TransactionsContext.Provider value={{ transactions, isLoaded, addTransaction, removeTransaction }}>
+    <TransactionsContext.Provider value={{ transactions, isLoaded, isLoadError, addTransaction, removeTransaction }}>
       {children}
     </TransactionsContext.Provider>
   )
