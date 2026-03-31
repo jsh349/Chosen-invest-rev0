@@ -32,7 +32,7 @@ import { getRankInputExplanation } from '@/lib/utils/rank-input-explanation'
 import { getRankAllocationInsight } from '@/lib/utils/rank-allocation-insight'
 import { getRankChecklist } from '@/lib/utils/rank-checklist'
 import { RankDetailExplanationBlock } from '@/components/rank/rank-detail-explanation'
-import { getBenchmarkCapabilities } from '@/lib/utils/benchmark-capabilities'
+import { getBenchmarkCapabilities, getPartialCoverageNote } from '@/lib/utils/benchmark-capabilities'
 import { getBenchmarkHealthStatus } from '@/lib/utils/benchmark-health'
 import { getRankConfidenceNote } from '@/lib/utils/rank-confidence-note'
 import { readScalar, writeScalar } from '@/lib/utils/local-storage'
@@ -883,6 +883,11 @@ export default function RankPage() {
           {getBenchmarkSourceNote(activeBenchmarkSource, benchmarkCaps.isFallbackOnly) && (
             <span className="text-[10px] text-gray-500 w-full">
               {getBenchmarkSourceNote(activeBenchmarkSource, benchmarkCaps.isFallbackOnly)}
+            </span>
+          )}
+          {benchmarkHealth.status === 'partial' && getPartialCoverageNote(benchmarkCaps) && (
+            <span className="text-[10px] text-amber-500/60 w-full">
+              {getPartialCoverageNote(benchmarkCaps)}
             </span>
           )}
         </div>

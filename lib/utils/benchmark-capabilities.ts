@@ -68,3 +68,26 @@ const UNKNOWN_CAPABILITIES: BenchmarkSourceCapabilities = {
 export function getBenchmarkCapabilities(sourceId: string): BenchmarkSourceCapabilities {
   return CAPABILITIES[sourceId as KnownSourceId] ?? UNKNOWN_CAPABILITIES
 }
+
+/**
+ * Returns a short note listing which rank categories are not supported by the
+ * given capability set, or null when all categories are supported.
+ *
+ * Returns null for fallback-only sources — the fallback/invalid confidence note
+ * already covers that state and these sources don't declare real coverage gaps.
+ *
+ * Intended for the internal methodology/diagnostics area only.
+ */
+export function getPartialCoverageNote(caps: BenchmarkSourceCapabilities): string | null {
+  if (caps.isFallbackOnly) return null
+
+  const missing: string[] = []
+  if (!caps.supportsWealth)    missing.push('overall wealth')
+  if (!caps.supportsAge)       missing.push('age-based')
+  if (!caps.supportsAgeGender) missing.push('age & gender')
+  if (!caps.supportsReturn)    missing.push('investment return')
+
+  if (missing.length === 0) return null
+
+  return `Not available from this source: ${missing.join(', ')}.`
+}
