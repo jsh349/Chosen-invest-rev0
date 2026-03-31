@@ -879,6 +879,20 @@ export default function RankPage() {
           Missing profile fields will show an unavailable state rather than an estimate. These are estimates only and not financial advice.
         </p>
         <div className="mt-2 border-t border-surface-border pt-2 flex flex-wrap gap-x-4 gap-y-1">
+          {/* Compact internal state summary — source · fallback · health · readiness at a glance.
+              Sits above the individual detail chips so the overall state is readable first. */}
+          <span className="w-full text-[10px] text-gray-400">
+            {activeBenchmarkSource}
+            {' · '}
+            {usingFallbackBenchmark ? 'fallback active' : 'no fallback'}
+            {' · '}
+            {benchmarkHealth.status}
+            {' · '}
+            {benchmarkHealth.status === 'healthy'  ? 'ready' :
+             benchmarkHealth.status === 'fallback' ? 'operational' :
+             benchmarkHealth.status === 'partial'  ? 'partial' :
+             'not ready'}
+          </span>
           <span className="text-[10px] text-gray-600">
             <span className="text-gray-500">Version: </span>
             {activeBenchmarkMeta.version}
