@@ -6,6 +6,7 @@ import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
 import { percentileColor } from '@/lib/utils/rank-format'
 import { ROUTES } from '@/lib/constants/routes'
 import type { RankResult } from '@/lib/types/rank'
+import { getPrimaryRank } from '@/lib/utils/rank-priority'
 
 interface RankOverviewCardProps {
   rank: RankResult
@@ -63,20 +64,21 @@ function RankTile({ result }: { result: RankResult }) {
 }
 
 export function RankOverviewCard({ rank, ageRank, ageGenderRank, returnRank, totalValue }: RankOverviewCardProps) {
-  const overallTop = rank.percentile != null ? 100 - rank.percentile : null
+  const primary = getPrimaryRank([rank, ageRank, ageGenderRank, returnRank])
+  const heroTop = primary?.percentile != null ? 100 - primary.percentile : null
   const { compact } = useFormatCurrency()
 
   return (
     <div className="rounded-xl border border-surface-border bg-surface-card p-6 space-y-6">
-      {/* Hero: Overall Wealth Rank */}
+      {/* Hero: highest-priority rank with a real percentile */}
       <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center sm:gap-8">
         <div className="flex-1 text-center sm:text-left space-y-1">
           <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">
-            Overall Wealth Rank
+            {primary?.label ?? 'Overall Wealth Rank'}
           </p>
-          {overallTop != null ? (
-            <p className={cn('text-5xl font-extrabold tracking-tight', percentileColor(100 - overallTop))}>
-              Top {overallTop}%
+          {heroTop != null ? (
+            <p className={cn('text-5xl font-extrabold tracking-tight', percentileColor(100 - heroTop))}>
+              Top {heroTop}%
             </p>
           ) : (
             <p className="text-4xl font-bold text-gray-600">—</p>
@@ -86,15 +88,15 @@ export function RankOverviewCard({ rank, ageRank, ageGenderRank, returnRank, tot
           </p>
         </div>
         <div className="w-full sm:w-64 space-y-2">
-          {rank.percentile != null && (
-            <PercentileBar percentile={rank.percentile} tall />
+          {primary?.percentile != null && (
+            <PercentileBar percentile={primary.percentile} tall />
           )}
           <div className="flex justify-between text-[10px] text-gray-600">
             <span>0th</span>
             <span>50th</span>
             <span>100th</span>
           </div>
-          <p className="text-xs text-gray-400">{rank.message}</p>
+          <p className="text-xs text-gray-400">{primary?.message}</p>
         </div>
       </div>
 

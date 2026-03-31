@@ -4,10 +4,10 @@ import { forwardRef } from 'react'
 import type { RankResult } from '@/lib/types/rank'
 import { topPctLabel, percentileColor } from '@/lib/utils/rank-format'
 import { cn } from '@/lib/utils/cn'
+import { getPrimaryRank } from '@/lib/utils/rank-priority'
 
-// Overall shown as hero; age + return shown as secondary rows
-const HERO_TYPE      = 'overall_wealth'
-const SECONDARY_TYPES = ['age_based', 'investment_return'] as const
+// All four types are candidates for secondary; the primary is excluded at runtime.
+const SECONDARY_TYPES = ['overall_wealth', 'age_based', 'age_gender', 'investment_return'] as const
 
 type Props = {
   ranks: RankResult[]
@@ -22,8 +22,9 @@ type Props = {
  */
 export const RankShareCard = forwardRef<HTMLDivElement, Props>(
   function RankShareCard({ ranks, mode = 'individual' }, ref) {
-    const hero      = ranks.find((r) => r.type === HERO_TYPE) ?? null
+    const hero      = getPrimaryRank(ranks)
     const secondary = SECONDARY_TYPES
+      .filter((type) => type !== hero?.type)
       .map((type) => ranks.find((r) => r.type === type))
       .filter((r): r is RankResult => r != null)
 
