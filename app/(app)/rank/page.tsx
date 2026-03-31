@@ -287,7 +287,10 @@ export default function RankPage() {
     : []
 
   const rankActions = isFullyLoaded && goalsLoaded && summary.assetCount > 0
-    ? getRankActions(ranks, { hasGoals: goals.length > 0 })
+    ? getRankActions(ranks, {
+        hasGoals: goals.length > 0,
+        isLowConfidence: benchmarkHealth.status === 'fallback' || benchmarkHealth.status === 'invalid',
+      })
     : []
 
   // Derived profile booleans — computed once and shared across all rank utilities
