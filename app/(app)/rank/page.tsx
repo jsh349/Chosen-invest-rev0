@@ -893,7 +893,7 @@ export default function RankPage() {
             {benchmarkHealth.status}
             {' · '}
             {benchmarkHealth.status === 'healthy'  ? 'ready' :
-             benchmarkHealth.status === 'fallback' ? 'operational' :
+             benchmarkHealth.status === 'fallback' ? 'degraded' :
              benchmarkHealth.status === 'partial'  ? 'partial' :
              'not ready'}
           </span>
