@@ -24,17 +24,13 @@ export function getBenchmarkHealthStatus(
   isUsingFallback: boolean,
 ): BenchmarkHealthResult {
   if (isUsingFallback) {
-    return {
-      status: 'fallback',
-      note: 'Preferred source unavailable — built-in reference data is active.',
-    }
+    // Note omitted — "Fallback: active" row and Active source label already cover this.
+    return { status: 'fallback', note: '' }
   }
 
   if (caps.isFallbackOnly) {
-    return {
-      status: 'invalid',
-      note: 'Source is a stub with no real data.',
-    }
+    // "invalid" alone is not self-explanatory; keep a short clarifying note.
+    return { status: 'invalid', note: 'stub — no real data' }
   }
 
   const allSupported =
@@ -44,14 +40,10 @@ export function getBenchmarkHealthStatus(
     caps.supportsReturn
 
   if (!allSupported) {
-    return {
-      status: 'partial',
-      note: 'Source does not support all rank categories.',
-    }
+    // Note omitted — Capabilities row shows exactly which categories are missing.
+    return { status: 'partial', note: '' }
   }
 
-  return {
-    status: 'healthy',
-    note: 'All rank categories supported.',
-  }
+  // Note omitted — "healthy" is self-explanatory and Capabilities row confirms.
+  return { status: 'healthy', note: '' }
 }

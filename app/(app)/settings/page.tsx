@@ -496,7 +496,7 @@ export default function SettingsPage() {
             }>
               {debugHealth.status}
             </span>
-            <span className="ml-2 text-gray-600">{debugHealth.note}</span>
+            {debugHealth.note && <span className="ml-2 text-gray-600">{debugHealth.note}</span>}
           </p>
           <p>
             <span className="inline-block w-36 text-gray-600">Capabilities</span>
