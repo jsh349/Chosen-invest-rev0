@@ -2,6 +2,7 @@ import type { RankResult } from '@/lib/types/rank'
 import type { RankHint } from '@/lib/utils/rank-next-hint'
 import { getPrimaryRank } from '@/lib/utils/rank-priority'
 import { getRankInsight } from '@/lib/utils/rank-insight'
+import { getRankInterpretation } from '@/lib/utils/rank-interpretation'
 import { ROUTES } from '@/lib/constants/routes'
 
 /**
@@ -51,7 +52,10 @@ export function composeRankReport(
 
   return {
     highlight,
-    explanation: highlight.message,
+    // Use the short interpretation (no redundant percentile) rather than
+    // highlight.message — the percentile is already displayed prominently
+    // in Slot 1, so the explanation slot should add interpretation only.
+    explanation: getRankInterpretation(highlight.percentile!),
     comparisonNote,
     nextAction,
   }
