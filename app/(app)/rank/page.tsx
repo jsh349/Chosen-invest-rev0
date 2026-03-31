@@ -546,7 +546,7 @@ export default function RankPage() {
                   href={ROUTES.settings}
                   className="text-[10px] text-brand-400 hover:text-brand-300 transition-colors"
                 >
-                  Review inputs →
+                  Settings →
                 </Link>
                 <button
                   onClick={() => {
@@ -626,9 +626,9 @@ export default function RankPage() {
           {rankReviewSummary && !reviewVisible && !reviewDismissed && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-3">
               <div className="flex items-center justify-between gap-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Review Summary</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Rank Assessment</p>
                 <span className="text-[10px] text-amber-500/70">
-                  Review pending
+                  Needs attention
                 </span>
               </div>
               <ul className="space-y-2.5">
