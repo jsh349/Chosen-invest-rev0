@@ -745,12 +745,13 @@ export default function RankPage() {
               </p>
             </div>
           </div>
+          {/* note + reasonHint on one line: note is the "what" (larger), reason is the "why" (smaller inline). */}
           <p className="text-xs text-gray-600 leading-relaxed border-t border-surface-border pt-2">
             {monthlySummary.note}
+            {monthlySummary.reasonHint && (
+              <span className="text-[10px] text-gray-500"> {monthlySummary.reasonHint}</span>
+            )}
           </p>
-          {monthlySummary.reasonHint && (
-            <p className="text-[10px] text-gray-500 leading-relaxed">{monthlySummary.reasonHint}</p>
-          )}
           {versionNote && (
             <p className="text-[10px] text-amber-500/70 leading-relaxed">{versionNote}</p>
           )}
