@@ -447,10 +447,14 @@ export default function RankPage() {
           {/* 2. Summary strip — comparison context after the user sees the number */}
           {summary.assetCount > 0 && (
             <div className="flex flex-wrap gap-4 rounded-xl border border-surface-border bg-surface-card px-5 py-4">
-              <div>
-                <p className="text-xs text-gray-500">Comparison</p>
-                <p className="mt-0.5 text-sm font-semibold capitalize text-white">{mode}</p>
-              </div>
+              {/* Comparison and Benchmark are secondary context — hidden in low-data mode
+                  where the primary concern is completing the profile, not the source. */}
+              {availableCount > 1 && (
+                <div>
+                  <p className="text-xs text-gray-500">Comparison</p>
+                  <p className="mt-0.5 text-sm font-semibold capitalize text-white">{mode}</p>
+                </div>
+              )}
               <div>
                 <p className="text-xs text-gray-500">Total Assets</p>
                 <p className="mt-0.5 text-sm font-semibold text-white">{compact(summary.totalAssetValue)}</p>
@@ -465,12 +469,14 @@ export default function RankPage() {
                   <p className="mt-0.5 text-sm font-semibold text-white">{userAge}</p>
                 </div>
               )}
-              <div>
-                <p className="text-xs text-gray-500">Benchmark</p>
-                <p className="mt-0.5 text-sm font-semibold text-white">
-                  {sourceSummary?.currentLabel ?? (activeBenchmarkSource === 'default' || usingFallbackBenchmark ? 'Built-in reference' : 'Curated data')}
-                </p>
-              </div>
+              {availableCount > 1 && (
+                <div>
+                  <p className="text-xs text-gray-500">Benchmark</p>
+                  <p className="mt-0.5 text-sm font-semibold text-white">
+                    {sourceSummary?.currentLabel ?? (activeBenchmarkSource === 'default' || usingFallbackBenchmark ? 'Built-in reference' : 'Curated data')}
+                  </p>
+                </div>
+              )}
               <div>
                 <p className="text-xs text-gray-500">Profile</p>
                 <p className={cn('mt-0.5 text-sm font-semibold', completeness.color)}>
@@ -816,8 +822,11 @@ export default function RankPage() {
         </div>
       )}
 
-      {/* Benchmark source change summary — shown when source changed or fallback is active */}
-      {sourceSummary !== null && (sourceSummary.previousLabel !== null || sourceSummary.fallbackActive) && (
+      {/* Benchmark source change summary — shown only when the source actually changed.
+          The pure-fallback case (no prior source, just fallback active) is already
+          communicated by the confidence note in the summary strip; showing this card
+          too would repeat the same message in two places. */}
+      {sourceSummary !== null && sourceSummary.previousLabel !== null && (
         <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-3">
           <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Benchmark Source</p>
           <div className="flex flex-wrap gap-x-6 gap-y-1">
