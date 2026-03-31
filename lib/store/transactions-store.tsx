@@ -6,6 +6,7 @@ import {
   useState,
   useEffect,
   useCallback,
+  useRef,
   type ReactNode,
 } from 'react'
 import type { Transaction } from '@/lib/types/transaction'
@@ -29,12 +30,18 @@ const TransactionsContext = createContext<TransactionsContextType>({
 export function TransactionsProvider({ children }: { children: ReactNode }) {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [isLoaded, setIsLoaded] = useState(false)
+  // Ref mirrors state so mutation callbacks can build the next array without
+  // putting async side-effects inside the setState updater (Strict Mode double-invoke).
+  const transactionsRef = useRef<Transaction[]>([])
 
   useEffect(() => {
     let cancelled = false
     transactionsAdapter.getAll().then((stored) => {
       if (cancelled) return
-      if (stored.length > 0) setTransactions(stored)
+      if (stored.length > 0) {
+        transactionsRef.current = stored
+        setTransactions(stored)
+      }
       setIsLoaded(true)
     }).catch(() => {
       if (!cancelled) setIsLoaded(true)
@@ -43,22 +50,20 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const addTransaction = useCallback((t: Transaction) => {
-    setTransactions((prev) => {
-      const updated = [t, ...prev]
-      void transactionsAdapter.saveAll(updated).catch(() => { console.error('[transactions] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
-      return updated
-    })
+    const updated = [t, ...transactionsRef.current]
+    transactionsRef.current = updated
+    setTransactions(updated)
+    void transactionsAdapter.saveAll(updated).catch(() => { console.error('[transactions] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
     recordAudit('Transaction added', t.description)
   }, [])
 
   const removeTransaction = useCallback((id: string) => {
-    setTransactions((prev) => {
-      const target = prev.find((t) => t.id === id)
-      if (target) recordAudit('Transaction deleted', target.description)
-      const updated = prev.filter((t) => t.id !== id)
-      void transactionsAdapter.saveAll(updated).catch(() => { console.error('[transactions] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
-      return updated
-    })
+    const target = transactionsRef.current.find((t) => t.id === id)
+    if (target) recordAudit('Transaction deleted', target.description)
+    const updated = transactionsRef.current.filter((t) => t.id !== id)
+    transactionsRef.current = updated
+    setTransactions(updated)
+    void transactionsAdapter.saveAll(updated).catch(() => { console.error('[transactions] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
   }, [])
 
   return (

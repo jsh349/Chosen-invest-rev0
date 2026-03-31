@@ -6,6 +6,7 @@ import {
   useState,
   useEffect,
   useCallback,
+  useRef,
   type ReactNode,
 } from 'react'
 import type { Asset } from '@/lib/types/asset'
@@ -37,12 +38,20 @@ const AssetsContext = createContext<AssetsContextType>({
 export function AssetsProvider({ children }: { children: ReactNode }) {
   const [assets, setAssetsState] = useState<Asset[]>([])
   const [isLoaded, setIsLoaded] = useState(false)
+  // Ref mirrors state so mutation callbacks can build the next array without
+  // putting async side-effects inside the setState updater. React Strict Mode
+  // double-invokes updater functions in development — calling saveAll() inside
+  // an updater would fire two API writes per mutation.
+  const assetsRef = useRef<Asset[]>([])
 
   useEffect(() => {
     let cancelled = false
     assetsAdapter.getAll().then((stored) => {
       if (cancelled) return
-      if (stored.length > 0) setAssetsState(stored)
+      if (stored.length > 0) {
+        assetsRef.current = stored
+        setAssetsState(stored)
+      }
       setIsLoaded(true)
     }).catch(() => {
       if (!cancelled) setIsLoaded(true)
@@ -54,6 +63,7 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
     // Update in-memory state immediately so the UI responds without waiting,
     // then return the save Promise so callers can await persistence before
     // navigating away (prevents stale-read on immediate dashboard reload).
+    assetsRef.current = newAssets
     setAssetsState(newAssets)
     return assetsAdapter.saveAll(newAssets).catch((err) => {
       console.error('[assets] save failed', err)
@@ -63,37 +73,34 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const addAsset = useCallback((asset: Asset) => {
-    setAssetsState((prev) => {
-      const updated = [...prev, asset]
-      void assetsAdapter.saveAll(updated).catch(() => { console.error('[assets] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
-      return updated
-    })
+    const updated = [...assetsRef.current, asset]
+    assetsRef.current = updated
+    setAssetsState(updated)
+    void assetsAdapter.saveAll(updated).catch(() => { console.error('[assets] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
     recordAudit('Asset added', asset.name)
   }, [])
 
   const updateAsset = useCallback(
     (id: string, patch: Partial<Pick<Asset, 'name' | 'category' | 'value'>>) => {
-      setAssetsState((prev) => {
-        const target = prev.find((a) => a.id === id)
-        const updated = prev.map((a) =>
-          a.id === id ? { ...a, ...patch, updatedAt: new Date().toISOString() } : a
-        )
-        void assetsAdapter.saveAll(updated).catch(() => { console.error('[assets] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
-        if (target) recordAudit('Asset edited', patch.name ?? target.name)
-        return updated
-      })
+      const target = assetsRef.current.find((a) => a.id === id)
+      const updated = assetsRef.current.map((a) =>
+        a.id === id ? { ...a, ...patch, updatedAt: new Date().toISOString() } : a
+      )
+      assetsRef.current = updated
+      setAssetsState(updated)
+      void assetsAdapter.saveAll(updated).catch(() => { console.error('[assets] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
+      if (target) recordAudit('Asset edited', patch.name ?? target.name)
     },
     []
   )
 
   const removeAsset = useCallback((id: string) => {
-    setAssetsState((prev) => {
-      const target = prev.find((a) => a.id === id)
-      if (target) recordAudit('Asset deleted', target.name)
-      const updated = prev.filter((a) => a.id !== id)
-      void assetsAdapter.saveAll(updated).catch(() => { console.error('[assets] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
-      return updated
-    })
+    const target = assetsRef.current.find((a) => a.id === id)
+    if (target) recordAudit('Asset deleted', target.name)
+    const updated = assetsRef.current.filter((a) => a.id !== id)
+    assetsRef.current = updated
+    setAssetsState(updated)
+    void assetsAdapter.saveAll(updated).catch(() => { console.error('[assets] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
   }, [])
 
   const clearAssets = useCallback(async () => {

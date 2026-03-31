@@ -6,6 +6,7 @@ import {
   useState,
   useEffect,
   useCallback,
+  useRef,
   type ReactNode,
 } from 'react'
 import type { Goal } from '@/lib/types/goal'
@@ -35,12 +36,18 @@ const GoalsContext = createContext<GoalsContextType>({
 export function GoalsProvider({ children }: { children: ReactNode }) {
   const [goals, setGoalsState] = useState<Goal[]>([])
   const [isLoaded, setIsLoaded] = useState(false)
+  // Ref mirrors state so mutation callbacks can build the next array without
+  // putting async side-effects inside the setState updater (Strict Mode double-invoke).
+  const goalsRef = useRef<Goal[]>([])
 
   useEffect(() => {
     let cancelled = false
     goalsAdapter.getAll().then((stored) => {
       if (cancelled) return
-      if (stored.length > 0) setGoalsState(stored)
+      if (stored.length > 0) {
+        goalsRef.current = stored
+        setGoalsState(stored)
+      }
       setIsLoaded(true)
     }).catch(() => {
       if (!cancelled) setIsLoaded(true)
@@ -49,39 +56,37 @@ export function GoalsProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const setGoals = useCallback((newGoals: Goal[]) => {
-    void goalsAdapter.saveAll(newGoals).catch(() => { console.error('[goals] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
+    goalsRef.current = newGoals
     setGoalsState(newGoals)
+    void goalsAdapter.saveAll(newGoals).catch(() => { console.error('[goals] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
   }, [])
 
   const addGoal = useCallback((goal: Goal) => {
-    setGoalsState((prev) => {
-      const updated = [...prev, goal]
-      void goalsAdapter.saveAll(updated).catch(() => { console.error('[goals] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
-      return updated
-    })
+    const updated = [...goalsRef.current, goal]
+    goalsRef.current = updated
+    setGoalsState(updated)
+    void goalsAdapter.saveAll(updated).catch(() => { console.error('[goals] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
     recordAudit('Goal added', goal.name)
   }, [])
 
   const updateGoal = useCallback((id: string, patch: Partial<Omit<Goal, 'id' | 'createdAt'>>) => {
-    setGoalsState((prev) => {
-      const target = prev.find((g) => g.id === id)
-      const updated = prev.map((g) =>
-        g.id === id ? { ...g, ...patch, updatedAt: new Date().toISOString() } : g
-      )
-      void goalsAdapter.saveAll(updated).catch(() => { console.error('[goals] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
-      if (target) recordAudit('Goal edited', patch.name ?? target.name)
-      return updated
-    })
+    const target = goalsRef.current.find((g) => g.id === id)
+    const updated = goalsRef.current.map((g) =>
+      g.id === id ? { ...g, ...patch, updatedAt: new Date().toISOString() } : g
+    )
+    goalsRef.current = updated
+    setGoalsState(updated)
+    void goalsAdapter.saveAll(updated).catch(() => { console.error('[goals] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
+    if (target) recordAudit('Goal edited', patch.name ?? target.name)
   }, [])
 
   const removeGoal = useCallback((id: string) => {
-    setGoalsState((prev) => {
-      const target = prev.find((g) => g.id === id)
-      if (target) recordAudit('Goal deleted', target.name)
-      const updated = prev.filter((g) => g.id !== id)
-      void goalsAdapter.saveAll(updated).catch(() => { console.error('[goals] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
-      return updated
-    })
+    const target = goalsRef.current.find((g) => g.id === id)
+    if (target) recordAudit('Goal deleted', target.name)
+    const updated = goalsRef.current.filter((g) => g.id !== id)
+    goalsRef.current = updated
+    setGoalsState(updated)
+    void goalsAdapter.saveAll(updated).catch(() => { console.error('[goals] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
   }, [])
 
   return (

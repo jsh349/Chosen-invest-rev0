@@ -40,6 +40,13 @@ const STRING_KEYS: ReadonlySet<string> = new Set([
   STORAGE_KEYS.benchmarkSource,
   STORAGE_KEYS.benchmarkSeen,
   STORAGE_KEYS.rankReviewSeen,
+  // These two store raw scalar strings. Without this, JSON.parse('household')
+  // throws a SyntaxError during export — the key is silently exported as null
+  // and lost on import. JSON.parse('1735000000000') succeeds numerically but
+  // round-tripping through JSON.stringify/parse changes the type; raw string
+  // preservation is semantically correct for both keys.
+  STORAGE_KEYS.rankReviewCooldown,
+  STORAGE_KEYS.rankComparisonMode,
 ])
 
 /** Keys whose stored value must be a plain object (not array, not null). */
@@ -144,10 +151,13 @@ export default function SettingsPage() {
   const [returnError, setReturnError] = useState('')
 
   const benchmarkSources = getAvailableBenchmarkSources()
-  const [selectedBenchmarkSource, setSelectedBenchmarkSource] = useState<BenchmarkSource['id']>(() => {
-    const id = getActiveBenchmarkSourceId()
-    return id === 'curated' ? 'curated' : 'default'
-  })
+  // Stable initial value avoids hydration mismatch — localStorage is not available
+  // during SSR. The real stored preference is read in the useEffect below.
+  const [selectedBenchmarkSource, setSelectedBenchmarkSource] = useState<BenchmarkSource['id']>('default')
+
+  // mounted gates any section whose content depends on localStorage so the
+  // server-rendered HTML and the initial client render always agree.
+  const [mounted, setMounted] = useState(false)
 
   // recordAudit() writes directly to localStorage outside the React context,
   // so context state can be stale when navigating here. Refresh on mount so
@@ -157,6 +167,16 @@ export default function SettingsPage() {
   // Keep raw input strings in sync when settings change externally (e.g. Reset button).
   useEffect(() => { setBirthYearRaw(settings.birthYear?.toString() ?? ''); setBirthYearError('') }, [settings.birthYear])
   useEffect(() => { setReturnRaw(settings.annualReturnPct?.toString() ?? ''); setReturnError('') }, [settings.annualReturnPct])
+
+  // Read localStorage-dependent values only after mount to avoid hydration mismatch.
+  // getActiveBenchmarkSourceId(), readScalar(), isUsingFallbackBenchmark() all read
+  // localStorage and return SSR-safe fallbacks on the server — but they differ from
+  // client values, causing React hydration errors if used directly at render time.
+  useEffect(() => {
+    const id = getActiveBenchmarkSourceId()
+    setSelectedBenchmarkSource(id === 'curated' ? 'curated' : 'default')
+    setMounted(true)
+  }, [])
 
   if (!isLoaded) {
     return (
@@ -203,13 +223,15 @@ export default function SettingsPage() {
     reader.readAsText(file)
   }
 
-  const debugSrcId    = getActiveBenchmarkSourceId()
-  const debugCaps     = getBenchmarkCapabilities(debugSrcId)
-  const debugFallback = isUsingFallbackBenchmark()
-  const debugRefresh  = readBenchmarkRefreshState()
-  const debugHealth   = getBenchmarkHealthStatus(debugCaps, debugFallback)
-  const debugMode     = readScalar(STORAGE_KEYS.rankComparisonMode) ?? 'individual'
-  const debugActiveMeta = getActiveBenchmarkMeta()
+  // Debug variables read from localStorage — only valid after mount.
+  // Computed conditionally to avoid calling localStorage functions on the server.
+  const debugSrcId      = mounted ? getActiveBenchmarkSourceId()  : 'default'
+  const debugCaps       = getBenchmarkCapabilities(debugSrcId)
+  const debugFallback   = mounted ? isUsingFallbackBenchmark()    : false
+  const debugRefresh    = mounted ? readBenchmarkRefreshState()    : { hasPending: false, pendingSource: null, lastApplied: null }
+  const debugHealth     = getBenchmarkHealthStatus(debugCaps, debugFallback)
+  const debugMode       = mounted ? (readScalar(STORAGE_KEYS.rankComparisonMode) ?? 'individual') : 'individual'
+  const debugActiveMeta = mounted ? getActiveBenchmarkMeta()      : { version: BENCHMARK_META.version, updatedAt: BENCHMARK_META.updatedAt, sourceLabel: BENCHMARK_META.sourceLabel }
   const debugReady =
     !!(BENCHMARK_META.version && BENCHMARK_META.updatedAt && BENCHMARK_META.sourceLabel) &&
     !debugCaps.isFallbackOnly &&
@@ -411,8 +433,10 @@ export default function SettingsPage() {
         )}
       </div>
 
-      {/* Benchmark source — shown only when 2+ sources are available (internal use) */}
-      {benchmarkSources.length >= 2 && (
+      {/* Benchmark source — shown only when 2+ sources are available (internal use).
+          Gated on mounted so selectedBenchmarkSource is read from localStorage before
+          the select renders, preventing a hydration mismatch on the value prop. */}
+      {mounted && benchmarkSources.length >= 2 && (
         <div className="rounded-xl border border-surface-border bg-surface-card px-4">
           <h2 className="border-b border-surface-border py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
             Benchmark Data <span className="normal-case font-normal text-gray-600">(internal)</span>
