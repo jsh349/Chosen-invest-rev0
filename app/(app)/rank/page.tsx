@@ -63,7 +63,9 @@ function readPersistedMode(): RankMode {
  * this rank type, or null when support is complete (healthy path — no note shown).
  */
 function getRankCoverageNote(type: RankType, caps: BenchmarkSourceCapabilities): string | null {
-  if (caps.isFallbackOnly) return 'Built-in reference data'
+  // isFallbackOnly: the confidence note in the summary strip already tells the user
+  // "using built-in reference ranges" — a per-row coverage note would repeat it.
+  if (caps.isFallbackOnly) return null
   const supported: Record<RankType, boolean> = {
     overall_wealth:    caps.supportsWealth,
     age_based:         caps.supportsAge,
@@ -83,9 +85,10 @@ function rankCompleteness(availableCount: number, total: number): { label: strin
  * Escalation rule for source-related notes in the summary strip.
  *
  * Three levels, in descending prominence:
- *   fallback / invalid  ('low')      → amber   — source degraded; user should be aware
- *   partial             ('moderate') → gray-500 — caution; partial category coverage
- *   informational only  (no note)    → gray-600 — supplementary context; no concern
+ *   invalid   ('low')      → amber   — source not yet connected; user should be aware
+ *   fallback  ('moderate') → gray-500 — preferred source failed; built-in is active
+ *   partial   ('moderate') → gray-500 — caution; partial category coverage
+ *   informational only (no note) → gray-600 — supplementary context; no concern
  *
  * Healthy local source with no informational note → no line rendered (caller guards on null).
  */
@@ -894,7 +897,7 @@ export default function RankPage() {
           </div>
           {sourceSummary.fallbackActive && (
             <p className="text-xs text-amber-400/80">
-              New source is also using built-in reference data.
+              New source is also using built-in reference ranges.
             </p>
           )}
           <p className="text-[11px] text-gray-600 leading-relaxed">

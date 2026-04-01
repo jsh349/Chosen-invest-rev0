@@ -12,7 +12,7 @@ export function getBenchmarkSourceNote(
   // External source slot exists in the system but is not yet connected to a live feed.
   // isFallbackOnly is always true for 'external' until real data is wired up.
   if (sourceId === 'external' && isFallbackOnly) {
-    return 'Live data source is being prepared — built-in reference data is active for now.'
+    return 'Live data source is being prepared — built-in reference ranges are active for now.'
   }
 
   // All other states (default, curated healthy, curated fallback) are already

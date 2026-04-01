@@ -17,7 +17,7 @@ export type RankConfidenceNote = {
  * create an implicit contract that callers must keep in sync.
  *
  * Priority order (first match wins — one note at a time):
- *   1. status 'fallback' → level 'low'    (preferred source failed to load)
+ *   1. status 'fallback' → level 'moderate' (preferred source failed to load)
  *   2. status 'invalid'  → level 'low'    (source not yet connected)
  *   3. status 'partial'  → level 'moderate' (some rank categories unsupported)
  *   4. status 'healthy'  → null           (no concern to surface)
