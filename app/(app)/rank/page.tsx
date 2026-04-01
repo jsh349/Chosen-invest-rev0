@@ -186,7 +186,7 @@ function RankRow({ result, coverageNote }: { result: RankResult; coverageNote?: 
  * Shows the band label prominently + one supporting interpretation line.
  * Returns null when no rank is available.
  */
-function PrimaryRankHighlight({ ranks, mode }: { ranks: RankResult[]; mode: RankMode }) {
+function PrimaryRankHighlight({ ranks, mode, benchmarkLabel }: { ranks: RankResult[]; mode: RankMode; benchmarkLabel: string }) {
   const primary = getPrimaryRank(ranks)
   if (!primary) return null
   return (
@@ -200,7 +200,7 @@ function PrimaryRankHighlight({ ranks, mode }: { ranks: RankResult[]; mode: Rank
       <p className="text-xs text-gray-500 leading-relaxed">
         {getRankInterpretation(primary.percentile!)}
       </p>
-      <p className="text-[10px] capitalize text-gray-600">{mode} · local benchmark</p>
+      <p className="text-[10px] capitalize text-gray-600">{mode} · {benchmarkLabel}</p>
     </div>
   )
 }
@@ -483,7 +483,7 @@ export default function RankPage() {
           )}
 
           {/* 1. Primary rank highlight — most relevant rank, shown first */}
-          {summary.assetCount > 0 && <PrimaryRankHighlight ranks={ranks} mode={mode} />}
+          {summary.assetCount > 0 && <PrimaryRankHighlight ranks={ranks} mode={mode} benchmarkLabel={(activeBenchmarkSource === 'default' || usingFallbackBenchmark) ? 'Built-in reference' : 'Curated data'} />}
 
           {/* 2. Summary strip — comparison context after the user sees the number */}
           {summary.assetCount > 0 && (
