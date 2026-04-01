@@ -62,9 +62,9 @@ export function getRankNarrativeSummary(ranks: RankResult[]): string {
   // Priority order: wealth > return gap → return > wealth gap → profile incomplete.
   let second = ''
   if (retPct !== null && overallPct - retPct >= RANK_GAP_THRESHOLD) {
-    second = ' Your investment return rank is notably lower than your wealth rank.'
+    second = ' Your return rank is notably lower than your wealth rank.'
   } else if (retPct !== null && retPct - overallPct >= RANK_GAP_THRESHOLD) {
-    second = ' Your investment return rank is notably stronger than your wealth rank.'
+    second = ' Your return rank is notably stronger than your wealth rank.'
   } else if (profileIncomplete) {
     // Aligns narrative with the profile-completion hint shown in the explanation block:
     // both acknowledge that the current view is based on partial profile inputs.

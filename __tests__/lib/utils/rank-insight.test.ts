@@ -27,13 +27,13 @@ describe('getRankInsight', () => {
   // Rule 1 — wealth significantly above return (gap >= 20)
   it('Rule 1: fires when wealth exceeds return by 20+', () => {
     const insight = getRankInsight([overall(80), ret(55), ageBased(null, 'birth year'), ageGender(null, 'birth year and gender')])
-    expect(insight).toContain('Wealth rank is higher')
+    expect(insight).toContain('Overall wealth rank is stronger')
   })
 
   it('Rule 1: does NOT fire when gap is 19', () => {
     const insight = getRankInsight([overall(74), ret(55), ageBased(null, 'birth year'), ageGender(null, 'birth year and gender')])
     // gap = 19 → Rule 1 skipped; Rule 3 fires instead
-    expect(insight).not.toContain('Wealth rank is higher')
+    expect(insight).not.toContain('Overall wealth rank is stronger')
   })
 
   // Rule 2 — return significantly above wealth
@@ -64,7 +64,7 @@ describe('getRankInsight', () => {
   // Priority — first matching rule wins
   it('Rule 1 takes priority over Rule 3', () => {
     const insight = getRankInsight([overall(80), ret(55), ageBased(null, 'birth year'), ageGender(null, 'birth year and gender')])
-    expect(insight).toContain('Wealth rank is higher')
+    expect(insight).toContain('Overall wealth rank is stronger')
     expect(insight).not.toContain('birth year')
   })
 })

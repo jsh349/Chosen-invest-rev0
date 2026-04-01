@@ -39,10 +39,10 @@ export function getRankChecklist(
     items.push({ text: 'Add birth year for age-based comparison', href: ROUTES.settings })
   }
   if (!profile.hasGender) {
-    items.push({ text: 'Add gender for peer group comparison', href: ROUTES.settings })
+    items.push({ text: 'Add gender for age and gender comparison', href: ROUTES.settings })
   }
   if (!profile.hasReturn) {
-    items.push({ text: 'Add return estimate for investment rank', href: ROUTES.settings })
+    items.push({ text: 'Add return estimate for return rank', href: ROUTES.settings })
   }
 
   // Allocation review — only when age context is available, so the rank signal
