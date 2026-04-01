@@ -23,6 +23,8 @@ type Props = {
    * Mirrors the same prop on RankShareCard for consistent source framing.
    */
   sourceNote?: string | null
+  /** Comparison mode label shown in the card sub-header. Defaults to 'individual'. */
+  mode?: 'individual' | 'household'
 }
 
 /**
@@ -30,7 +32,7 @@ type Props = {
  * Slots 3 and 4 (comparisonNote, nextAction) are omitted when null.
  * Returns null when no rank data is available.
  */
-export function RankReportSection({ ranks, nextHint, sourceNote = null }: Props) {
+export function RankReportSection({ ranks, nextHint, sourceNote = null, mode = 'individual' }: Props) {
   const report = composeRankReport(ranks, nextHint)
   if (!report) return null
 
@@ -47,7 +49,7 @@ export function RankReportSection({ ranks, nextHint, sourceNote = null }: Props)
       className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-3"
     >
       <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Rank Report</p>
-      <p className="text-[10px] text-gray-600">local benchmark</p>
+      <p className="text-[10px] capitalize text-gray-600">{mode} · local benchmark</p>
 
       {/* Slot 1 — primary rank highlight */}
       <div className="space-y-0.5">
