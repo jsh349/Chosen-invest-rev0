@@ -961,7 +961,9 @@ export default function RankPage() {
               {usingFallbackBenchmark ? 'fallback active' : 'no fallback'}
             </span>
             {' · '}
-            {benchmarkHealth.status}
+            <span className={benchmarkHealth.status !== 'healthy' ? 'text-amber-500/60' : undefined}>
+              {benchmarkHealth.status}
+            </span>
             {' · '}
             <span className={benchmarkHealth.status !== 'healthy' ? 'text-amber-500/60' : undefined}>
               {benchmarkHealth.status === 'healthy'  ? 'ready' :

@@ -484,9 +484,9 @@ export default function SettingsPage() {
           <p>
             <span className="inline-block w-36 text-gray-600">Fallback</span>
             {debugFallback
-              ? 'active'
+              ? <span className="text-amber-400">active</span>
               : debugCaps.isFallbackOnly
-                ? 'stub'
+                ? <span className="text-amber-400/60">stub</span>
                 : 'none'}
           </p>
           <p>
