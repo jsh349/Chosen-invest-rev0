@@ -488,6 +488,18 @@ export default function RankPage() {
           {/* 2. Summary strip — comparison context after the user sees the number */}
           {summary.assetCount > 0 && (
             <div className="flex flex-wrap gap-4 rounded-xl border border-surface-border bg-surface-card px-5 py-4">
+              {/* Confidence note — shown before the chips when a caveat is active so the
+                  user understands the benchmark state before reading the numbers below it.
+                  inputExplanation / sourceExplanation are supplemental context and stay
+                  at the bottom of the strip. */}
+              {confidenceNote && (
+                <p className={cn(
+                  'w-full border-b border-surface-border pb-3 text-xs',
+                  sourceNoteColor(confidenceNote),
+                )}>
+                  {confidenceNote.text}
+                </p>
+              )}
               {/* Comparison and Benchmark are secondary context — hidden in low-data mode
                   where the primary concern is completing the profile, not the source. */}
               {availableCount > 1 && (
@@ -524,12 +536,10 @@ export default function RankPage() {
                   {completeness.label}
                 </p>
               </div>
-              {(confidenceNote ?? inputExplanation ?? sourceExplanation) && (
-                <p className={cn(
-                  'w-full border-t border-surface-border pt-3 text-xs',
-                  sourceNoteColor(confidenceNote),
-                )}>
-                  {confidenceNote?.text ?? inputExplanation ?? sourceExplanation}
+              {/* Input/source explanation — supplemental context, stays at bottom */}
+              {!confidenceNote && (inputExplanation ?? sourceExplanation) && (
+                <p className="w-full border-t border-surface-border pt-3 text-xs text-gray-600">
+                  {inputExplanation ?? sourceExplanation}
                 </p>
               )}
             </div>
