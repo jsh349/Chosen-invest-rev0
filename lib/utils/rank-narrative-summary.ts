@@ -8,10 +8,14 @@ import { RANK_GAP_THRESHOLD } from '@/lib/utils/rank-insight'
  *
  * Rules (first matching condition wins for the opening sentence):
  *   - No data at all        → neutral prompt to complete profile
- *   - Overall ≥ 75          → "compares favorably"
+ *   - Overall ≥ 75          → "well above the benchmark median"
  *   - Overall 50–74         → "above the benchmark median"
  *   - Overall 40–49         → "near the benchmark median"
- *   - Overall < 40          → "below the benchmark median"
+ *   - Overall 25–39         → "below the benchmark median"
+ *   - Overall < 25          → "well below the benchmark median"
+ *
+ * Tiers mirror getRankInterpretation so summary and detail surfaces use
+ * recognisably related language for the same rank state.
  *
  * A second sentence is appended (at most one) when:
  *   - Return rank is ≥ 20 pts below overall  → note about return standing
@@ -38,16 +42,20 @@ export function getRankNarrativeSummary(ranks: RankResult[]): string {
       : 'Overall wealth rank is unavailable with current portfolio data.'
   }
 
-  // Opening sentence based on overall percentile
+  // Opening sentence based on overall percentile.
+  // Wording anchors to getRankInterpretation tiers so summary and detail surfaces
+  // use recognisably related language for the same rank state.
   let opening: string
   if (overallPct >= 75) {
-    opening = 'Your overall asset position compares favorably against the reference group.'
+    opening = 'Your overall asset position is well above the benchmark median.'
   } else if (overallPct >= 50) {
     opening = 'Your overall asset position is above the benchmark median.'
   } else if (overallPct >= 40) {
     opening = 'Your overall asset position is near the benchmark median.'
-  } else {
+  } else if (overallPct >= 25) {
     opening = 'Your overall asset position is below the benchmark median.'
+  } else {
+    opening = 'Your overall asset position is well below the benchmark median.'
   }
 
   // Optional second sentence — return gap takes priority; profile note is fallback.
