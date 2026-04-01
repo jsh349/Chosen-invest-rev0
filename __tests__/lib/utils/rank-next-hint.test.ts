@@ -89,10 +89,14 @@ describe('getPrimaryRankNextAction — confidence-sensitive wording', () => {
     expect(hint!.text).not.toMatch(/to build on your wealth rank/)
   })
 
-  it('profile-completion hints are unchanged regardless of confidence level', () => {
+  it('profile-completion hints share the same route regardless of confidence level', () => {
     const highConf = getPrimaryRankNextAction({ ...fullProfile, hasAge: false }, [], { isLowConfidence: false })
     const lowConf  = getPrimaryRankNextAction({ ...fullProfile, hasAge: false }, [], { isLowConfidence: true })
-    expect(highConf!.text).toBe(lowConf!.text)
+    // Both route to Settings; wording is intentionally softened when isLowConfidence = true
+    // (removes "unlock" framing since the added rank will also use fallback data)
+    expect(highConf!.href).toBe(lowConf!.href)
+    expect(lowConf!.text).not.toMatch(/unlock/)
+    expect(highConf!.text).toMatch(/unlock/)
   })
 
   it('portfolio and goals hints preserve their route regardless of confidence', () => {

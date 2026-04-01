@@ -87,8 +87,8 @@ export function getPrimaryRankNextAction(
     return {
       href: ROUTES.settings,
       text: isLowConfidence
-        ? 'Add an estimated annual return to include investment ranking.'
-        : 'Add an estimated annual return to unlock investment ranking.',
+        ? 'Add an estimated annual return to include investment rank.'
+        : 'Add an estimated annual return to unlock investment rank.',
     }
   }
 
