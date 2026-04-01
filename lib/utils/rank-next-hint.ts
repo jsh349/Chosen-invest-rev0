@@ -63,7 +63,8 @@ export function getNextRankHint(profile: {
 export function getPrimaryRankNextAction(
   profile: { hasAge: boolean; hasGender: boolean; hasReturn: boolean; hasGoals: boolean },
   ranks: RankResult[],
-  { isLowConfidence = false }: { isLowConfidence?: boolean } = {},
+  { isLowConfidence = false, mode = 'individual' as 'individual' | 'household' }:
+    { isLowConfidence?: boolean; mode?: 'individual' | 'household' } = {},
 ): RankHint | null {
   // Profile completeness hints — always shown, wording adapts to confidence level.
   // In low-confidence states, 'unlock' framing is removed: the unlocked rank will
@@ -99,7 +100,9 @@ export function getPrimaryRankNextAction(
     return {
       text: isLowConfidence
         ? 'Consider reviewing your portfolio allocation.'
-        : 'Review your portfolio allocation to improve your rank position.',
+        : mode === 'household'
+          ? 'Review your portfolio allocation.'
+          : 'Review your portfolio allocation to improve your rank position.',
       href: ROUTES.portfolioList,
     }
   }
@@ -109,7 +112,9 @@ export function getPrimaryRankNextAction(
     return {
       text: isLowConfidence
         ? 'Consider setting a financial goal.'
-        : 'Set a financial goal to build on your wealth rank.',
+        : mode === 'household'
+          ? 'Set a financial goal to build toward your financial targets.'
+          : 'Set a financial goal to build on your wealth rank.',
       href: ROUTES.goals,
     }
   }

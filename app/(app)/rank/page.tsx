@@ -303,6 +303,7 @@ export default function RankPage() {
         // Soften portfolio/goals wording when the benchmark source is degraded —
         // the rank signal itself may not be reliable enough to imply strong outcomes.
         isLowConfidence: benchmarkHealth.status === 'fallback' || benchmarkHealth.status === 'invalid',
+        mode,
       })
     : null
 
@@ -432,7 +433,7 @@ export default function RankPage() {
                 href={ROUTES.household}
                 className="inline-block text-xs text-brand-400 hover:text-brand-300 transition-colors"
               >
-                Set up household →
+                Add household members →
               </Link>
             </>
           ) : (
