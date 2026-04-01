@@ -114,7 +114,7 @@ function PercentileBar({ percentile }: { percentile: number }) {
   )
 }
 
-function RankRow({ result, coverageNote }: { result: RankResult; coverageNote?: string }) {
+function RankRow({ result, coverageNote, isLowConfidence = false }: { result: RankResult; coverageNote?: string; isLowConfidence?: boolean }) {
   const hasPct = result.percentile != null
 
   return (
@@ -132,7 +132,7 @@ function RankRow({ result, coverageNote }: { result: RankResult; coverageNote?: 
             <p className="text-2xl font-bold text-gray-600">—</p>
           )}
           <p className="text-sm text-gray-300 leading-relaxed">
-            {hasPct ? getRankInterpretation(result.percentile!) : result.message}
+            {hasPct ? getRankInterpretation(result.percentile!, isLowConfidence) : result.message}
           </p>
           {hasPct && (
             <div className="pt-1">
@@ -186,7 +186,7 @@ function RankRow({ result, coverageNote }: { result: RankResult; coverageNote?: 
  * Shows the band label prominently + one supporting interpretation line.
  * Returns null when no rank is available.
  */
-function PrimaryRankHighlight({ ranks, mode, benchmarkLabel }: { ranks: RankResult[]; mode: RankMode; benchmarkLabel: string }) {
+function PrimaryRankHighlight({ ranks, mode, benchmarkLabel, isLowConfidence = false }: { ranks: RankResult[]; mode: RankMode; benchmarkLabel: string; isLowConfidence?: boolean }) {
   const primary = getPrimaryRank(ranks)
   if (!primary) return null
   return (
@@ -198,7 +198,7 @@ function PrimaryRankHighlight({ ranks, mode, benchmarkLabel }: { ranks: RankResu
         {percentileBandLabel(primary.percentile!)}
       </p>
       <p className="text-xs text-gray-500 leading-relaxed">
-        {getRankInterpretation(primary.percentile!)}
+        {getRankInterpretation(primary.percentile!, isLowConfidence)}
       </p>
       <p className="text-[10px] capitalize text-gray-600">{mode} · {benchmarkLabel}</p>
     </div>
@@ -483,7 +483,7 @@ export default function RankPage() {
           )}
 
           {/* 1. Primary rank highlight — most relevant rank, shown first */}
-          {summary.assetCount > 0 && <PrimaryRankHighlight ranks={ranks} mode={mode} benchmarkLabel={(activeBenchmarkSource === 'default' || usingFallbackBenchmark) ? 'Built-in reference' : 'Curated data'} />}
+          {summary.assetCount > 0 && <PrimaryRankHighlight ranks={ranks} mode={mode} benchmarkLabel={(activeBenchmarkSource === 'default' || usingFallbackBenchmark) ? 'Built-in reference' : 'Curated data'} isLowConfidence={benchmarkHealth.status !== 'healthy'} />}
 
           {/* 2. Summary strip — comparison context after the user sees the number */}
           {summary.assetCount > 0 && (
@@ -581,7 +581,7 @@ export default function RankPage() {
           {reviewVisible && (
             <div className="flex items-center justify-between gap-3 rounded-xl border border-brand-500/20 bg-brand-500/5 px-5 py-3">
               <p className="text-xs text-brand-300 leading-relaxed">
-                Your rank inputs have changed — review your updated insights.
+                Your rank inputs have changed — the numbers below may have shifted.
               </p>
               <div className="flex items-center gap-3 shrink-0">
                 <Link
@@ -713,11 +713,13 @@ export default function RankPage() {
                In low-data mode only ranked rows are shown (see rankRowsToShow). */}
           {summary.assetCount > 0 && rankRowsToShow.length > 0 && (
             <div className="!mt-8 rounded-xl border border-surface-border bg-surface-card px-5">
+              <p className="pt-4 text-xs font-semibold uppercase tracking-wide text-gray-500">Rank Breakdown</p>
               {rankRowsToShow.map((r) => (
                 <RankRow
                   key={r.type}
                   result={r}
                   coverageNote={getRankCoverageNote(r.type, benchmarkCaps) ?? undefined}
+                  isLowConfidence={benchmarkHealth.status !== 'healthy'}
                 />
               ))}
             </div>
