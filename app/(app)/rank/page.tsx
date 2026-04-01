@@ -896,7 +896,7 @@ export default function RankPage() {
           </div>
           {sourceSummary.fallbackActive && (
             <p className="text-xs text-amber-400/80">
-              Preferred source unavailable — built-in reference data is active.
+              New source is also using built-in reference data.
             </p>
           )}
           <p className="text-[11px] text-gray-600 leading-relaxed">

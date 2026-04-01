@@ -143,6 +143,32 @@ the only primary CTA on the page. It should match the text-xs size of the links 
 
 ---
 
+# Addendum: P247 — Fallback source explanation deduplication
+
+## Task Summary
+Benchmark Source card fallback amber line repeats "Preferred source unavailable —"
+which is the exact opener of the confidence note already shown in the summary strip.
+The card's unique value is the source-switch context, not the fallback state restatement.
+
+## Non-Goals
+- No changes to confidence note texts
+- No changes to getBenchmarkSourceNote (methodology section)
+- No other files
+
+## Affected Files
+- `app/(app)/rank/page.tsx` — one string change in the Benchmark Source card fallback line
+
+## Risks
+- None — display-only string change
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. Fallback + source changed: card shows "New source is also using built-in reference data."
+3. Summary strip confidence note unchanged: "Preferred source unavailable — using built-in reference ranges."
+4. No source change (previousLabel null): card not shown — unaffected
+
+---
+
 # Addendum: P242 — Rank summary context compression
 
 ## Task Summary
