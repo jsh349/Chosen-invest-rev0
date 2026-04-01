@@ -52,7 +52,7 @@ export function RankDetailExplanationBlock({ nextHint, rankInsight, rankGoalInsi
   if (visible.length === 0) return null
 
   return (
-    <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3 space-y-2.5">
+    <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-3">
       {visible.map((item) => (
         <div key={item.key} className="flex items-start justify-between gap-3">
           <p className="text-xs text-gray-400 leading-relaxed">{item.text}</p>

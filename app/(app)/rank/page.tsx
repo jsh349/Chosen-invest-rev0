@@ -190,7 +190,7 @@ function PrimaryRankHighlight({ ranks, mode }: { ranks: RankResult[]; mode: Rank
   const primary = getPrimaryRank(ranks)
   if (!primary) return null
   return (
-    <div className="rounded-xl border border-brand-500/25 bg-surface-card px-5 py-4 space-y-1.5">
+    <div className="rounded-xl border border-brand-500/25 bg-surface-card px-5 py-4 space-y-2">
       <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
         {primary.label}
       </p>
