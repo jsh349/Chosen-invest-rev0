@@ -54,7 +54,7 @@ export function getRankChecklist(
     overall?.percentile !== null && overall?.percentile !== undefined &&
     overall.percentile < 40
   ) {
-    items.push({ text: 'Review portfolio allocation', href: ROUTES.portfolioList })
+    items.push({ text: 'Adjust portfolio allocation', href: ROUTES.portfolioList })
   }
 
   if (!profile.hasGoals) {

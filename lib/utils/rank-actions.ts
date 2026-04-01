@@ -45,7 +45,7 @@ export function getRankActions(
   // the rank position itself may shift once the source is restored — suggesting
   // portfolio action on that signal overstates the current confidence level.
   if (actions.length < 2 && overallPct !== null && overallPct < 75 && !profileIncomplete && !isLowConfidence) {
-    actions.push({ label: 'Review portfolio allocation', href: ROUTES.portfolioList })
+    actions.push({ label: 'Adjust portfolio allocation', href: ROUTES.portfolioList })
   }
 
   // Rule 3: return estimate missing and not already linking to Settings.
