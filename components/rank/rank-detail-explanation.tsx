@@ -43,8 +43,12 @@ export function RankDetailExplanationBlock({ nextHint, rankInsight, rankGoalInsi
   // bridge insight).
   let visible: typeof candidates
   if (candidates[0]?.key === 'hint') {
-    const interpretation = candidates.find((c) => c.key === 'insight') ?? null
-    // Insight before hint: context first, then action.
+    // Pair the hint with the first available interpretation (insight, goal, or
+    // allocation bridge) so the user reads context before the action link.
+    // Previously only 'insight' was checked — goal/allocation insights were
+    // silently dropped when nextHint was present.
+    const interpretation = candidates.find((c) => c.key !== 'hint') ?? null
+    // Interpretation before hint: context first, then action.
     visible = interpretation ? [interpretation, candidates[0]] : [candidates[0]]
   } else {
     visible = candidates.slice(0, 2)
