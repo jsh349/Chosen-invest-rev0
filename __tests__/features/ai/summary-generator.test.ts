@@ -25,20 +25,18 @@ function makeCtx(overrides: Partial<AdvisorContext> = {}): AdvisorContext {
 }
 
 describe('generateAISummary', () => {
-  // MEDIUM regression — duplicate portfolioList href
-  it('no duplicate hrefs in suggested actions (concentration + fallback scenario)', () => {
-    // Scenario that previously produced two ROUTES.portfolioList entries:
-    // hasGoals=true (no goal action), cashFlow=null (no tx action), no rank, topPct=80 > 60
+  // Regression — concentrated portfolio produces two portfolioList actions with distinct labels
+  // (Phase 70 bug: both had href=/portfolio/list, causing React duplicate-key warning.
+  //  Fix: ai-summary-card.tsx uses key={action.label}; generator intentionally emits both.)
+  it('concentrated portfolio (topPct>60, goals present, no cashFlow) produces two portfolioList actions', () => {
+    // hasGoals=true → no goal action; cashFlow=null → no tx action; no rank
+    // → both "Review portfolio allocation" and "View portfolio details" are added
     const result = generateAISummary(makeCtx())
-    const hrefs = result.suggestedActions.map((a) => a.href)
-    const unique = [...new Set(hrefs)]
-    expect(hrefs).toHaveLength(unique.length)
-  })
-
-  it('at most one portfolioList action for concentrated portfolio', () => {
-    const result = generateAISummary(makeCtx())
-    const count = result.suggestedActions.filter((a) => a.href === ROUTES.portfolioList).length
-    expect(count).toBeLessThanOrEqual(1)
+    const portfolioListActions = result.suggestedActions.filter((a) => a.href === ROUTES.portfolioList)
+    expect(portfolioListActions).toHaveLength(2)
+    // Labels must be distinct so key={action.label} renders both without collisions
+    const labels = portfolioListActions.map((a) => a.label)
+    expect(new Set(labels).size).toBe(2)
   })
 
   it('returns max 2 suggested actions', () => {

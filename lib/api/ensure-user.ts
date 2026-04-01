@@ -38,8 +38,8 @@ export async function ensureUser(
     // Find the canonical id and use it for the rest of the request.
     const isEmailConflict =
       err instanceof Error &&
-      'code' in (err as Record<string, unknown>) &&
-      (err as Record<string, unknown>).code === 'SQLITE_CONSTRAINT_UNIQUE' &&
+      'code' in (err as unknown as Record<string, unknown>) &&
+      (err as unknown as Record<string, unknown>).code === 'SQLITE_CONSTRAINT_UNIQUE' &&
       err.message.includes('users.email')
 
     if (!isEmailConflict) throw err

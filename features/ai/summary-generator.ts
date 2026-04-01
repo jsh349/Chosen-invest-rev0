@@ -161,7 +161,8 @@ export function generateAISummary(ctx: AdvisorContext): AIAnalysisResult {
   }
   if (actions.length < 2 && topPct > CONCENTRATION_THRESHOLDS.attention) {
     actions.push({ label: 'Review portfolio allocation', href: ROUTES.portfolioList })
-  } else if (actions.length < 2) {
+  }
+  if (actions.length < 2) {
     actions.push({ label: 'View portfolio details', href: ROUTES.portfolioList })
   }
 

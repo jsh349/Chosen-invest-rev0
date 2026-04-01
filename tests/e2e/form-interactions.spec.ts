@@ -50,36 +50,47 @@ async function gotoAuthenticated(page: Page, route: string) {
   await page.waitForLoadState('networkidle')
 }
 
-/** Go to a route with auth cookie + pre-seeded localStorage data. */
-async function seedAndGoto(
-  page: Page,
-  route: string,
-  seed: Record<string, string> = {}
-) {
+/** Clear all DB data for pw_test_user via the API, then navigate to route. */
+async function clearAndGoto(page: Page, route: string) {
   await page.context().addCookies([SESSION_COOKIE])
-  await page.goto('/login')
-  await page.evaluate((data) => {
-    for (const [key, value] of Object.entries(data)) {
-      localStorage.setItem(key, value)
-    }
-  }, seed)
+  await Promise.all([
+    page.request.delete('http://localhost:3001/api/assets'),
+    page.request.delete('http://localhost:3001/api/goals'),
+    page.request.delete('http://localhost:3001/api/transactions'),
+  ])
   await page.goto(route)
   await page.waitForLoadState('networkidle')
 }
 
-/** Read a localStorage key as parsed JSON from the current page context. */
-async function readLS(page: Page, key: string) {
-  return page.evaluate((k) => {
-    const raw = localStorage.getItem(k)
-    return raw ? JSON.parse(raw) : null
-  }, key)
+/** Seed assets/goals/transactions via the API (clearing first), then navigate. */
+async function seedApiAndGoto(
+  page: Page,
+  route: string,
+  seed: { assets?: object[]; goals?: object[]; transactions?: object[] } = {}
+) {
+  await page.context().addCookies([SESSION_COOKIE])
+  await Promise.all([
+    page.request.delete('http://localhost:3001/api/assets'),
+    page.request.delete('http://localhost:3001/api/goals'),
+    page.request.delete('http://localhost:3001/api/transactions'),
+  ])
+  if (seed.assets?.length) {
+    await page.request.post('http://localhost:3001/api/assets', { data: seed.assets })
+  }
+  if (seed.goals?.length) {
+    await page.request.post('http://localhost:3001/api/goals', { data: seed.goals })
+  }
+  if (seed.transactions?.length) {
+    await page.request.post('http://localhost:3001/api/transactions', { data: seed.transactions })
+  }
+  await page.goto(route)
+  await page.waitForLoadState('networkidle')
 }
 
-// Pre-built seed payloads
-const SEED_ASSETS = JSON.stringify([
+// Pre-built seed payloads (objects for API seeding, not JSON strings)
+const SEED_ASSETS = [
   {
     id: 'seed-a1',
-    userId: 'pw_test_user',
     name: 'Existing Stock',
     category: 'stock',
     value: 5000,
@@ -87,9 +98,9 @@ const SEED_ASSETS = JSON.stringify([
     createdAt: '2025-01-01T00:00:00.000Z',
     updatedAt: '2025-01-01T00:00:00.000Z',
   },
-])
+]
 
-const SEED_GOALS = JSON.stringify([
+const SEED_GOALS = [
   {
     id: 'seed-g1',
     name: 'Emergency Fund',
@@ -100,9 +111,9 @@ const SEED_GOALS = JSON.stringify([
     createdAt: '2025-01-01T00:00:00.000Z',
     updatedAt: '2025-01-01T00:00:00.000Z',
   },
-])
+]
 
-const SEED_TRANSACTIONS = JSON.stringify([
+const SEED_TRANSACTIONS = [
   {
     id: 'seed-t1',
     date: '2025-06-01',
@@ -111,7 +122,7 @@ const SEED_TRANSACTIONS = JSON.stringify([
     category: 'Income',
     createdAt: '2025-06-01T00:00:00.000Z',
   },
-])
+]
 
 // ===========================================================================
 // 1. PORTFOLIO INPUT FORM
@@ -133,7 +144,7 @@ test.describe('Portfolio Input — form interactions', () => {
   })
 
   test('pre-populates fields when existing assets are present', async ({ page }) => {
-    await seedAndGoto(page, '/portfolio/input', { chosen_assets_v1: SEED_ASSETS })
+    await seedApiAndGoto(page, '/portfolio/input', { assets: SEED_ASSETS })
     // Should show "Edit Your Assets" heading
     await expect(page.getByRole('heading', { name: /edit your assets/i })).toBeVisible()
     // The existing asset name should be in the input
@@ -144,7 +155,7 @@ test.describe('Portfolio Input — form interactions', () => {
   // ── Typing + total preview ─────────────────────────────────────────────────
 
   test('total updates in real-time as values are entered', async ({ page }) => {
-    await gotoAuthenticated(page, '/portfolio/input')
+    await clearAndGoto(page, '/portfolio/input')
     await page.locator('#name-0').fill('My Savings')
     await page.locator('#value-0').fill('12000')
     // Total entered preview should appear
@@ -186,8 +197,8 @@ test.describe('Portfolio Input — form interactions', () => {
 
   // ── Happy-path submit ──────────────────────────────────────────────────────
 
-  test('fills form and submits — assets saved to localStorage', async ({ page }) => {
-    await gotoAuthenticated(page, '/portfolio/input')
+  test('fills form and submits — assets saved to DB', async ({ page }) => {
+    await clearAndGoto(page, '/portfolio/input')
 
     await page.locator('#name-0').fill('Apple Shares')
     // Set category to stock
@@ -204,35 +215,37 @@ test.describe('Portfolio Input — form interactions', () => {
     await page.locator('button[type="submit"]').click()
     await page.waitForURL(/\/dashboard/, { timeout: 10000 })
 
-    // Verify localStorage was written
-    const stored = await readLS(page, 'chosen_assets_v1')
-    expect(Array.isArray(stored)).toBe(true)
-    expect(stored).toHaveLength(2)
-    expect(stored[0].name).toBe('Apple Shares')
-    expect(stored[0].value).toBe(8000)
-    expect(stored[1].name).toBe('Emergency Fund')
-    expect(stored[1].value).toBe(5000)
+    // Verify assets were saved to DB via the API
+    const resp = await page.request.get('http://localhost:3001/api/assets')
+    const data = await resp.json()
+    expect(Array.isArray(data)).toBe(true)
+    expect(data).toHaveLength(2)
+    const names = data.map((a: { name: string }) => a.name)
+    expect(names).toContain('Apple Shares')
+    expect(names).toContain('Emergency Fund')
   })
 
   test('empty form submits without saving and redirects to dashboard', async ({ page }) => {
-    await gotoAuthenticated(page, '/portfolio/input')
+    await clearAndGoto(page, '/portfolio/input')
     // Leave all fields blank and submit
     await page.locator('button[type="submit"]').click()
     await page.waitForURL(/\/dashboard/, { timeout: 8000 })
-    // localStorage should be absent or empty array (no custom assets)
-    const stored = await readLS(page, 'chosen_assets_v1')
-    const hasCustom = stored && Array.isArray(stored) && stored.some((a: { userId?: string }) => a.userId)
-    expect(hasCustom).toBeFalsy()
+    // No assets should have been saved to DB
+    const resp = await page.request.get('http://localhost:3001/api/assets')
+    const assets = await resp.json()
+    expect(Array.isArray(assets)).toBe(true)
+    expect(assets).toHaveLength(0)
   })
 
   test('Cancel button returns to dashboard without saving', async ({ page }) => {
-    await gotoAuthenticated(page, '/portfolio/input')
+    await clearAndGoto(page, '/portfolio/input')
     await page.locator('#name-0').fill('Should Not Save')
     await page.locator('button:has-text("Cancel")').click()
     await page.waitForURL(/\/dashboard/, { timeout: 8000 })
-    // Assert the asset was not saved
-    const stored = await readLS(page, 'chosen_assets_v1')
-    const names: string[] = stored ? stored.map((a: { name: string }) => a.name) : []
+    // Assert the asset was not saved to DB
+    const resp = await page.request.get('http://localhost:3001/api/assets')
+    const assets = await resp.json()
+    const names: string[] = Array.isArray(assets) ? assets.map((a: { name: string }) => a.name) : []
     expect(names).not.toContain('Should Not Save')
   })
 
@@ -268,12 +281,12 @@ test.describe('Goals — form interactions', () => {
   })
 
   test('empty goals list shows empty state', async ({ page }) => {
-    await gotoAuthenticated(page, '/goals')
+    await clearAndGoto(page, '/goals')
     await expect(page.locator('text=No goals yet')).toBeVisible()
   })
 
   test('existing goals are listed when seeded', async ({ page }) => {
-    await seedAndGoto(page, '/goals', { chosen_goals_v1: SEED_GOALS })
+    await seedApiAndGoto(page, '/goals', { goals: SEED_GOALS })
     await expect(page.locator('text=Emergency Fund')).toBeVisible()
     // Goal type badge (span inside the goal card, not the select option)
     await expect(page.getByText('savings', { exact: true })).toBeVisible()
@@ -335,8 +348,8 @@ test.describe('Goals — form interactions', () => {
     await expect(page.locator('text=2027-06-01')).toBeVisible()
   })
 
-  test('adding a goal persists it to localStorage', async ({ page }) => {
-    await gotoAuthenticated(page, '/goals')
+  test('adding a goal persists it to DB', async ({ page }) => {
+    await clearAndGoto(page, '/goals')
     await page.locator('input[name="name"]').fill('Retirement Nest Egg')
     await page.locator('select[name="type"]').selectOption('retirement')
     await page.locator('input[name="targetAmount"]').fill('500000')
@@ -344,9 +357,11 @@ test.describe('Goals — form interactions', () => {
     await page.locator('button:has-text("Add Goal")').click()
 
     await expect(page.locator('text=Retirement Nest Egg')).toBeVisible()
-    const stored = await readLS(page, 'chosen_goals_v1')
-    expect(Array.isArray(stored)).toBe(true)
-    const added = stored.find((g: { name: string }) => g.name === 'Retirement Nest Egg')
+    // Verify goal was saved to DB via the API
+    const resp = await page.request.get('http://localhost:3001/api/goals')
+    const goals = await resp.json()
+    expect(Array.isArray(goals)).toBe(true)
+    const added = goals.find((g: { name: string }) => g.name === 'Retirement Nest Egg')
     expect(added).toBeTruthy()
     expect(added.targetAmount).toBe(500000)
     expect(added.currentAmount).toBe(50000)
@@ -368,7 +383,7 @@ test.describe('Goals — form interactions', () => {
   // ── Edit flow ──────────────────────────────────────────────────────────────
 
   test('edit button opens inline form with existing values', async ({ page }) => {
-    await seedAndGoto(page, '/goals', { chosen_goals_v1: SEED_GOALS })
+    await seedApiAndGoto(page, '/goals', { goals: SEED_GOALS })
 
     // Click the pencil (edit) button
     await page.locator('button[aria-label="Edit goal"]').first().click()
@@ -381,7 +396,7 @@ test.describe('Goals — form interactions', () => {
   })
 
   test('editing a goal and saving updates the list', async ({ page }) => {
-    await seedAndGoto(page, '/goals', { chosen_goals_v1: SEED_GOALS })
+    await seedApiAndGoto(page, '/goals', { goals: SEED_GOALS })
 
     await page.locator('button[aria-label="Edit goal"]').first().click()
 
@@ -397,7 +412,7 @@ test.describe('Goals — form interactions', () => {
   })
 
   test('Cancel button during edit restores the list without changes', async ({ page }) => {
-    await seedAndGoto(page, '/goals', { chosen_goals_v1: SEED_GOALS })
+    await seedApiAndGoto(page, '/goals', { goals: SEED_GOALS })
 
     await page.locator('button[aria-label="Edit goal"]').first().click()
     const nameInput = page.locator('input[name="name"]').last()
@@ -412,8 +427,8 @@ test.describe('Goals — form interactions', () => {
 
   // ── Delete flow ────────────────────────────────────────────────────────────
 
-  test('deleting a goal removes it from the list and localStorage', async ({ page }) => {
-    await seedAndGoto(page, '/goals', { chosen_goals_v1: SEED_GOALS })
+  test('deleting a goal removes it from the list', async ({ page }) => {
+    await seedApiAndGoto(page, '/goals', { goals: SEED_GOALS })
 
     await expect(page.locator('text=Emergency Fund')).toBeVisible()
     await page.locator('button[aria-label="Delete goal"]').first().click()
@@ -421,9 +436,10 @@ test.describe('Goals — form interactions', () => {
     // Goal should be gone from UI
     await expect(page.locator('text=Emergency Fund')).not.toBeVisible()
 
-    // localStorage should be empty array
-    const stored = await readLS(page, 'chosen_goals_v1')
-    expect(stored).toHaveLength(0)
+    // Verify goal deleted from DB
+    const resp = await page.request.get('http://localhost:3001/api/goals')
+    const goals = await resp.json()
+    expect(goals).toHaveLength(0)
   })
 
   test('no JS errors during goals CRUD flow', async ({ page }) => {
@@ -559,8 +575,8 @@ test.describe('Transactions — form interactions', () => {
     expect(bodyText).toMatch(/\+.*4[,.]?500/i)
   })
 
-  test('expense persists to localStorage with negative amount', async ({ page }) => {
-    await gotoAuthenticated(page, '/transactions')
+  test('expense persists to DB with negative amount', async ({ page }) => {
+    await clearAndGoto(page, '/transactions')
     await page.locator('input[name="date"]').fill('2025-06-15')
     await page.locator('input[name="description"]').fill('Grocery Run')
     await page.locator('input[name="amount"]').fill('85')
@@ -569,9 +585,11 @@ test.describe('Transactions — form interactions', () => {
     await page.locator('button:has-text("Add Transaction")').click()
 
     await expect(page.locator('text=Grocery Run')).toBeVisible()
-    const stored = await readLS(page, 'chosen_transactions_v1')
-    expect(Array.isArray(stored)).toBe(true)
-    const entry = stored.find((t: { description: string }) => t.description === 'Grocery Run')
+    // Verify transaction saved to DB via the API
+    const resp = await page.request.get('http://localhost:3001/api/transactions')
+    const txns = await resp.json()
+    expect(Array.isArray(txns)).toBe(true)
+    const entry = txns.find((t: { description: string }) => t.description === 'Grocery Run')
     expect(entry).toBeTruthy()
     expect(entry.amount).toBe(-85) // stored as negative for expense
     expect(entry.category).toBe('Groceries')
@@ -608,7 +626,7 @@ test.describe('Transactions — form interactions', () => {
   // ── Filter + sort ──────────────────────────────────────────────────────────
 
   test('filter by category hides non-matching transactions', async ({ page }) => {
-    await seedAndGoto(page, '/transactions', { chosen_transactions_v1: SEED_TRANSACTIONS })
+    await seedApiAndGoto(page, '/transactions', { transactions: SEED_TRANSACTIONS })
 
     // History filter select has "All categories" option — target it specifically
     const filterSelect = page.locator('select:has(option[value="All"])')
@@ -618,14 +636,14 @@ test.describe('Transactions — form interactions', () => {
   })
 
   test('filter by category shows matching transactions', async ({ page }) => {
-    await seedAndGoto(page, '/transactions', { chosen_transactions_v1: SEED_TRANSACTIONS })
+    await seedApiAndGoto(page, '/transactions', { transactions: SEED_TRANSACTIONS })
     const filterSelect = page.locator('select:has(option[value="All"])')
     await filterSelect.selectOption('Income')
     await expect(page.locator('text=Salary')).toBeVisible()
   })
 
   test('sort by oldest-first changes display order', async ({ page }) => {
-    const twoTx = JSON.stringify([
+    const twoTx = [
       {
         id: 'tx1', date: '2025-06-15', description: 'Latest',
         amount: -100, category: 'Other', createdAt: '2025-06-15T00:00:00.000Z',
@@ -634,8 +652,8 @@ test.describe('Transactions — form interactions', () => {
         id: 'tx2', date: '2025-01-01', description: 'Earliest',
         amount: 500, category: 'Income', createdAt: '2025-01-01T00:00:00.000Z',
       },
-    ])
-    await seedAndGoto(page, '/transactions', { chosen_transactions_v1: twoTx })
+    ]
+    await seedApiAndGoto(page, '/transactions', { transactions: twoTx })
 
     // Sort select has "date-desc" option — target it specifically
     const sortSelect = page.locator('select:has(option[value="date-desc"])')
@@ -647,8 +665,8 @@ test.describe('Transactions — form interactions', () => {
 
   // ── Delete ─────────────────────────────────────────────────────────────────
 
-  test('deleting a transaction removes it from list and localStorage', async ({ page }) => {
-    await seedAndGoto(page, '/transactions', { chosen_transactions_v1: SEED_TRANSACTIONS })
+  test('deleting a transaction removes it from list', async ({ page }) => {
+    await seedApiAndGoto(page, '/transactions', { transactions: SEED_TRANSACTIONS })
 
     await expect(page.locator('text=Salary')).toBeVisible()
     await page.locator('button[aria-label="Delete transaction"]').first().click()
@@ -657,8 +675,10 @@ test.describe('Transactions — form interactions', () => {
     // Empty state should return
     await expect(page.locator('text=No transactions yet')).toBeVisible()
 
-    const stored = await readLS(page, 'chosen_transactions_v1')
-    expect(stored).toHaveLength(0)
+    // Verify DB is empty
+    const resp = await page.request.get('http://localhost:3001/api/transactions')
+    const txns = await resp.json()
+    expect(txns).toHaveLength(0)
   })
 
   test('no JS errors during full transaction add + delete flow', async ({ page }) => {
