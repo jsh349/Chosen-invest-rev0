@@ -934,18 +934,24 @@ export default function RankPage() {
         </p>
         <div className="mt-2 border-t border-surface-border pt-2 flex flex-wrap gap-x-4 gap-y-1">
           {/* Compact internal state summary — source · fallback · health · readiness at a glance.
-              Sits above the individual detail chips so the overall state is readable first. */}
+              Sits above the individual detail chips so the overall state is readable first.
+              Caution tokens (fallback, non-healthy readiness) are muted amber so they
+              stand out on scan without making the internal view noisy. */}
           <span className="w-full text-[10px] text-gray-400">
             {activeBenchmarkSource}
             {' · '}
-            {usingFallbackBenchmark ? 'fallback active' : 'no fallback'}
+            <span className={usingFallbackBenchmark ? 'text-amber-500/60' : undefined}>
+              {usingFallbackBenchmark ? 'fallback active' : 'no fallback'}
+            </span>
             {' · '}
             {benchmarkHealth.status}
             {' · '}
-            {benchmarkHealth.status === 'healthy'  ? 'ready' :
-             benchmarkHealth.status === 'fallback' ? 'degraded' :
-             benchmarkHealth.status === 'partial'  ? 'partial' :
-             'not ready'}
+            <span className={benchmarkHealth.status !== 'healthy' ? 'text-amber-500/60' : undefined}>
+              {benchmarkHealth.status === 'healthy'  ? 'ready' :
+               benchmarkHealth.status === 'fallback' ? 'degraded' :
+               benchmarkHealth.status === 'partial'  ? 'partial' :
+               'not ready'}
+            </span>
           </span>
           <span className="text-[10px] text-gray-600">
             <span className="text-gray-500">Version: </span>
@@ -964,9 +970,9 @@ export default function RankPage() {
           <span className="text-[10px] text-gray-600">
             <span className="text-gray-500">Status: </span>
             {benchmarkHealth.status === 'healthy'  && 'Current'}
-            {benchmarkHealth.status === 'partial'  && 'Partial — not all categories supported'}
-            {benchmarkHealth.status === 'fallback' && 'Using fallback'}
-            {benchmarkHealth.status === 'invalid'  && 'Not connected'}
+            {benchmarkHealth.status === 'partial'  && <span className="text-amber-500/60">Partial — not all categories supported</span>}
+            {benchmarkHealth.status === 'fallback' && <span className="text-amber-500/60">Using fallback</span>}
+            {benchmarkHealth.status === 'invalid'  && <span className="text-amber-500/60">Not connected</span>}
           </span>
           {BENCHMARK_META.notes && (
             <span className="text-[10px] text-gray-600 w-full">{BENCHMARK_META.notes}</span>
