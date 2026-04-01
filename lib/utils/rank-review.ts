@@ -20,7 +20,7 @@ import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
 import { readScalar, writeScalar } from '@/lib/utils/local-storage'
 
 /** After dismissal, the review prompt is suppressed for this many ms. */
-export const RANK_REVIEW_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
+export const RANK_REVIEW_COOLDOWN_MS = 14 * 24 * 60 * 60 * 1000 // 14 days
 
 export type RankReviewInputs = {
   totalAssetValue:  number
