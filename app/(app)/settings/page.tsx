@@ -105,7 +105,6 @@ function Row({ label, hint, children }: { label: string; hint?: string; children
 }
 
 function handleExport() {
-  if (typeof window === 'undefined') return
   const data: Record<string, unknown> = { exportedAt: new Date().toISOString() }
   for (const key of ALL_STORAGE_KEYS) {
     try {

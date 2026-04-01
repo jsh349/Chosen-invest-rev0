@@ -17,6 +17,7 @@ import { useCurrentUserId } from '@/lib/hooks/use-current-user-id'
 type HouseholdNotesContextType = {
   notes: HouseholdNote[]
   isLoaded: boolean
+  isLoadError: boolean
   addNote: (note: HouseholdNote) => void
   removeNote: (id: string) => void
 }
@@ -24,6 +25,7 @@ type HouseholdNotesContextType = {
 const HouseholdNotesContext = createContext<HouseholdNotesContextType>({
   notes: [],
   isLoaded: false,
+  isLoadError: false,
   addNote: () => {},
   removeNote: () => {},
 })
@@ -31,6 +33,7 @@ const HouseholdNotesContext = createContext<HouseholdNotesContextType>({
 export function HouseholdNotesProvider({ children }: { children: ReactNode }) {
   const [notes, setNotes] = useState<HouseholdNote[]>([])
   const [isLoaded, setIsLoaded] = useState(false)
+  const [isLoadError, setIsLoadError] = useState(false)
   const currentUserId = useCurrentUserId()
   // Ref mirrors state so callbacks can build the updated array without
   // putting async side-effects inside the setState updater.
@@ -46,7 +49,10 @@ export function HouseholdNotesProvider({ children }: { children: ReactNode }) {
       }
       setIsLoaded(true)
     }).catch(() => {
-      if (!cancelled) setIsLoaded(true)
+      if (!cancelled) {
+        setIsLoadError(true)
+        setIsLoaded(true)
+      }
     })
     return () => { cancelled = true }
   }, [])
@@ -70,7 +76,7 @@ export function HouseholdNotesProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <HouseholdNotesContext.Provider value={{ notes, isLoaded, addNote, removeNote }}>
+    <HouseholdNotesContext.Provider value={{ notes, isLoaded, isLoadError, addNote, removeNote }}>
       {children}
     </HouseholdNotesContext.Provider>
   )

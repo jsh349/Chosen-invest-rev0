@@ -240,6 +240,9 @@ export default function RankPage() {
   // Tracks an in-session dismiss — suppresses the review summary card immediately
   // after the banner is dismissed, preventing two review surfaces in quick succession.
   const [reviewDismissed, setReviewDismissed] = useState(false)
+  // Frozen at mount so rank calculations are stable for the session and don't
+  // silently produce a wrong age if the page is kept open across midnight Jan 1.
+  const [currentYear] = useState(() => new Date().getFullYear())
 
   const isFullyLoaded = assetsLoaded && householdLoaded && settingsLoaded && snapshotsLoaded && goalsLoaded
   // Read once at mount — source preference requires page reload to change.
@@ -260,8 +263,8 @@ export default function RankPage() {
     [currentUserId, assets]
   )
   const userAge = useMemo(
-    () => settings.birthYear ? new Date().getFullYear() - settings.birthYear : undefined,
-    [settings.birthYear]
+    () => settings.birthYear ? currentYear - settings.birthYear : undefined,
+    [currentYear, settings.birthYear]
   )
 
   const ranks = useMemo<RankResult[]>(() => {

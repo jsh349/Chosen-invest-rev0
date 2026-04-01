@@ -34,8 +34,12 @@ export function recordAudit(action: string, detail: string) {
     }
     writeJSON(LS_KEY, [entry, ...existing].slice(0, MAX_ENTRIES))
   } catch (e) {
-    // never break the app for audit
+    // Never break the app for audit, but surface the failure so the
+    // PersistErrorBanner fires — consistent with every other store.
     console.warn('[audit] failed to record:', e)
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('persist-error'))
+    }
   }
 }
 

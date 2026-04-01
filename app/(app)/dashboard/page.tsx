@@ -117,6 +117,10 @@ export default function DashboardPage() {
   const { settings, isLoaded: settingsLoaded } = useSettings()
   const currentUserId = useCurrentUserId()
   const [showPrefs, setShowPrefs] = useState(false)
+  // Frozen at component mount so rank calculations are stable for the session.
+  // Avoids a year-boundary bug where a page kept open across midnight Jan 1
+  // silently uses a stale year for the rest of the session.
+  const [currentYear] = useState(() => new Date().getFullYear())
 
   // All hooks must run unconditionally before any early return (Rules of Hooks).
   // These computations are safe with empty arrays while data is loading.
@@ -127,8 +131,8 @@ export default function DashboardPage() {
   const summary = baseCtx.portfolio
   const trendData = useMemo(() => buildMockTrend(summary.totalAssetValue), [summary.totalAssetValue])
   const userAge = useMemo(
-    () => settings.birthYear ? new Date().getFullYear() - settings.birthYear : undefined,
-    [settings.birthYear]
+    () => settings.birthYear ? currentYear - settings.birthYear : undefined,
+    [currentYear, settings.birthYear]
   )
   const overallRank = useMemo(() => computeOverallWealthRank(summary.totalAssetValue), [summary.totalAssetValue])
   const ageRank = useMemo(() => computeAgeBasedRank(summary.totalAssetValue, userAge), [summary.totalAssetValue, userAge])
@@ -170,11 +174,19 @@ export default function DashboardPage() {
 
   // Defer the AI summary render to a useEffect so health cards and the rest of
   // the dashboard paint first. The skeleton shows for one frame, then the effect
-  // fires and the AI card appears. When generateAISummary becomes truly async
-  // (real Gemini call), make this effect async — the skeleton stays until resolved.
+  // fires and the AI card appears.
+  //
+  // The `active` flag is a cancellation guard for when generateAISummary becomes
+  // truly async (real API call). Without it, a slow first invocation could resolve
+  // after a faster second one and overwrite the correct result with stale output.
+  // Currently synchronous, so the guard is a no-op — it costs nothing.
   const [aiAnalysis, setAiAnalysis] = useState<typeof computedAiAnalysis | null>(null)
   useEffect(() => {
-    setAiAnalysis(computedAiAnalysis)
+    let active = true
+    void Promise.resolve(computedAiAnalysis).then((a) => {
+      if (active) setAiAnalysis(a)
+    })
+    return () => { active = false }
   }, [computedAiAnalysis])
 
   if (!isLoaded || !prefsLoaded || !goalsLoaded || !txLoaded || !settingsLoaded) {

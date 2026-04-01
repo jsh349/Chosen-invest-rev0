@@ -15,6 +15,8 @@ function oauthErrorMessage(code: string | null): string | null {
   return 'Sign-in failed. Please try again.'
 }
 
+// Must remain in a 'use client' file — uses useSearchParams() which requires
+// client context. If extracted to its own file, add 'use client' at the top.
 function LoginForm() {
   const [loading, setLoading] = useState(false)
   const searchParams = useSearchParams()
