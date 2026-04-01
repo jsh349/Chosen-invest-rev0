@@ -43,7 +43,7 @@ export function getRankConfidenceNote(params: {
 
   if (benchmarkHealthStatus === 'partial') {
     return {
-      text:  'Some rank categories are not available from the active benchmark source.',
+      text:  'Some rank categories are unavailable from the active source.',
       level: 'moderate',
     }
   }

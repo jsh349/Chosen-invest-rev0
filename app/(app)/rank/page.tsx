@@ -130,9 +130,6 @@ function RankRow({ result, coverageNote }: { result: RankResult; coverageNote?: 
           )}
           <p className="text-sm text-gray-400 leading-relaxed">{result.message}</p>
           {hasPct && (
-            <p className="text-[11px] text-gray-600">{getRankInterpretation(result.percentile!)}</p>
-          )}
-          {hasPct && (
             <div className="pt-1">
               <PercentileBar percentile={result.percentile!} />
               <div className="mt-1 flex justify-between text-[10px] text-gray-600">

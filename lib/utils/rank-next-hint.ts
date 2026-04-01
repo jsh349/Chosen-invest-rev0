@@ -72,24 +72,22 @@ export function getPrimaryRankNextAction(
     return {
       href: ROUTES.settings,
       text: isLowConfidence
-        ? 'Add your birth year in Settings to include age in your comparison.'
-        : 'Add your birth year in Settings to unlock age-based rank comparison.',
+        ? 'Add your birth year to include age in your comparison.'
+        : 'Add your birth year to unlock age-based comparison.',
     }
   }
   if (!profile.hasGender) {
     return {
       href: ROUTES.settings,
-      text: isLowConfidence
-        ? 'Add your gender in Settings for a more detailed age and gender comparison.'
-        : 'Add your gender in Settings for a more detailed age and gender comparison.',
+      text: 'Add your gender for a more specific peer comparison.',
     }
   }
   if (!profile.hasReturn) {
     return {
       href: ROUTES.settings,
       text: isLowConfidence
-        ? 'Add an estimated annual return in Settings to include investment rank.'
-        : 'Add an estimated annual return in Settings to unlock investment rank.',
+        ? 'Add an estimated annual return to include investment ranking.'
+        : 'Add an estimated annual return to unlock investment ranking.',
     }
   }
 
