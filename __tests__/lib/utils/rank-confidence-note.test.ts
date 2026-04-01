@@ -9,14 +9,14 @@ describe('getRankConfidenceNote', () => {
 
   // ── fallback ─────────────────────────────────────────────────────────────
 
-  it('returns level "low" when status is "fallback"', () => {
+  it('returns level "moderate" when status is "fallback"', () => {
     const result = getRankConfidenceNote({ benchmarkHealthStatus: 'fallback' })
-    expect(result?.level).toBe('low')
+    expect(result?.level).toBe('moderate')
   })
 
-  it('fallback note mentions built-in reference data', () => {
+  it('fallback note mentions built-in ranges', () => {
     const result = getRankConfidenceNote({ benchmarkHealthStatus: 'fallback' })
-    expect(result?.text).toMatch(/built-in reference data/i)
+    expect(result?.text).toMatch(/built-in ranges/i)
   })
 
   // ── invalid source ───────────────────────────────────────────────────────
@@ -26,9 +26,9 @@ describe('getRankConfidenceNote', () => {
     expect(result?.level).toBe('low')
   })
 
-  it('invalid note mentions not yet connected or built-in reference', () => {
+  it('invalid note mentions not connected or built-in ranges', () => {
     const result = getRankConfidenceNote({ benchmarkHealthStatus: 'invalid' })
-    expect(result?.text).toMatch(/not yet connected|built-in reference/i)
+    expect(result?.text).toMatch(/not connected|built-in ranges/i)
   })
 
   // ── partial source ───────────────────────────────────────────────────────

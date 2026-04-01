@@ -29,21 +29,21 @@ export function getRankConfidenceNote(params: {
 
   if (benchmarkHealthStatus === 'fallback') {
     return {
-      text:  'Preferred source unavailable — using built-in reference ranges.',
+      text:  'Preferred source unavailable — using built-in ranges.',
       level: 'moderate',
     }
   }
 
   if (benchmarkHealthStatus === 'invalid') {
     return {
-      text:  'Selected source not yet connected — using built-in reference ranges.',
+      text:  'Selected source not connected — using built-in ranges.',
       level: 'low',
     }
   }
 
   if (benchmarkHealthStatus === 'partial') {
     return {
-      text:  'Some rank categories are unavailable from the active source.',
+      text:  'Some rank categories unavailable from this source.',
       level: 'moderate',
     }
   }
