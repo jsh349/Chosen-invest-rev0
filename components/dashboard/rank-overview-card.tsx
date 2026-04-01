@@ -58,7 +58,7 @@ function RankTile({ result }: { result: RankResult }) {
       ) : (
         <div className="h-1.5 w-full rounded-full bg-surface-muted" />
       )}
-      <p className="text-[11px] leading-relaxed text-gray-400">{result.message}</p>
+      <p className={cn('text-[11px] leading-relaxed', hasPct ? 'text-gray-400' : 'text-gray-500')}>{result.message}</p>
     </div>
   )
 }

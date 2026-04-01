@@ -30,7 +30,7 @@ export function getRankConfidenceNote(params: {
   if (benchmarkHealthStatus === 'fallback') {
     return {
       text:  'Preferred source unavailable — using built-in reference ranges.',
-      level: 'low',
+      level: 'moderate',
     }
   }
 
