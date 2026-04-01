@@ -111,20 +111,18 @@ export const RankShareCard = forwardRef<HTMLDivElement, Props>(
               </div>
             )}
 
-            {/* Partial data note */}
-            {isPartial && (
+            {/* Combined coverage + source note — merged into one compact line when
+                both are present to avoid two adjacent low-key notes.
+                Distinction is preserved: partial-profile signal first, source signal second. */}
+            {(isPartial || sourceNote) && (
               <p className="text-[10px] text-gray-600">
-                {availableCount} of {totalCount} ranks available — some inputs are missing.
+                {[
+                  isPartial ? `${availableCount} of ${totalCount} ranks available — some inputs are missing.` : null,
+                  sourceNote ?? null,
+                ].filter(Boolean).join(' · ')}
               </p>
             )}
           </>
-        )}
-
-        {/* Compact source/fallback note — shown only when benchmark source is degraded.
-            Provides standalone source context for screenshot/share scenarios where
-            the rank page summary strip is not visible. */}
-        {sourceNote && (
-          <p className="text-[10px] text-gray-500">{sourceNote}</p>
         )}
 
         {/* Disclaimer + optional review hint */}

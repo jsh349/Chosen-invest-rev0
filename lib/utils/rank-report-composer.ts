@@ -30,10 +30,17 @@ export type RankReportContent = {
  *
  * Lives here (not in the UI component) so any surface can import the
  * composition logic without depending on the renderer.
+ *
+ * @param isLowConfidence When true (fallback / invalid benchmark source):
+ *   Hints that imply a reliable outcome ("to unlock ...") are suppressed.
+ *   These hints should have been generated with isLowConfidence = true by
+ *   the caller (getPrimaryRankNextAction); this is a defensive safety gate
+ *   for cases where the caller cannot pass the flag.
  */
 export function composeRankReport(
   ranks: RankResult[],
   nextHint: RankHint | null | undefined,
+  { isLowConfidence = false }: { isLowConfidence?: boolean } = {},
 ): RankReportContent | null {
   const highlight = getPrimaryRank(ranks)
   if (!highlight || highlight.percentile === null) return null
@@ -41,7 +48,16 @@ export function composeRankReport(
   // Only surface profile-completeness actions (Settings) in compact reports.
   // Portfolio/goals actions need the surrounding context of the full rank page
   // to be actionable — showing them here without that context is low confidence.
-  const nextAction = nextHint?.href === ROUTES.settings ? nextHint : null
+  //
+  // Additional gate: when isLowConfidence is true, suppress Settings hints that
+  // still carry "unlock" framing — these imply a reliable rank improvement that
+  // the fallback source cannot deliver. Callers should ideally pass a hint
+  // computed with isLowConfidence = true; this prevents a mismatch when they don't.
+  const rawAction = nextHint?.href === ROUTES.settings ? nextHint : null
+  const nextAction =
+    rawAction !== null && isLowConfidence && rawAction.text.includes('unlock')
+      ? null
+      : rawAction
 
   // comparisonNote (slot 3) is suppressed when nextAction (slot 4) is present.
   // When a profile-completeness action is already shown, getRankInsight's profile-gap

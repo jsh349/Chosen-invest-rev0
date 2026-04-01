@@ -23,6 +23,13 @@ type Props = {
    * Mirrors the same prop on RankShareCard for consistent source framing.
    */
   sourceNote?: string | null
+  /**
+   * When true, suppresses Settings hints that still carry "unlock" framing —
+   * those imply a reliable rank improvement the fallback source cannot deliver.
+   * Should match the isLowConfidence value used when computing nextHint via
+   * getPrimaryRankNextAction.
+   */
+  isLowConfidence?: boolean
   /** Comparison mode label shown in the card sub-header. Defaults to 'individual'. */
   mode?: 'individual' | 'household'
 }
@@ -32,8 +39,8 @@ type Props = {
  * Slots 3 and 4 (comparisonNote, nextAction) are omitted when null.
  * Returns null when no rank data is available.
  */
-export function RankReportSection({ ranks, nextHint, sourceNote = null, mode = 'individual' }: Props) {
-  const report = composeRankReport(ranks, nextHint)
+export function RankReportSection({ ranks, nextHint, sourceNote = null, isLowConfidence = false, mode = 'individual' }: Props) {
+  const report = composeRankReport(ranks, nextHint, { isLowConfidence })
   if (!report) return null
 
   const { highlight, explanation, comparisonNote, nextAction } = report
@@ -85,18 +92,16 @@ export function RankReportSection({ ranks, nextHint, sourceNote = null, mode = '
         </div>
       )}
 
-      {/* Partial coverage note — parity with RankShareCard */}
-      {isPartial && (
+      {/* Combined coverage + source note — when both are present they are merged
+          into a single compact line to avoid two adjacent low-key notes.
+          Distinction is preserved: partial-profile signal first, source signal second. */}
+      {(isPartial || sourceNote) && (
         <p className="text-[10px] text-gray-600">
-          {availableCount} of {ranks.length} ranks available — some inputs are missing.
+          {[
+            isPartial ? `${availableCount} of ${ranks.length} ranks available — some inputs are missing.` : null,
+            sourceNote ?? null,
+          ].filter(Boolean).join(' · ')}
         </p>
-      )}
-
-      {/* Compact source/fallback note — shown only when benchmark source is degraded.
-          Mirrors the same pattern in RankShareCard for consistent source framing
-          across standalone compact report surfaces. */}
-      {sourceNote && (
-        <p className="text-[10px] text-gray-500">{sourceNote}</p>
       )}
 
       {/* Footer — benchmark framing + detail link.
