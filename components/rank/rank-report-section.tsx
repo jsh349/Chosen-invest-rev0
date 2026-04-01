@@ -108,7 +108,7 @@ export function RankReportSection({ ranks, nextHint, sourceNote = null }: Props)
           href={ROUTES.rank}
           className="shrink-0 text-[10px] text-brand-400 hover:text-brand-300 transition-colors"
         >
-          {isPartial ? 'View full ranking →' : 'Review in full →'}
+          {isPartial ? 'View full ranking →' : 'Review in detail →'}
         </Link>
       </div>
     </div>
