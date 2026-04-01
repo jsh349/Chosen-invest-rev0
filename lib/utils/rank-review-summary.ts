@@ -106,7 +106,7 @@ export function getRankReviewSummary(
       return {
         topic: 'return', label: 'Return rank',
         status: 'review',
-        note: 'Return rank is below the benchmark median — consider updating your return estimate.',
+        note: 'Below the benchmark median — consider reviewing your return estimate.',
       }
     }
     return {

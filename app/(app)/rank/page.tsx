@@ -679,8 +679,13 @@ export default function RankPage() {
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-3">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Rank Assessment</p>
-                <span className="text-[10px] text-amber-500/70">
-                  Needs attention
+                <span className={cn(
+                  'text-[10px]',
+                  rankReviewSummary.some((i) => i.status === 'missing')
+                    ? 'text-amber-500/70'
+                    : 'text-gray-500',
+                )}>
+                  {rankReviewSummary.some((i) => i.status === 'missing') ? 'Needs attention' : 'For your review'}
                 </span>
               </div>
               <ul className="space-y-2.5">
