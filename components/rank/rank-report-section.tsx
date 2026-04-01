@@ -56,7 +56,7 @@ export function RankReportSection({ ranks, nextHint, sourceNote = null, isLowCon
       className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-3"
     >
       <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Rank Report</p>
-      <p className="text-[10px] capitalize text-gray-600">{mode} · local benchmark</p>
+      <p className="text-[10px] capitalize text-gray-600">{mode} · built-in reference</p>
 
       {/* Slot 1 — primary rank highlight */}
       <div className="space-y-0.5">
