@@ -4,6 +4,7 @@ import { forwardRef } from 'react'
 import Link from 'next/link'
 import type { RankResult } from '@/lib/types/rank'
 import { topPctLabel, percentileColor } from '@/lib/utils/rank-format'
+import { getRankInterpretation } from '@/lib/utils/rank-interpretation'
 import { cn } from '@/lib/utils/cn'
 import { getPrimaryRank } from '@/lib/utils/rank-priority'
 import { ROUTES } from '@/lib/constants/routes'
@@ -83,7 +84,7 @@ export const RankShareCard = forwardRef<HTMLDivElement, Props>(
                       </span>
                     </div>
                     <p className="mt-1.5 text-[11px] text-gray-500 leading-relaxed">
-                      {hero.message}
+                      {getRankInterpretation(hero.percentile!)}
                     </p>
                   </>
                 ) : (

@@ -16,7 +16,7 @@ export function benchmarkVersionNote(snapshots: { savedAt: string }[]): string |
   const benchmarkDate = new Date(getActiveBenchmarkMeta().updatedAt)
   const hasOlderSnapshot = snapshots.some((s) => new Date(s.savedAt) < benchmarkDate)
   if (!hasOlderSnapshot) return null
-  return 'Rank comparisons may reflect updated benchmark reference ranges.'
+  return 'Rank comparisons may reflect updated reference ranges.'
 }
 
 const LS_KEY = STORAGE_KEYS.benchmarkSeen
@@ -82,7 +82,7 @@ export function getBenchmarkTransitionNote(): string | null {
   if (prevSource === currentSource) return null
   const from = sourceLabelFor(prevSource).toLowerCase()
   const to   = sourceLabelFor(currentSource).toLowerCase()
-  return `Benchmark source changed from ${from} to ${to} — reference ranges may differ from your previous visit.`
+  return `Benchmark source changed from ${from} to ${to} — reference ranges may differ.`
 }
 
 // ---------------------------------------------------------------------------
@@ -116,7 +116,7 @@ export type BenchmarkSourceSummary = {
  */
 export function getBenchmarkSourceImpactNote(hasPriorSnapshots: boolean): string | null {
   if (!hasPriorSnapshots) return null
-  return 'Prior snapshots were recorded under different reference ranges and may not compare directly to current values.'
+  return 'Prior snapshots used different reference ranges — direct comparisons may not be exact.'
 }
 
 export function getBenchmarkSourceSummary(fallbackActive: boolean): BenchmarkSourceSummary | null {

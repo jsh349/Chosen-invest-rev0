@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { cn } from '@/lib/utils/cn'
 import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
 import { percentileColor } from '@/lib/utils/rank-format'
+import { getRankInterpretation } from '@/lib/utils/rank-interpretation'
 import { ROUTES } from '@/lib/constants/routes'
 import type { RankResult } from '@/lib/types/rank'
 import { getPrimaryRank } from '@/lib/utils/rank-priority'
@@ -58,7 +59,11 @@ function RankTile({ result }: { result: RankResult }) {
       ) : (
         <div className="h-1.5 w-full rounded-full bg-surface-muted" />
       )}
-      <p className={cn('text-[11px] leading-relaxed', hasPct ? 'text-gray-400' : 'text-gray-500')}>{result.message}</p>
+      {hasPct && (
+        <p className="text-[11px] leading-relaxed text-gray-400">
+          {getRankInterpretation(result.percentile!)}
+        </p>
+      )}
     </div>
   )
 }
@@ -96,7 +101,7 @@ export function RankOverviewCard({ rank, ageRank, ageGenderRank, returnRank, tot
             <span>50th</span>
             <span>100th</span>
           </div>
-          <p className="text-xs text-gray-400">{primary?.message}</p>
+          <p className="text-xs text-gray-400">{primary && getRankInterpretation(primary.percentile!)}</p>
         </div>
       </div>
 
