@@ -563,7 +563,7 @@ export default function RankPage() {
               <div className="flex items-center gap-3 shrink-0">
                 <Link
                   href={ROUTES.settings}
-                  className="text-[10px] text-brand-400 hover:text-brand-300 transition-colors"
+                  className="text-xs text-brand-400 hover:text-brand-300 transition-colors"
                 >
                   Settings →
                 </Link>

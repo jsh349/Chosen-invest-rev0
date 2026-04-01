@@ -118,6 +118,31 @@ Separate source framing from confidence framing in the rank summary strip.
 
 ---
 
+# Addendum: P244 — CTA emphasis consistency pass
+
+## Task Summary
+Review banner "Settings →" CTA is text-[10px] while all other primary CTAs are text-xs.
+When the review banner is active, nextHint is suppressed — the banner Settings link is
+the only primary CTA on the page. It should match the text-xs size of the links it replaces.
+
+## Non-Goals
+- No styling changes to secondary actions (Dismiss stays text-[10px])
+- No changes to footer nav hints (text-[10px] is correct there)
+- No changes to checklist or missingField links
+
+## Affected Files
+- `app/(app)/rank/page.tsx` — banner Settings link: text-[10px] → text-xs
+
+## Risks
+- None — single class name change
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. Review banner visible: "Settings →" is text-xs (matches explanation block CTAs)
+3. Dismiss button unchanged at text-[10px] (secondary action, visually subordinate)
+
+---
+
 # Addendum: P242 — Rank summary context compression
 
 ## Task Summary
