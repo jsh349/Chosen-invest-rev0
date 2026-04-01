@@ -1,16 +1,23 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 /**
  * Listens for 'persist-error' CustomEvents dispatched by store save handlers
  * and shows a dismissible banner so users know when a save failed.
+ * Applies a ~3 s cooldown to avoid re-showing immediately after dismiss.
  */
 export function PersistErrorBanner() {
   const [visible, setVisible] = useState(false)
+  const lastShownAt = useRef<number>(0)
 
   useEffect(() => {
-    function onError() { setVisible(true) }
+    function onError() {
+      const now = Date.now()
+      if (now - lastShownAt.current < 3000) return
+      lastShownAt.current = now
+      setVisible(true)
+    }
     window.addEventListener('persist-error', onError)
     return () => window.removeEventListener('persist-error', onError)
   }, [])

@@ -21,13 +21,13 @@ export const assetsAdapter: AssetsAdapter = {
     if (!res.ok) throw new Error(`[assetsAdapter] getAll failed: ${res.status}`)
     const data = await res.json() as Asset[]
     return data.filter((a) => {
-      if (!a.id || !Number.isFinite(a.value) || !a.name) {
-        console.warn('[assetsAdapter] Skipping malformed asset — missing id, value, or name.', a)
+      if (!a.id || !Number.isFinite(a.value) || !a.name || !a.createdAt) {
+        console.warn('[assetsAdapter] Skipping malformed asset — missing id, value, name, or createdAt.', a)
         return false
       }
       if (!isValidAssetCategory(a.category)) {
-        console.warn(`[assetsAdapter] Unknown category "${a.category}" on asset "${a.id}" — skipped.`)
-        return false
+        console.warn(`[assetsAdapter] Unknown category "${a.category}" on asset "${a.id}" — coerced to 'other'.`)
+        a.category = 'other'
       }
       return true
     })

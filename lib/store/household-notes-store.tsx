@@ -62,7 +62,10 @@ export function HouseholdNotesProvider({ children }: { children: ReactNode }) {
     const updated = [noteWithUser, ...notesRef.current]
     notesRef.current = updated
     setNotes(updated)
-    void householdNotesAdapter.saveAll(updated).catch(() => { window.dispatchEvent(new CustomEvent('persist-error')) })
+    void householdNotesAdapter.saveAll(updated).catch((err) => {
+      console.error('[HouseholdNotesStore] addNote save failed', err)
+      if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('persist-error'))
+    })
     recordAudit('Note added', noteWithUser.title)
   }, [currentUserId])
 
@@ -71,7 +74,10 @@ export function HouseholdNotesProvider({ children }: { children: ReactNode }) {
     const updated = notesRef.current.filter((n) => n.id !== id)
     notesRef.current = updated
     setNotes(updated)
-    void householdNotesAdapter.saveAll(updated).catch(() => { window.dispatchEvent(new CustomEvent('persist-error')) })
+    void householdNotesAdapter.saveAll(updated).catch((err) => {
+      console.error('[HouseholdNotesStore] removeNote save failed', err)
+      if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('persist-error'))
+    })
     if (target) recordAudit('Note deleted', target.title)
   }, [])
 

@@ -131,7 +131,9 @@ function RankRow({ result, coverageNote }: { result: RankResult; coverageNote?: 
           ) : (
             <p className="text-2xl font-bold text-gray-600">—</p>
           )}
-          <p className="text-sm text-gray-400 leading-relaxed">{result.message}</p>
+          <p className="text-sm text-gray-400 leading-relaxed">
+            {hasPct ? getRankInterpretation(result.percentile!) : result.message}
+          </p>
           {hasPct && (
             <div className="pt-1">
               <PercentileBar percentile={result.percentile!} />

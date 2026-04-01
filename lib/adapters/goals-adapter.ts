@@ -30,6 +30,18 @@ export const goalsAdapter: GoalsAdapter = {
         console.warn(`[goalsAdapter] Unknown goal type "${g.type}" on goal "${g.id}" — skipped.`)
         return false
       }
+      if (g.currentAmount < 0) {
+        console.warn(`[goalsAdapter] Negative currentAmount on goal "${g.id}" — skipped.`)
+        return false
+      }
+      if (g.currentAmount > g.targetAmount) {
+        console.warn(`[goalsAdapter] currentAmount exceeds targetAmount on goal "${g.id}" — skipped.`)
+        return false
+      }
+      if (g.targetDate && !/^\d{4}-\d{2}-\d{2}$/.test(g.targetDate)) {
+        console.warn(`[goalsAdapter] Invalid targetDate format on goal "${g.id}" — skipped.`)
+        return false
+      }
       return true
     })
   },

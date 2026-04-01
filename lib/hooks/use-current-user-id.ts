@@ -11,5 +11,9 @@ import { LOCAL_USER_ID } from '@/lib/constants/auth'
  */
 export function useCurrentUserId(): string {
   const { data: session } = useSession()
-  return session?.user?.id ?? LOCAL_USER_ID
+  const id = session?.user?.id ?? LOCAL_USER_ID
+  if (process.env.NODE_ENV === 'development' && id === LOCAL_USER_ID && session !== undefined) {
+    console.warn('[useCurrentUserId] Falling back to LOCAL_USER_ID — no authenticated session.')
+  }
+  return id
 }

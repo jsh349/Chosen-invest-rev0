@@ -14,6 +14,7 @@ import { FormError } from '@/components/ui/form-error'
 import type { Goal, GoalType } from '@/lib/types/goal'
 import { getGoalStatus, goalProgressPct, GOAL_STATUS_LABELS, GOAL_STATUS_STYLES } from '@/lib/utils/goal-status'
 import { ROUTES } from '@/lib/constants/routes'
+import { useCurrentUserId } from '@/lib/hooks/use-current-user-id'
 
 const GOAL_TYPES: { value: GoalType; label: string }[] = [
   { value: 'savings',    label: 'Savings'    },
@@ -144,6 +145,7 @@ function parseForm(form: FormState): { targetAmount: number; currentAmount: numb
 export default function GoalsPage() {
   const { goals, isLoaded, addGoal, updateGoal, removeGoal } = useGoals()
   const { fmt } = useFormatCurrency()
+  const currentUserId = useCurrentUserId()
   const [addForm, setAddForm] = useState<FormState>(EMPTY_FORM)
   const [addError, setAddError] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -171,6 +173,7 @@ export default function GoalsPage() {
     const now = new Date().toISOString()
     addGoal({
       id:            crypto.randomUUID(),
+      userId:        currentUserId,
       name:          addForm.name.trim(),
       type:          addForm.type,
       targetAmount:  amounts.targetAmount,
@@ -214,6 +217,7 @@ export default function GoalsPage() {
       shared:        editForm.shared,
     })
     setEditingId(null)
+    setEditForm(EMPTY_FORM)
   }
 
   return (

@@ -98,7 +98,7 @@ export function computeAgeBasedRank(totalAssetValue: number, age?: number): Rank
       type: 'age_based',
       label: 'Age-Based Rank',
       percentile: null,
-      message: 'Add your birth year in Settings to enable age-based ranking.',
+      message: 'Add your birth year in Settings to unlock age-based ranking.',
       missingField: 'birth year',
     }
   }
@@ -145,7 +145,7 @@ export function computeAgeGenderRank(
       type: 'age_gender',
       label: 'Age + Gender Rank',
       percentile: null,
-      message: 'Add your birth year and gender in Settings to enable this ranking.',
+      message: 'Add your birth year and gender in Settings to unlock this ranking.',
       missingField: 'birth year and gender',
     }
   }
@@ -154,7 +154,7 @@ export function computeAgeGenderRank(
       type: 'age_gender',
       label: 'Age + Gender Rank',
       percentile: null,
-      message: 'Add your birth year in Settings to enable this ranking.',
+      message: 'Add your birth year in Settings to unlock this ranking.',
       missingField: 'birth year',
     }
   }
@@ -163,7 +163,7 @@ export function computeAgeGenderRank(
       type: 'age_gender',
       label: 'Age + Gender Rank',
       percentile: null,
-      message: 'Add your gender in Settings to enable this ranking.',
+      message: 'Add your gender in Settings to unlock this ranking.',
       missingField: 'gender',
     }
   }
@@ -223,7 +223,7 @@ export function computeReturnRank(annualReturnPct?: number): RankResult {
       type: 'investment_return',
       label: 'Investment Return Rank',
       percentile: null,
-      message: 'Add your estimated annual return in Settings to enable this ranking.',
+      message: 'Add your estimated annual return in Settings to unlock this ranking.',
       missingField: 'annual return',
     }
   }
