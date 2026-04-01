@@ -394,6 +394,13 @@ export default function RankPage() {
 
   const availableCount = ranks.filter((r) => r.percentile != null).length
   const completeness = rankCompleteness(availableCount, ranks.length)
+  // In low-data mode (≤1 ranked category), only show rows that have a real
+  // percentile. The unranked rows would repeat profile-completion prompts
+  // already visible in the explanation block above. Full row set is restored
+  // once more than one rank is available.
+  const rankRowsToShow = availableCount > 1
+    ? ranks
+    : ranks.filter((r) => r.percentile != null)
   const hasHouseholdMembers = members.length > 0
   const sourceImpactNote =
     sourceSummary !== null && sourceSummary.previousLabel !== null
@@ -685,10 +692,11 @@ export default function RankPage() {
 
           </div>{/* end action cluster */}
 
-          {/* Rank rows — detailed breakdown, visually separated from the advice cluster above */}
-          {summary.assetCount > 0 && (
+          {/* Rank rows — detailed breakdown, visually separated from the advice cluster above.
+               In low-data mode only ranked rows are shown (see rankRowsToShow). */}
+          {summary.assetCount > 0 && rankRowsToShow.length > 0 && (
             <div className="!mt-8 rounded-xl border border-surface-border bg-surface-card px-5">
-              {ranks.map((r) => (
+              {rankRowsToShow.map((r) => (
                 <RankRow
                   key={r.type}
                   result={r}
