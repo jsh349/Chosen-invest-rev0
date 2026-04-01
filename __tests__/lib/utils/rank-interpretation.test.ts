@@ -1,16 +1,19 @@
 import { getRankInterpretation } from '@/lib/utils/rank-interpretation'
 
 describe('getRankInterpretation', () => {
-  it('returns favorable copy at 75th percentile', () => {
-    expect(getRankInterpretation(75)).toContain('favorably')
+  // Normal (non-fallback) — uses "benchmark median"
+  it('returns well-above copy at 75th percentile', () => {
+    expect(getRankInterpretation(75)).toContain('Well above')
+    expect(getRankInterpretation(75)).toContain('benchmark median')
   })
 
-  it('returns favorable copy at 90th percentile', () => {
-    expect(getRankInterpretation(90)).toContain('favorably')
+  it('returns well-above copy at 90th percentile', () => {
+    expect(getRankInterpretation(90)).toContain('Well above')
   })
 
   it('returns above-midpoint copy at 50th percentile', () => {
     expect(getRankInterpretation(50)).toContain('Above')
+    expect(getRankInterpretation(50)).toContain('benchmark median')
   })
 
   it('returns above-midpoint copy at 74th percentile', () => {
@@ -33,17 +36,45 @@ describe('getRankInterpretation', () => {
     expect(getRankInterpretation(39)).toContain('Below')
   })
 
-  it('returns lower-range copy at 24th percentile', () => {
-    expect(getRankInterpretation(24)).toContain('lower range')
+  it('returns well-below copy at 24th percentile', () => {
+    expect(getRankInterpretation(24)).toContain('Well below')
   })
 
-  it('returns lower-range copy at 0', () => {
-    expect(getRankInterpretation(0)).toContain('lower range')
+  it('returns well-below copy at 0', () => {
+    expect(getRankInterpretation(0)).toContain('Well below')
   })
 
   it('returns a non-empty string for every integer 0–100', () => {
     for (let i = 0; i <= 100; i++) {
       expect(getRankInterpretation(i).length).toBeGreaterThan(0)
     }
+  })
+
+  // Low-confidence (fallback) — uses "reference estimate" instead of "benchmark median"
+  describe('isLowConfidence = true', () => {
+    it('uses reference estimate wording at 75th percentile', () => {
+      const result = getRankInterpretation(75, true)
+      expect(result).toContain('Well above')
+      expect(result).toContain('reference estimate')
+      expect(result).not.toContain('benchmark median')
+    })
+
+    it('uses reference estimate wording at 50th percentile', () => {
+      const result = getRankInterpretation(50, true)
+      expect(result).toContain('reference estimate')
+      expect(result).not.toContain('benchmark median')
+    })
+
+    it('uses reference estimate wording at 0th percentile', () => {
+      const result = getRankInterpretation(0, true)
+      expect(result).toContain('Well below')
+      expect(result).toContain('reference estimate')
+    })
+
+    it('returns a non-empty string for every integer 0–100 in low-confidence mode', () => {
+      for (let i = 0; i <= 100; i++) {
+        expect(getRankInterpretation(i, true).length).toBeGreaterThan(0)
+      }
+    })
   })
 })

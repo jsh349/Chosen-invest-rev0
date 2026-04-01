@@ -71,7 +71,7 @@ export function composeRankReport(
     // Use the short interpretation (no redundant percentile) rather than
     // highlight.message — the percentile is already displayed prominently
     // in Slot 1, so the explanation slot should add interpretation only.
-    explanation: getRankInterpretation(highlight.percentile!),
+    explanation: getRankInterpretation(highlight.percentile!, isLowConfidence),
     comparisonNote,
     nextAction,
   }
