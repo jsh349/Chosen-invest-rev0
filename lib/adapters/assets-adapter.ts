@@ -40,7 +40,11 @@ export const assetsAdapter: AssetsAdapter = {
       headers:     { 'Content-Type': 'application/json' },
       body:        JSON.stringify(assets),
     })
-    if (!res.ok) throw new Error(`[assetsAdapter] saveAll failed: ${res.status}`)
+    if (!res.ok) {
+      let detail = ''
+      try { detail = JSON.stringify(await res.json()) } catch { /* ignore */ }
+      throw new Error(`[assetsAdapter] saveAll failed: HTTP ${res.status} — ${detail}`)
+    }
   },
 
   async clear() {

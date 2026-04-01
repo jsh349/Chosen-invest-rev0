@@ -46,32 +46,42 @@ export async function POST(request: Request) {
 
   const parsed = AssetsPayloadSchema.safeParse(body)
   if (!parsed.success) {
+    console.error('[POST /api/assets] Validation failed:', JSON.stringify(parsed.error.issues, null, 2))
     return Response.json({ error: 'Invalid input', details: parsed.error.issues }, { status: 400 })
   }
 
   const userId = session.user.id
   const now    = new Date().toISOString()
 
-  await ensureUser(userId, session.user.email, session.user.name)
+  try {
+    await ensureUser(userId, session.user.email, session.user.name)
+  } catch (err) {
+    console.error('[POST /api/assets] ensureUser failed:', err)
+    return Response.json({ error: 'Failed to resolve user record' }, { status: 500 })
+  }
 
-  // Atomic replace: delete + insert run inside a single transaction.
-  await db.transaction(async (tx) => {
-    await tx.delete(assets).where(eq(assets.userId, userId))
-    if (parsed.data.length > 0) {
-      await tx.insert(assets).values(
-        parsed.data.map((a) => ({
-          id:         a.id,
-          userId,
-          name:       a.name,
-          category:   a.category,
-          valueCents: Math.round(a.value * 100),
-          currency:   a.currency,
-          createdAt:  a.createdAt,
-          updatedAt:  a.updatedAt ?? now,
-        })),
-      )
-    }
-  })
+  try {
+    await db.transaction(async (tx) => {
+      await tx.delete(assets).where(eq(assets.userId, userId))
+      if (parsed.data.length > 0) {
+        await tx.insert(assets).values(
+          parsed.data.map((a) => ({
+            id:         a.id,
+            userId,
+            name:       a.name,
+            category:   a.category,
+            valueCents: Math.round(a.value * 100),
+            currency:   a.currency,
+            createdAt:  a.createdAt,
+            updatedAt:  a.updatedAt ?? now,
+          })),
+        )
+      }
+    })
+  } catch (err) {
+    console.error('[POST /api/assets] DB transaction failed:', err)
+    return Response.json({ error: 'Failed to save assets' }, { status: 500 })
+  }
 
   return Response.json({ ok: true })
 }

@@ -45,30 +45,40 @@ export async function POST(request: Request) {
 
   const parsed = TransactionsPayloadSchema.safeParse(body)
   if (!parsed.success) {
+    console.error('[POST /api/transactions] Validation failed:', JSON.stringify(parsed.error.issues, null, 2))
     return Response.json({ error: 'Invalid input', details: parsed.error.issues }, { status: 400 })
   }
 
   const userId = session.user.id
 
-  await ensureUser(userId, session.user.email, session.user.name)
+  try {
+    await ensureUser(userId, session.user.email, session.user.name)
+  } catch (err) {
+    console.error('[POST /api/transactions] ensureUser failed:', err)
+    return Response.json({ error: 'Failed to resolve user record' }, { status: 500 })
+  }
 
-  // Atomic replace: delete + insert run inside a single transaction.
-  await db.transaction(async (tx) => {
-    await tx.delete(transactions).where(eq(transactions.userId, userId))
-    if (parsed.data.length > 0) {
-      await tx.insert(transactions).values(
-        parsed.data.map((t) => ({
-          id:          t.id,
-          userId,
-          date:        t.date,
-          description: t.description,
-          amountCents: Math.round(t.amount * 100),
-          category:    t.category,
-          createdAt:   t.createdAt,
-        })),
-      )
-    }
-  })
+  try {
+    await db.transaction(async (tx) => {
+      await tx.delete(transactions).where(eq(transactions.userId, userId))
+      if (parsed.data.length > 0) {
+        await tx.insert(transactions).values(
+          parsed.data.map((t) => ({
+            id:          t.id,
+            userId,
+            date:        t.date,
+            description: t.description,
+            amountCents: Math.round(t.amount * 100),
+            category:    t.category,
+            createdAt:   t.createdAt,
+          })),
+        )
+      }
+    })
+  } catch (err) {
+    console.error('[POST /api/transactions] DB transaction failed:', err)
+    return Response.json({ error: 'Failed to save transactions' }, { status: 500 })
+  }
 
   return Response.json({ ok: true })
 }
