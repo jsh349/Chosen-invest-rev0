@@ -8,6 +8,7 @@ export type GoalType =
 
 export type Goal = {
   id: string
+  userId?: string
   name: string
   type: GoalType
   targetAmount: number

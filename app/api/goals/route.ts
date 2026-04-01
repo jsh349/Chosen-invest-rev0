@@ -1,17 +1,10 @@
 import { auth } from '@/auth'
 import { db } from '@/lib/db/turso'
-import { goals, users } from '@/lib/db/schema'
+import { goals } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 import { GoalsPayloadSchema } from '@/lib/api/validators'
+import { ensureUser } from '@/lib/api/ensure-user'
 import type { Goal } from '@/lib/types/goal'
-
-async function ensureUser(id: string, email: string, displayName: string | null | undefined) {
-  const now = new Date().toISOString()
-  await db
-    .insert(users)
-    .values({ id, email, displayName: displayName ?? null, createdAt: now, updatedAt: now })
-    .onConflictDoUpdate({ target: users.id, set: { updatedAt: now } })
-}
 
 export async function GET() {
   const session = await auth()
@@ -26,6 +19,7 @@ export async function GET() {
 
   const result: Goal[] = rows.map((row) => ({
     id:            row.id,
+    userId:        row.userId,
     name:          row.name,
     type:          row.type as Goal['type'],
     targetAmount:  row.targetAmountCents / 100,
@@ -60,26 +54,38 @@ export async function POST(request: Request) {
   const userId = session.user.id
   const now    = new Date().toISOString()
 
-  await ensureUser(userId, session.user.email ?? '', session.user.name)
+  await ensureUser(userId, session.user.email, session.user.name)
 
-  await db.delete(goals).where(eq(goals.userId, userId))
+  // Atomic replace: delete + insert run inside a single transaction.
+  await db.transaction(async (tx) => {
+    await tx.delete(goals).where(eq(goals.userId, userId))
+    if (parsed.data.length > 0) {
+      await tx.insert(goals).values(
+        parsed.data.map((g) => ({
+          id:                 g.id,
+          userId,
+          name:               g.name,
+          type:               g.type,
+          targetAmountCents:  Math.round(g.targetAmount * 100),
+          currentAmountCents: Math.round(g.currentAmount * 100),
+          targetDate:         g.targetDate ?? null,
+          shared:             g.shared ?? false,
+          createdAt:          g.createdAt,
+          updatedAt:          g.updatedAt ?? now,
+        })),
+      )
+    }
+  })
 
-  if (parsed.data.length > 0) {
-    await db.insert(goals).values(
-      parsed.data.map((g) => ({
-        id:                 g.id,
-        userId,
-        name:               g.name,
-        type:               g.type,
-        targetAmountCents:  Math.round(g.targetAmount * 100),
-        currentAmountCents: Math.round(g.currentAmount * 100),
-        targetDate:         g.targetDate ?? null,
-        shared:             g.shared ?? false,
-        createdAt:          g.createdAt,
-        updatedAt:          g.updatedAt ?? now,
-      })),
-    )
+  return Response.json({ ok: true })
+}
+
+export async function DELETE() {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  await db.delete(goals).where(eq(goals.userId, session.user.id))
   return Response.json({ ok: true })
 }

@@ -1,19 +1,10 @@
 import { auth } from '@/auth'
 import { db } from '@/lib/db/turso'
-import { assets, users } from '@/lib/db/schema'
+import { assets } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 import { AssetsPayloadSchema } from '@/lib/api/validators'
+import { ensureUser } from '@/lib/api/ensure-user'
 import type { Asset } from '@/lib/types/asset'
-
-// Upserts the authenticated user into the users table before any write.
-// Required because assets.user_id references users.id (FK constraint).
-async function ensureUser(id: string, email: string, displayName: string | null | undefined) {
-  const now = new Date().toISOString()
-  await db
-    .insert(users)
-    .values({ id, email, displayName: displayName ?? null, createdAt: now, updatedAt: now })
-    .onConflictDoUpdate({ target: users.id, set: { updatedAt: now } })
-}
 
 export async function GET() {
   const session = await auth()
@@ -61,26 +52,26 @@ export async function POST(request: Request) {
   const userId = session.user.id
   const now    = new Date().toISOString()
 
-  await ensureUser(userId, session.user.email ?? '', session.user.name)
+  await ensureUser(userId, session.user.email, session.user.name)
 
-  // Replace strategy: delete all existing assets for this user, then insert.
-  // Matches the saveAll() semantic of the adapter contract.
-  await db.delete(assets).where(eq(assets.userId, userId))
-
-  if (parsed.data.length > 0) {
-    await db.insert(assets).values(
-      parsed.data.map((a) => ({
-        id:         a.id,
-        userId,
-        name:       a.name,
-        category:   a.category,
-        valueCents: Math.round(a.value * 100),
-        currency:   a.currency,
-        createdAt:  a.createdAt,
-        updatedAt:  a.updatedAt ?? now,
-      })),
-    )
-  }
+  // Atomic replace: delete + insert run inside a single transaction.
+  await db.transaction(async (tx) => {
+    await tx.delete(assets).where(eq(assets.userId, userId))
+    if (parsed.data.length > 0) {
+      await tx.insert(assets).values(
+        parsed.data.map((a) => ({
+          id:         a.id,
+          userId,
+          name:       a.name,
+          category:   a.category,
+          valueCents: Math.round(a.value * 100),
+          currency:   a.currency,
+          createdAt:  a.createdAt,
+          updatedAt:  a.updatedAt ?? now,
+        })),
+      )
+    }
+  })
 
   return Response.json({ ok: true })
 }

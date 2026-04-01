@@ -387,6 +387,10 @@ export default function SettingsPage() {
           <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={handleImport} />
         </div>
 
+        <p className="pb-3 text-xs text-gray-600">
+          Export covers local preferences (display settings, rank configuration, audit log). Financial records (assets, goals, transactions) are stored in your account and are not included.
+        </p>
+
         {importStatus && (
           <p className={`mb-4 rounded-lg px-3 py-2 text-xs ${importStatus.type === 'success' ? 'bg-green-950 text-green-400' : 'bg-red-950 text-red-400'}`}>
             {importStatus.message}
@@ -544,7 +548,7 @@ export default function SettingsPage() {
       </div>
 
       <p className="text-xs text-gray-600 text-center">
-        All data is stored locally in your browser and is not synced to any server.
+        Display preferences and rank settings are stored locally. Financial data (assets, goals, transactions) is synced to your account.
       </p>
     </div>
   )

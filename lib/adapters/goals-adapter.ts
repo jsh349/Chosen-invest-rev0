@@ -12,6 +12,7 @@ function isValidGoalType(t: string): t is GoalType {
 export type GoalsAdapter = {
   getAll(): Promise<Goal[]>
   saveAll(goals: Goal[]): Promise<void>
+  clear(): Promise<void>
 }
 
 /** API-backed implementation — persists goals in Turso via /api/goals. */
@@ -41,5 +42,13 @@ export const goalsAdapter: GoalsAdapter = {
       body:        JSON.stringify(goals),
     })
     if (!res.ok) throw new Error(`[goalsAdapter] saveAll failed: ${res.status}`)
+  },
+
+  async clear() {
+    const res = await fetch('/api/goals', {
+      method:      'DELETE',
+      credentials: 'include',
+    })
+    if (!res.ok) throw new Error(`[goalsAdapter] clear failed: ${res.status}`)
   },
 }

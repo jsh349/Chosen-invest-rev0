@@ -1,17 +1,10 @@
 import { auth } from '@/auth'
 import { db } from '@/lib/db/turso'
-import { transactions, users } from '@/lib/db/schema'
+import { transactions } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 import { TransactionsPayloadSchema } from '@/lib/api/validators'
+import { ensureUser } from '@/lib/api/ensure-user'
 import type { Transaction } from '@/lib/types/transaction'
-
-async function ensureUser(id: string, email: string, displayName: string | null | undefined) {
-  const now = new Date().toISOString()
-  await db
-    .insert(users)
-    .values({ id, email, displayName: displayName ?? null, createdAt: now, updatedAt: now })
-    .onConflictDoUpdate({ target: users.id, set: { updatedAt: now } })
-}
 
 export async function GET() {
   const session = await auth()
@@ -26,6 +19,7 @@ export async function GET() {
 
   const result: Transaction[] = rows.map((row) => ({
     id:          row.id,
+    userId:      row.userId,
     date:        row.date,
     description: row.description,
     amount:      row.amountCents / 100,
@@ -56,23 +50,35 @@ export async function POST(request: Request) {
 
   const userId = session.user.id
 
-  await ensureUser(userId, session.user.email ?? '', session.user.name)
+  await ensureUser(userId, session.user.email, session.user.name)
 
-  await db.delete(transactions).where(eq(transactions.userId, userId))
+  // Atomic replace: delete + insert run inside a single transaction.
+  await db.transaction(async (tx) => {
+    await tx.delete(transactions).where(eq(transactions.userId, userId))
+    if (parsed.data.length > 0) {
+      await tx.insert(transactions).values(
+        parsed.data.map((t) => ({
+          id:          t.id,
+          userId,
+          date:        t.date,
+          description: t.description,
+          amountCents: Math.round(t.amount * 100),
+          category:    t.category,
+          createdAt:   t.createdAt,
+        })),
+      )
+    }
+  })
 
-  if (parsed.data.length > 0) {
-    await db.insert(transactions).values(
-      parsed.data.map((t) => ({
-        id:          t.id,
-        userId,
-        date:        t.date,
-        description: t.description,
-        amountCents: Math.round(t.amount * 100),
-        category:    t.category,
-        createdAt:   t.createdAt,
-      })),
-    )
+  return Response.json({ ok: true })
+}
+
+export async function DELETE() {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  await db.delete(transactions).where(eq(transactions.userId, session.user.id))
   return Response.json({ ok: true })
 }

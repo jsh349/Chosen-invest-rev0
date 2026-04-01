@@ -11,6 +11,7 @@ function isValidCategory(cat: string): cat is TransactionCategory {
 export type TransactionsAdapter = {
   getAll(): Promise<Transaction[]>
   saveAll(transactions: Transaction[]): Promise<void>
+  clear(): Promise<void>
 }
 
 /** API-backed implementation — persists transactions in Turso via /api/transactions. */
@@ -40,5 +41,13 @@ export const transactionsAdapter: TransactionsAdapter = {
       body:        JSON.stringify(transactions),
     })
     if (!res.ok) throw new Error(`[transactionsAdapter] saveAll failed: ${res.status}`)
+  },
+
+  async clear() {
+    const res = await fetch('/api/transactions', {
+      method:      'DELETE',
+      credentials: 'include',
+    })
+    if (!res.ok) throw new Error(`[transactionsAdapter] clear failed: ${res.status}`)
   },
 }

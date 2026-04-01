@@ -19,6 +19,7 @@ export const TRANSACTION_CATEGORIES: readonly TransactionCategory[] = [
 
 export type Transaction = {
   id: string
+  userId?: string
   date: string            // YYYY-MM-DD
   description: string
   amount: number          // positive = income, negative = expense
