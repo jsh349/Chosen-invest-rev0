@@ -60,7 +60,7 @@ export function getRankReviewSummary(
       return {
         topic: 'profile', label: 'Profile',
         status: 'review',
-        note: 'Return estimate not set — investment return rank unavailable.',
+        note: 'Return estimate not set — return rank unavailable.',
       }
     }
     return {
@@ -99,7 +99,7 @@ export function getRankReviewSummary(
       return {
         topic: 'return', label: 'Return rank',
         status: 'missing',
-        note: 'No return estimate set — investment return rank unavailable.',
+        note: 'Return estimate not set — return rank unavailable.',
       }
     }
     if (returnPct < 50) {

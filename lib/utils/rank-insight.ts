@@ -28,7 +28,7 @@ export function getRankInsight(ranks: RankResult[]): string | null {
 
   // Rule 3: wealth rank available but age comparison missing (birth year not set)
   if (overallPct !== null && ageBased?.missingField === 'birth year') {
-    return 'Peer group comparison is unavailable — add birth year in Settings to see how your wealth compares within your age group.'
+    return 'Age-based comparison is unavailable — add birth year in Settings to see how your wealth compares within your age group.'
   }
 
   // Rule 4: age rank available but gender comparison missing

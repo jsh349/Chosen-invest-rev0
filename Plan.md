@@ -169,6 +169,37 @@ The card's unique value is the source-switch context, not the fallback state res
 
 ---
 
+# Addendum: P250 — Final local-first rank system polish pass
+
+## Task Summary
+Three targeted wording inconsistencies across rank insight/review/goal surfaces.
+
+## Issues
+1. rank-goal-insight Rule 3: "above average" → "strong" (all other ≥75 rank descriptions use "strong")
+2. rank-insight Rule 3: "Peer group comparison is unavailable" — imprecise (birth year unlocks age-based rank, not full peer group; Rule 4 correctly says "Age and gender")
+3. rank-review-summary lines 63+102: "investment return rank" is verbose vs label "Return rank"; line 102 opener also drifts from line 63
+
+## Non-Goals
+- No changes to percentile-label.ts band labels (intentionally short for large headline context)
+- No changes to rank-checklist.ts verb consistency (Add vs Set is intentional: Add = fill in a field, Set = create an entity)
+- No other files
+
+## Affected Files
+- `lib/utils/rank-goal-insight.ts`    — Rule 3 text: "above average" → "strong"
+- `lib/utils/rank-insight.ts`         — Rule 3 text: "Peer group" → "Age-based"
+- `lib/utils/rank-review-summary.ts`  — lines 63+102: "investment return rank" → "return rank"; align openers
+
+## Risks
+- None — user-facing string changes only
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. Return rank ≥75 + no investment/retirement goal: insight says "strong" (not "above average")
+3. No birth year set: rank insight says "Age-based comparison is unavailable"
+4. No return estimate in review summary: note says "Return estimate not set — return rank unavailable."
+
+---
+
 # Addendum: P242 — Rank summary context compression
 
 ## Task Summary

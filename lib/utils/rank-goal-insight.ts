@@ -33,7 +33,7 @@ export function getRankGoalInsight(ranks: RankResult[], goals: Goal[]): string |
     returnPct >= 75 &&
     !goals.some((g) => g.type === 'investment' || g.type === 'retirement')
   ) {
-    return 'Your estimated return rank is above average. An investment or retirement goal can help direct that performance into a long-term plan.'
+    return 'Your estimated return rank is strong — an investment or retirement goal can help direct that performance into a long-term plan.'
   }
 
   return null
