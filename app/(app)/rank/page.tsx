@@ -131,7 +131,7 @@ function RankRow({ result, coverageNote }: { result: RankResult; coverageNote?: 
           ) : (
             <p className="text-2xl font-bold text-gray-600">—</p>
           )}
-          <p className="text-sm text-gray-400 leading-relaxed">
+          <p className="text-sm text-gray-300 leading-relaxed">
             {hasPct ? getRankInterpretation(result.percentile!) : result.message}
           </p>
           {hasPct && (
@@ -145,7 +145,7 @@ function RankRow({ result, coverageNote }: { result: RankResult; coverageNote?: 
             </div>
           )}
           {result.detail && (
-            <div className="mt-2 rounded-md bg-surface-muted/40 px-3 py-2 space-y-0.5">
+            <div className="mt-3 rounded-md bg-surface-muted/40 px-3 py-2 space-y-0.5">
               <p className="text-[11px] text-gray-500">
                 <span className="text-gray-600">Basis: </span>{result.detail.comparisonBasis}
               </p>
