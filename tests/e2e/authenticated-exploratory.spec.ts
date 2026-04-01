@@ -123,6 +123,8 @@ test.describe('Step 3 — Dashboard page', () => {
     const errors: string[] = []
     page.on('pageerror', (e) => errors.push(e.message))
     await seedAndGoto(page, '/dashboard')
+    // Explicitly wait for h1 in case seedAndGoto's silent catch masked a timeout
+    await page.locator('h1').first().waitFor({ state: 'visible', timeout: 15000 })
     const bodyText = await page.locator('body').innerText()
     expect(bodyText.length).toBeGreaterThan(100)
     expect(errors.filter(e => !e.includes('ResizeObserver'))).toHaveLength(0)
