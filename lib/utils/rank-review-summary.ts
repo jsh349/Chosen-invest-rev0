@@ -39,28 +39,28 @@ export function getRankReviewSummary(
       return {
         topic: 'profile', label: 'Profile',
         status: 'missing',
-        note: 'Birth year not set — age-based comparisons unavailable.',
+        note: 'Add birth year to unlock age-based comparison.',
       }
     }
     if (!profile.hasGender && !profile.hasReturn) {
       return {
         topic: 'profile', label: 'Profile',
         status: 'review',
-        note: 'Gender and return estimate missing — two comparisons unavailable.',
+        note: 'Add gender and return estimate to complete your profile.',
       }
     }
     if (!profile.hasGender) {
       return {
         topic: 'profile', label: 'Profile',
         status: 'review',
-        note: 'Gender not set — age + gender comparison unavailable.',
+        note: 'Add gender to enable age + gender comparison.',
       }
     }
     if (!profile.hasReturn) {
       return {
         topic: 'profile', label: 'Profile',
         status: 'review',
-        note: 'Return estimate not set — return rank unavailable.',
+        note: 'Add a return estimate to enable return ranking.',
       }
     }
     return {
@@ -99,14 +99,14 @@ export function getRankReviewSummary(
       return {
         topic: 'return', label: 'Return rank',
         status: 'missing',
-        note: 'Return estimate not set — return rank unavailable.',
+        note: 'No return estimate — return rank unavailable.',
       }
     }
     if (returnPct < 50) {
       return {
         topic: 'return', label: 'Return rank',
         status: 'review',
-        note: 'Estimated return is below the benchmark median.',
+        note: 'Return rank is below the benchmark median — consider reviewing your return estimate.',
       }
     }
     return {
