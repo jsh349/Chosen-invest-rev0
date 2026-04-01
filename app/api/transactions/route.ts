@@ -49,10 +49,9 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Invalid input', details: parsed.error.issues }, { status: 400 })
   }
 
-  const userId = session.user.id
-
+  let userId: string
   try {
-    await ensureUser(userId, session.user.email, session.user.name)
+    userId = await ensureUser(session.user.id, session.user.email, session.user.name)
   } catch (err) {
     console.error('[POST /api/transactions] ensureUser failed:', err)
     return Response.json({ error: 'Failed to resolve user record' }, { status: 500 })
