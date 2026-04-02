@@ -259,3 +259,34 @@ Eliminate silent failures, missing error states, and structural fragility identi
 2. Household page: simulate load failure → should show error state
 3. Dashboard: goals/tx load error → error banner appears instead of zero-state
 4. Add new asset category to ASSET_CATEGORIES → validators.ts picks it up automatically
+
+---
+
+# Addendum: P291 — Calmness pass for top-line summary wording
+
+## Task Summary
+Single wording refinement in the narrative summary opening sentence.
+"Your overall asset position is [comparison]" reads slightly formal/stilted.
+Replace with "Your overall assets rank [comparison]" across all five tiers.
+
+## Goal
+The first visible narrative summary line feels more direct and professional
+without changing the factual content or benchmark framing.
+
+## Non-Goals
+- No changes to percentile thresholds or band labels
+- No changes to getRankInterpretation (used in PrimaryRankHighlight)
+- No redesign or logic changes
+- No new strings or tiers
+
+## Affected Files
+- `lib/utils/rank-narrative-summary.ts` — opening sentence template: "asset position is" → "assets rank"
+- `__tests__/lib/utils/rank-narrative-summary.test.ts` — fix 2 stale assertions still checking for "compares favorably"
+
+## Risks
+- None — user-facing string change only; no logic, no new branches
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. `npx jest rank-narrative-summary` → all 18 tests pass
+3. Rank page with assets: narrative summary reads "Your overall assets rank [above/below/near/well above/well below] the benchmark median."

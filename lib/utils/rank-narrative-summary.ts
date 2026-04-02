@@ -47,15 +47,15 @@ export function getRankNarrativeSummary(ranks: RankResult[]): string {
   // use recognisably related language for the same rank state.
   let opening: string
   if (overallPct >= 75) {
-    opening = 'Your overall asset position is well above the benchmark median.'
+    opening = 'Your overall assets rank well above the benchmark median.'
   } else if (overallPct >= 50) {
-    opening = 'Your overall asset position is above the benchmark median.'
+    opening = 'Your overall assets rank above the benchmark median.'
   } else if (overallPct >= 40) {
-    opening = 'Your overall asset position is near the benchmark median.'
+    opening = 'Your overall assets rank near the benchmark median.'
   } else if (overallPct >= 25) {
-    opening = 'Your overall asset position is below the benchmark median.'
+    opening = 'Your overall assets rank below the benchmark median.'
   } else {
-    opening = 'Your overall asset position is well below the benchmark median.'
+    opening = 'Your overall assets rank well below the benchmark median.'
   }
 
   // Optional second sentence — return gap takes priority; profile note is fallback.

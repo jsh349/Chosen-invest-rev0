@@ -48,12 +48,12 @@ describe('getRankNarrativeSummary — no data', () => {
 // ---------------------------------------------------------------------------
 
 describe('getRankNarrativeSummary — opening sentence', () => {
-  it('uses "compares favorably" for overall ≥ 75', () => {
-    expect(getRankNarrativeSummary([OVERALL(75)])).toMatch(/compares favorably/)
+  it('uses "rank well above the benchmark median" for overall ≥ 75', () => {
+    expect(getRankNarrativeSummary([OVERALL(75)])).toMatch(/rank well above the benchmark median/)
   })
 
-  it('uses "compares favorably" for overall = 90', () => {
-    expect(getRankNarrativeSummary([OVERALL(90)])).toMatch(/compares favorably/)
+  it('uses "rank well above the benchmark median" for overall = 90', () => {
+    expect(getRankNarrativeSummary([OVERALL(90)])).toMatch(/rank well above the benchmark median/)
   })
 
   it('uses "above the benchmark median" for overall = 50', () => {
