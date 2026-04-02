@@ -105,6 +105,7 @@ function Row({ label, hint, children }: { label: string; hint?: string; children
 }
 
 function handleExport() {
+  if (typeof window === 'undefined') return
   const data: Record<string, unknown> = { exportedAt: new Date().toISOString() }
   for (const key of ALL_STORAGE_KEYS) {
     try {
@@ -192,7 +193,9 @@ export default function SettingsPage() {
     const reader = new FileReader()
     reader.onload = (evt) => {
       try {
-        const data = JSON.parse(evt.target?.result as string)
+        const result = evt.target?.result
+        if (typeof result !== 'string') { setImportStatus({ type: 'error', message: 'Could not read file.' }); return }
+        const data = JSON.parse(result)
         const error = validateImport(data)
         if (error) { setImportStatus({ type: 'error', message: error }); return }
 

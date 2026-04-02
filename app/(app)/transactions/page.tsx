@@ -34,7 +34,7 @@ const EMPTY_FORM = {
 const SELECT_CLASS = 'rounded-lg border border-surface-border bg-surface-muted px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none'
 
 export default function TransactionsPage() {
-  const { transactions, isLoaded, addTransaction, removeTransaction } = useTransactions()
+  const { transactions, isLoaded, isLoadError, addTransaction, removeTransaction } = useTransactions()
   const { fmt } = useFormatCurrency()
   // Uses fmt() so showCents setting is respected (consistent with the rest of the app).
   const formatAmount = (amount: number) => {
@@ -49,6 +49,12 @@ export default function TransactionsPage() {
   if (!isLoaded) {
     return (
       <LoadingSpinner />
+    )
+  }
+
+  if (isLoadError) {
+    return (
+      <p className="py-10 text-center text-sm text-gray-500">Failed to load transactions — refresh to try again.</p>
     )
   }
 

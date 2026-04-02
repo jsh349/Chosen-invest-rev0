@@ -17,7 +17,7 @@ import type { AssetCategory } from '@/lib/types/asset'
 type Draft = { name: string; category: AssetCategory; value: string }
 
 export default function PortfolioListPage() {
-  const { assets, hasCustomAssets, updateAsset, removeAsset, isLoaded } = useAssets()
+  const { assets, hasCustomAssets, updateAsset, removeAsset, isLoaded, isLoadError } = useAssets()
   const { fmt } = useFormatCurrency()
   const [editingId, setEditingId] = useState<string | null>(null)
   const [draft, setDraft] = useState<Draft | null>(null)
@@ -26,6 +26,12 @@ export default function PortfolioListPage() {
   if (!isLoaded) {
     return (
       <LoadingSpinner />
+    )
+  }
+
+  if (isLoadError) {
+    return (
+      <p className="py-10 text-center text-sm text-gray-500">Failed to load portfolio — refresh to try again.</p>
     )
   }
 

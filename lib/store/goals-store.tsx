@@ -65,14 +65,14 @@ export function GoalsProvider({ children }: { children: ReactNode }) {
   const setGoals = useCallback((newGoals: Goal[]) => {
     goalsRef.current = newGoals
     setGoalsState(newGoals)
-    void goalsAdapter.saveAll(newGoals).catch(() => { console.error('[goals] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
+    void goalsAdapter.saveAll(newGoals).catch(() => { console.error('[goals] save failed'); if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('persist-error')) })
   }, [])
 
   const addGoal = useCallback((goal: Goal) => {
     const updated = [...goalsRef.current, goal]
     goalsRef.current = updated
     setGoalsState(updated)
-    void goalsAdapter.saveAll(updated).catch(() => { console.error('[goals] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
+    void goalsAdapter.saveAll(updated).catch(() => { console.error('[goals] save failed'); if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('persist-error')) })
     recordAudit('Goal added', goal.name)
   }, [])
 
@@ -83,7 +83,7 @@ export function GoalsProvider({ children }: { children: ReactNode }) {
     )
     goalsRef.current = updated
     setGoalsState(updated)
-    void goalsAdapter.saveAll(updated).catch(() => { console.error('[goals] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
+    void goalsAdapter.saveAll(updated).catch(() => { console.error('[goals] save failed'); if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('persist-error')) })
     if (target) recordAudit('Goal edited', patch.name ?? target.name)
   }, [])
 
@@ -93,7 +93,7 @@ export function GoalsProvider({ children }: { children: ReactNode }) {
     const updated = goalsRef.current.filter((g) => g.id !== id)
     goalsRef.current = updated
     setGoalsState(updated)
-    void goalsAdapter.saveAll(updated).catch(() => { console.error('[goals] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
+    void goalsAdapter.saveAll(updated).catch(() => { console.error('[goals] save failed'); if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('persist-error')) })
   }, [])
 
   return (

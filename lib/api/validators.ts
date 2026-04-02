@@ -12,7 +12,7 @@ const AssetSchema = z.object({
   name:      z.string().min(1).max(200).trim(),
   category:  z.enum(ASSET_CATEGORY_KEYS),
   value:     z.number().finite().nonnegative(),
-  currency:  z.string().min(1).max(10),
+  currency:  z.enum(['USD', 'EUR', 'GBP', 'JPY', 'KRW']),
   createdAt: z.string().min(1),
   updatedAt: z.string().min(1),
   // userId is resolved server-side from the session — not accepted from client

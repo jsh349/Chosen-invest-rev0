@@ -77,7 +77,7 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
     setAssetsState(newAssets)
     return assetsAdapter.saveAll(newAssets).catch((err) => {
       console.error('[assets] save failed', err)
-      window.dispatchEvent(new CustomEvent('persist-error'))
+      if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('persist-error'))
       throw err
     })
   }, [])
@@ -86,7 +86,7 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
     const updated = [...assetsRef.current, asset]
     assetsRef.current = updated
     setAssetsState(updated)
-    void assetsAdapter.saveAll(updated).catch(() => { console.error('[assets] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
+    void assetsAdapter.saveAll(updated).catch(() => { console.error('[assets] save failed'); if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('persist-error')) })
     recordAudit('Asset added', asset.name)
   }, [])
 
@@ -98,7 +98,7 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
       )
       assetsRef.current = updated
       setAssetsState(updated)
-      void assetsAdapter.saveAll(updated).catch(() => { console.error('[assets] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
+      void assetsAdapter.saveAll(updated).catch(() => { console.error('[assets] save failed'); if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('persist-error')) })
       if (target) recordAudit('Asset edited', patch.name ?? target.name)
     },
     []
@@ -110,13 +110,13 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
     const updated = assetsRef.current.filter((a) => a.id !== id)
     assetsRef.current = updated
     setAssetsState(updated)
-    void assetsAdapter.saveAll(updated).catch(() => { console.error('[assets] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
+    void assetsAdapter.saveAll(updated).catch(() => { console.error('[assets] save failed'); if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('persist-error')) })
   }, [])
 
   const clearAssets = useCallback(async () => {
     await assetsAdapter.clear().catch((err) => {
       console.error('[assets] clear failed', err)
-      window.dispatchEvent(new CustomEvent('persist-error'))
+      if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('persist-error'))
       throw err
     })
     assetsRef.current = []

@@ -143,7 +143,7 @@ function parseForm(form: FormState): { targetAmount: number; currentAmount: numb
 }
 
 export default function GoalsPage() {
-  const { goals, isLoaded, addGoal, updateGoal, removeGoal } = useGoals()
+  const { goals, isLoaded, isLoadError, addGoal, updateGoal, removeGoal } = useGoals()
   const { fmt } = useFormatCurrency()
   const currentUserId = useCurrentUserId()
   const [addForm, setAddForm] = useState<FormState>(EMPTY_FORM)
@@ -155,6 +155,12 @@ export default function GoalsPage() {
   if (!isLoaded) {
     return (
       <LoadingSpinner />
+    )
+  }
+
+  if (isLoadError) {
+    return (
+      <p className="py-10 text-center text-sm text-gray-500">Failed to load goals — refresh to try again.</p>
     )
   }
 
@@ -184,6 +190,7 @@ export default function GoalsPage() {
       updatedAt:     now,
     })
     setAddForm(EMPTY_FORM)
+    setAddError('')
   }
 
   function startEdit(goal: Goal) {

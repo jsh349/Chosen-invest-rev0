@@ -109,13 +109,15 @@ export function getLastAppliedBenchmark(): BenchmarkAppliedRecord | null {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEYS.benchmarkApplied)
     if (!raw) return null
-    const parsed = JSON.parse(raw) as Record<string, unknown>
+    const parsed: unknown = JSON.parse(raw)
+    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) return null
+    const record = parsed as Record<string, unknown>
     if (
-      typeof parsed.source      !== 'string' ||
-      typeof parsed.vintageYear !== 'number' ||
-      typeof parsed.appliedAt   !== 'string'
+      typeof record.source      !== 'string' ||
+      typeof record.vintageYear !== 'number' ||
+      typeof record.appliedAt   !== 'string'
     ) return null
-    return parsed as unknown as BenchmarkAppliedRecord
+    return record as unknown as BenchmarkAppliedRecord
   } catch {
     return null
   }

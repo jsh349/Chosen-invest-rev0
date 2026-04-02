@@ -85,7 +85,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     setSettings(updated)
     if (!writeJSON(LS_KEY, updated)) {
       console.error('[settings] save failed')
-      window.dispatchEvent(new CustomEvent('persist-error'))
+      if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('persist-error'))
     }
   }, [])
 

@@ -60,7 +60,7 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
     const updated = [t, ...transactionsRef.current]
     transactionsRef.current = updated
     setTransactions(updated)
-    void transactionsAdapter.saveAll(updated).catch(() => { console.error('[transactions] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
+    void transactionsAdapter.saveAll(updated).catch(() => { console.error('[transactions] save failed'); if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('persist-error')) })
     recordAudit('Transaction added', t.description)
   }, [])
 
@@ -70,7 +70,7 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
     const updated = transactionsRef.current.filter((t) => t.id !== id)
     transactionsRef.current = updated
     setTransactions(updated)
-    void transactionsAdapter.saveAll(updated).catch(() => { console.error('[transactions] save failed'); window.dispatchEvent(new CustomEvent('persist-error')) })
+    void transactionsAdapter.saveAll(updated).catch(() => { console.error('[transactions] save failed'); if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('persist-error')) })
   }, [])
 
   return (
