@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { ASSET_CATEGORIES } from '@/lib/constants/asset-categories'
+import { TRANSACTION_CATEGORIES } from '@/lib/types/transaction'
 
 // ── Assets ────────────────────────────────────────────────────────────────────
 
@@ -33,6 +34,9 @@ const GoalSchema = z.object({
   shared:        z.boolean().optional(),
   createdAt:     z.string().min(1),
   updatedAt:     z.string().min(1),
+}).refine((g) => g.currentAmount <= g.targetAmount, {
+  message: 'currentAmount must not exceed targetAmount',
+  path: ['currentAmount'],
 })
 
 export const GoalsPayloadSchema = z.array(GoalSchema).max(200)
@@ -45,10 +49,9 @@ const TransactionSchema = z.object({
   description: z.string().min(1).max(500).trim(),
   // Positive = income, negative = expense
   amount:      z.number().finite(),
-  category:    z.enum([
-    'Income', 'Housing', 'Groceries', 'Utilities', 'Subscriptions',
-    'Transport', 'Travel', 'Family', 'Taxes', 'Investments', 'Other',
-  ]),
+  // Derived from TRANSACTION_CATEGORIES so adding a new category only requires
+  // updating the constant — no need to edit this file separately.
+  category:    z.enum(TRANSACTION_CATEGORIES as unknown as [string, ...string[]]),
   createdAt:   z.string().min(1),
 })
 

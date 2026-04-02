@@ -35,8 +35,8 @@ export const goalsAdapter: GoalsAdapter = {
         return false
       }
       if (g.currentAmount > g.targetAmount) {
-        console.warn(`[goalsAdapter] currentAmount exceeds targetAmount on goal "${g.id}" — skipped.`)
-        return false
+        console.warn(`[goalsAdapter] currentAmount exceeds targetAmount on goal "${g.id}" — capping to targetAmount.`)
+        g.currentAmount = g.targetAmount
       }
       if (g.targetDate && !/^\d{4}-\d{2}-\d{2}$/.test(g.targetDate)) {
         console.warn(`[goalsAdapter] Invalid targetDate format on goal "${g.id}" — skipped.`)

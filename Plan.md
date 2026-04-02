@@ -262,6 +262,39 @@ Eliminate silent failures, missing error states, and structural fragility identi
 
 ---
 
+# Addendum: Bug Fixes — Audit Round 2
+
+## Task Summary
+Fix 5 confirmed bugs from the second debugging audit. No new features, no refactors.
+
+## Goal
+Eliminate silent data loss, missing user-facing error states, a trust-breaking stale copy string, and two validator/adapter contract mismatches.
+
+## Non-Goals
+- No new UI surfaces
+- No refactor of unrelated files
+- Do not fix low-severity items (writeJSON in updater, DELETE missing ensureUser, GOAL_TYPES constant consolidation)
+
+## Affected Files
+- `lib/adapters/goals-adapter.ts`    — replace silent drop with warn+cap for currentAmount > targetAmount
+- `lib/api/validators.ts`            — add z.refine cross-field check to GoalSchema; derive TransactionSchema.category from TRANSACTION_CATEGORIES
+- `app/(app)/portfolio/input/page.tsx` — fix stale copy; add saveError state rendered below save button
+
+## Risks
+- goals-adapter cap: the `currentAmount > targetAmount` case should not reach the adapter if validation is correct; the cap is a defensive fallback, not a normal path
+- validators.ts refine: rejects POST payloads that the adapter previously silently filtered — aligned behavior, no new data loss risk
+- portfolio/input page: saveError is a new state variable; must be cleared on retry (setSaving(true) before the try block already re-gates the submit path)
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. `npm test -- --ci` → all tests pass
+3. goals-adapter: goal with currentAmount > targetAmount is kept (capped) not dropped
+4. GoalSchema: POST with currentAmount > targetAmount returns 400
+5. TransactionSchema: POST with unknown category returns 400
+6. portfolio/input: save failure shows inline error message; stale browser copy is gone
+
+---
+
 # Addendum: P291 — Calmness pass for top-line summary wording
 
 ## Task Summary

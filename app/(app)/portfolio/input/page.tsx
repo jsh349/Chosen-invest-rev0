@@ -42,6 +42,7 @@ export default function PortfolioInputPage() {
   const { fmt } = useFormatCurrency()
   const [entries, setEntries] = useState<FormEntry[] | null>(null)
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
   const currentUserId = useCurrentUserId()
 
   // isLoaded is the intentional one-shot trigger. Adding assets/hasCustomAssets
@@ -94,6 +95,7 @@ export default function PortfolioInputPage() {
       ...formEntryToAsset(en, currentUserId, en._id ?? crypto.randomUUID()),
       createdAt: en._createdAt ?? now,
     }))
+    setSaveError('')
     try {
       // Await persistence so the dashboard never reads stale data on load.
       await setAssets(newAssets)
@@ -101,6 +103,7 @@ export default function PortfolioInputPage() {
     } catch {
       // API save failed — stay on page so the user can retry.
       setSaving(false)
+      setSaveError('Failed to save. Please try again.')
     }
   }
 
@@ -111,7 +114,7 @@ export default function PortfolioInputPage() {
           {hasCustomAssets ? 'Edit Your Assets' : 'Add Your Assets'}
         </h1>
         <p className="mt-0.5 text-sm text-gray-500">
-          Enter each asset manually. Your data stays in your browser.
+          Enter each asset manually. Your data is saved securely to your account.
         </p>
       </div>
 
@@ -157,6 +160,9 @@ export default function PortfolioInputPage() {
             {!saving && <ChevronRight className="h-4 w-4" />}
           </Button>
         </div>
+        {saveError && (
+          <p className="text-right text-xs text-red-400">{saveError}</p>
+        )}
       </form>
     </div>
   )
