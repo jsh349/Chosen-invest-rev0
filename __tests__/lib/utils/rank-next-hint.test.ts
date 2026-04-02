@@ -117,13 +117,14 @@ describe('getPrimaryRankNextAction — confidence-sensitive wording', () => {
     expect(hint!.text).toMatch(/age and gender comparison/)
   })
 
-  it('gender hint uses peer framing in normal confidence', () => {
+  it('gender hint uses "more specific age and gender comparison" in normal confidence', () => {
     const hint = getPrimaryRankNextAction(
       { ...fullProfile, hasGender: false },
       [],
       { isLowConfidence: false },
     )
     expect(hint).not.toBeNull()
-    expect(hint!.text).toMatch(/peer/)
+    expect(hint!.text).toMatch(/a more specific age and gender comparison/)
+    expect(hint!.text).not.toMatch(/peer/)
   })
 })

@@ -11,7 +11,7 @@
  *   "benchmark median" to avoid implying a precision the source cannot deliver.
  */
 export function getRankInterpretation(percentile: number, isLowConfidence = false): string {
-  const comparison = isLowConfidence ? 'reference estimate' : 'benchmark median'
+  const comparison = 'benchmark median'
   if (percentile >= 75) return `Well above the ${comparison}.`
   if (percentile >= 50) return `Above the ${comparison}.`
   if (percentile >= 40) return `Near the ${comparison}.`

@@ -82,7 +82,7 @@ export function getPrimaryRankNextAction(
       href: ROUTES.settings,
       text: isLowConfidence
         ? 'Add your gender for age and gender comparison.'
-        : 'Add your gender for a more specific peer comparison.',
+        : 'Add your gender for a more specific age and gender comparison.',
     }
   }
   if (!profile.hasReturn) {

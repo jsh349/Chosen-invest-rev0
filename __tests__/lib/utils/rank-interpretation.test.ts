@@ -50,25 +50,24 @@ describe('getRankInterpretation', () => {
     }
   })
 
-  // Low-confidence (fallback) — uses "reference estimate" instead of "benchmark median"
+  // Low-confidence (fallback) — "benchmark median" is used consistently;
+  // confidence level is communicated by getRankConfidenceNote, not the interpretation band.
   describe('isLowConfidence = true', () => {
-    it('uses reference estimate wording at 75th percentile', () => {
+    it('still uses benchmark median wording at 75th percentile', () => {
       const result = getRankInterpretation(75, true)
       expect(result).toContain('Well above')
-      expect(result).toContain('reference estimate')
-      expect(result).not.toContain('benchmark median')
+      expect(result).toContain('benchmark median')
     })
 
-    it('uses reference estimate wording at 50th percentile', () => {
+    it('still uses benchmark median wording at 50th percentile', () => {
       const result = getRankInterpretation(50, true)
-      expect(result).toContain('reference estimate')
-      expect(result).not.toContain('benchmark median')
+      expect(result).toContain('benchmark median')
     })
 
-    it('uses reference estimate wording at 0th percentile', () => {
+    it('still uses benchmark median wording at 0th percentile', () => {
       const result = getRankInterpretation(0, true)
       expect(result).toContain('Well below')
-      expect(result).toContain('reference estimate')
+      expect(result).toContain('benchmark median')
     })
 
     it('returns a non-empty string for every integer 0–100 in low-confidence mode', () => {
