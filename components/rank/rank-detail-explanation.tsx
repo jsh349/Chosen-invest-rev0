@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { RankHint } from '@/lib/utils/rank-next-hint'
 import { ROUTES } from '@/lib/constants/routes'
+import { cn } from '@/lib/utils/cn'
 
 function linkLabel(href: string): string {
   if (href === ROUTES.portfolioList || href === ROUTES.portfolioInput) return 'Portfolio →'
@@ -57,8 +58,14 @@ export function RankDetailExplanationBlock({ nextHint, rankInsight, rankGoalInsi
 
   return (
     <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-3">
-      {visible.map((item) => (
-        <div key={item.key} className="flex items-start justify-between gap-3">
+      {visible.map((item, i) => (
+        <div
+          key={item.key}
+          className={cn(
+            'flex items-start justify-between gap-3',
+            i > 0 && item.href && 'border-t border-surface-border pt-2',
+          )}
+        >
           <p className="text-xs text-gray-400 leading-relaxed">{item.text}</p>
           {item.href && (
             <Link

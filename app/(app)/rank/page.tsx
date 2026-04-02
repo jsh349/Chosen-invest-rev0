@@ -683,9 +683,15 @@ export default function RankPage() {
                   'text-[10px]',
                   rankReviewSummary.some((i) => i.status === 'missing')
                     ? 'text-amber-500/70'
-                    : 'text-gray-500',
+                    : rankReviewSummary.some((i) => i.status === 'review')
+                      ? 'text-gray-400'
+                      : 'text-gray-500',
                 )}>
-                  {rankReviewSummary.some((i) => i.status === 'missing') ? 'Needs attention' : 'For reference'}
+                  {rankReviewSummary.some((i) => i.status === 'missing')
+                    ? 'Needs attention'
+                    : rankReviewSummary.some((i) => i.status === 'review')
+                      ? 'Worth reviewing'
+                      : 'For reference'}
                 </span>
               </div>
               <ul className="space-y-2.5">

@@ -39,28 +39,28 @@ export function getRankReviewSummary(
       return {
         topic: 'profile', label: 'Profile',
         status: 'missing',
-        note: 'Add birth year for age-based comparison.',
+        note: 'Birth year not set — age-based rank unavailable.',
       }
     }
     if (!profile.hasGender && !profile.hasReturn) {
       return {
         topic: 'profile', label: 'Profile',
         status: 'review',
-        note: 'Add gender and return estimate.',
+        note: 'Gender and return estimate not set.',
       }
     }
     if (!profile.hasGender) {
       return {
         topic: 'profile', label: 'Profile',
         status: 'review',
-        note: 'Add gender for age and gender comparison.',
+        note: 'Gender not set — age-gender rank unavailable.',
       }
     }
     if (!profile.hasReturn) {
       return {
         topic: 'profile', label: 'Profile',
         status: 'review',
-        note: 'Add a return estimate for return rank.',
+        note: 'Return estimate not set — return rank unavailable.',
       }
     }
     return {

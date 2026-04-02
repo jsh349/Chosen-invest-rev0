@@ -372,6 +372,61 @@ In normal healthy state, comparisonNote appears as before.
 
 ---
 
+# Addendum: P304 — Visual handoff separator in RankDetailExplanationBlock
+
+## Task Summary
+When an interpretation item and an action item are both visible in
+RankDetailExplanationBlock, they share uniform `space-y-3` spacing.
+Adding a subtle top border to the action item marks the reading→acting boundary.
+
+## Non-Goals
+- No wording changes
+- No layout restructure
+- No new elements outside the existing card
+
+## Affected Files
+- `components/rank/rank-detail-explanation.tsx` — add `border-t border-surface-border pt-2` to action item when it follows another item
+
+## Risks
+- None — CSS-only addition; no logic change
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. Rank page: explanation block with hint shows a thin separator between insight and action link
+
+---
+
+# Addendum: P305 — Severity pass for review recommendation wording
+
+## Task Summary
+Two changes:
+1. Rank Assessment chip adds a middle tier for `review` status:
+   any `missing` → "Needs attention"; any `review` (no missing) → "Worth reviewing"; all `ok` → unreachable (block not shown)
+2. Profile review notes are reworded from imperative ("Add gender…") to observational ("Gender not set — …"),
+   matching the factual tone of wealth/return review notes.
+
+## Non-Goals
+- No changes to wealth or return review notes (already calm from P297)
+- No changes to status thresholds
+- No changes to review trigger logic
+
+## Affected Files
+- `app/(app)/rank/page.tsx`             — chip label + color: add middle tier
+- `lib/utils/rank-review-summary.ts`   — reword 4 profile notes to observational
+- `__tests__/lib/utils/rank-review-summary.test.ts` — verify assertions still match new wording
+
+## Risks
+- All test assertions use regex patterns that match substrings (birth year, gender, return estimate) — verified they still match after wording change
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. `npx jest rank-review-summary` → all 18 tests pass
+3. Review card with 'review' items only: chip says "Worth reviewing" (neutral gray)
+4. Review card with 'missing' item: chip says "Needs attention" (amber, as before)
+5. Profile 'review' notes read as observations, not imperative instructions
+
+---
+
 # Addendum: P291 — Calmness pass for top-line summary wording
 
 ## Task Summary
