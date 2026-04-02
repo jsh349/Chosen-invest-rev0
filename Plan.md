@@ -359,3 +359,35 @@ clearly separated from the main rank content above.
 3. RankReportSection with source note: note and disclaimer share one border separator
 4. RankReportSection without source note: single footer border unchanged
 5. RankShareCard with source note: note has its own top border before disclaimer
+
+---
+
+# Addendum: P294 — Handoff refinement: action CTA to review CTA
+
+## Task Summary
+In RankReportSection, when an action slot is active (nextAction present), the
+footer "Review in detail →" competes visually with the action link at the same
+brand color and size. Differentiate them: when an action is the primary step,
+the review CTA becomes informational ("See full ranking →"); when no action is
+needed, "Review in detail →" is the primary invitation.
+
+## Goal
+CTA hierarchy is clear: action slot = primary, footer link = secondary/informational
+when action is active; footer link = primary when profile is complete.
+
+## Non-Goals
+- No changes to routes
+- No changes to RankShareCard (no competing action slot)
+- No logic changes
+
+## Affected Files
+- `components/rank/rank-report-section.tsx` — footer link label conditional on nextAction
+
+## Risks
+- None — copy-only conditional; no logic
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. RankReportSection with nextAction: footer says "See full ranking →" (secondary)
+3. RankReportSection without nextAction, not partial: "Review in detail →" (primary)
+4. RankReportSection partial: "View full ranking →" (unchanged)
