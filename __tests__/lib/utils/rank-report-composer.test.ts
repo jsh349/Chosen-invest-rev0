@@ -33,7 +33,8 @@ describe('composeRankReport', () => {
     const report = composeRankReport(makeRanks(), null)
     expect(report).not.toBeNull()
     expect(report!.highlight.percentile).toBe(60)
-    expect(report!.explanation).toBe('Overall message.')
+    // explanation uses getRankInterpretation, not highlight.message
+    expect(report!.explanation).toBe('Above the benchmark median.')
   })
 
   // comparisonNote — present when nextAction is null and a gap exists

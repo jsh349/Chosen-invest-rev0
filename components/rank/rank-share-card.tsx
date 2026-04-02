@@ -119,9 +119,10 @@ export const RankShareCard = forwardRef<HTMLDivElement, Props>(
 
             {/* Combined coverage + source note — merged into one compact line when
                 both are present to avoid two adjacent low-key notes.
-                Distinction is preserved: partial-profile signal first, source signal second. */}
+                Distinction is preserved: partial-profile signal first, source signal second.
+                border-t separates trust context from the rank data above. */}
             {(isPartial || sourceNote) && (
-              <p className="text-[10px] text-gray-600">
+              <p className="border-t border-surface-border pt-2 text-[10px] text-gray-600">
                 {[
                   isPartial ? `${availableCount} of ${totalCount} ranks available — some inputs are missing.` : null,
                   sourceNote ?? null,

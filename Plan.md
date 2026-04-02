@@ -325,3 +325,37 @@ No speculation ("may be conservative"), no financial outcome claims
 1. `npx tsc --noEmit` → 0 errors
 2. `npx jest rank-insight rank-goal-insight rank-allocation-insight` → all tests pass
 3. Explanation block on rank page: each insight is one sentence, no financial advice framing
+
+---
+
+# Addendum: P293 — Flow polish: report summary to trust framing
+
+## Task Summary
+In both compact report surfaces the source/coverage note sits without a visual
+separator between the main content and the footer disclaimer, making the trust
+block feel disconnected. Group them under one separator.
+
+## Goal
+Source note and footer disclaimer read as a unified "trust framing" section,
+clearly separated from the main rank content above.
+
+## Non-Goals
+- No wording changes
+- No logic changes
+- No new components or props
+- No layout changes beyond the separator grouping
+
+## Affected Files
+- `components/rank/rank-report-section.tsx` — wrap source note + footer under one border-t div
+- `components/rank/rank-share-card.tsx`     — add border-t to source note paragraph
+- `__tests__/lib/utils/rank-report-composer.test.ts` — fix stale explanation assertion
+
+## Risks
+- None — layout-only change; no logic, no new branches
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. `npx jest rank-report-composer` → all 8 tests pass
+3. RankReportSection with source note: note and disclaimer share one border separator
+4. RankReportSection without source note: single footer border unchanged
+5. RankShareCard with source note: note has its own top border before disclaimer

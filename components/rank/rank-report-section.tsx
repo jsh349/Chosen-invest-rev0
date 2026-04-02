@@ -99,31 +99,29 @@ export function RankReportSection({ ranks, nextHint, sourceNote = null, isLowCon
         </div>
       )}
 
-      {/* Combined coverage + source note — when both are present they are merged
-          into a single compact line to avoid two adjacent low-key notes.
-          Distinction is preserved: partial-profile signal first, source signal second. */}
-      {(isPartial || sourceNote) && (
-        <p className="text-[10px] text-gray-600">
-          {[
-            isPartial ? `${availableCount} of ${ranks.length} ranks available — some inputs are missing.` : null,
-            sourceNote ?? null,
-          ].filter(Boolean).join(' · ')}
-        </p>
-      )}
-
-      {/* Footer — benchmark framing + detail link.
-           Link label matches RankShareCard parity: "View full ranking →" when
-           partial (signals this is a partial view), "Review in full →" otherwise. */}
-      <div className="border-t border-surface-border pt-2 flex items-center justify-between gap-3">
-        <p className="text-[10px] text-gray-600">
-          Estimate · not financial advice · Chosen Invest
-        </p>
-        <Link
-          href={ROUTES.rank}
-          className="shrink-0 text-[10px] text-brand-400 hover:text-brand-300 transition-colors"
-        >
-          {isPartial ? 'View full ranking →' : 'Review in detail →'}
-        </Link>
+      {/* Trust framing — source/coverage note and disclaimer share one separator
+          so the transition from "what this means" to "how strongly to trust it"
+          reads as a single block rather than two orphaned lines. */}
+      <div className="border-t border-surface-border pt-2 space-y-1.5">
+        {(isPartial || sourceNote) && (
+          <p className="text-[10px] text-gray-600">
+            {[
+              isPartial ? `${availableCount} of ${ranks.length} ranks available — some inputs are missing.` : null,
+              sourceNote ?? null,
+            ].filter(Boolean).join(' · ')}
+          </p>
+        )}
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-[10px] text-gray-600">
+            Estimate · not financial advice · Chosen Invest
+          </p>
+          <Link
+            href={ROUTES.rank}
+            className="shrink-0 text-[10px] text-brand-400 hover:text-brand-300 transition-colors"
+          >
+            {isPartial ? 'View full ranking →' : 'Review in detail →'}
+          </Link>
+        </div>
       </div>
     </div>
   )
