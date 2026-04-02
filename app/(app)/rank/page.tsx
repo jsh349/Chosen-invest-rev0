@@ -200,7 +200,7 @@ function PrimaryRankHighlight({ ranks, mode, benchmarkLabel, isLowConfidence = f
       <p className="text-xs text-gray-500 leading-relaxed">
         {getRankInterpretation(primary.percentile!, isLowConfidence)}
       </p>
-      <p className="text-[10px] capitalize text-gray-600">{mode} · {benchmarkLabel}</p>
+      <p className="mt-1 text-[10px] capitalize text-gray-600">{mode} · {benchmarkLabel}</p>
     </div>
   )
 }

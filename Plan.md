@@ -295,6 +295,83 @@ Eliminate silent data loss, missing user-facing error states, a trust-breaking s
 
 ---
 
+# Addendum: P301 — Hierarchy spacing pass for primary rank headline
+
+## Task Summary
+In PrimaryRankHighlight, the interpretation line and the trust/confidence footer line
+share equal `space-y-2` spacing, giving them equal visual weight. A small extra gap
+before the footer makes it feel clearly subordinate to the interpretation.
+
+## Non-Goals
+- No wording changes
+- No color changes
+- No redesign or new elements
+
+## Affected Files
+- `app/(app)/rank/page.tsx` — add `mt-1` to trust note `<p>` in PrimaryRankHighlight
+
+## Risks
+- None — single class addition, no logic change
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. Rank page with assets: trust note (`mode · benchmark`) has a slightly larger gap below interpretation
+
+---
+
+# Addendum: P302 — Compact note ordering pass
+
+## Task Summary
+In compact rank surfaces (RankReportSection, RankShareCard), when both a sourceNote
+and partial-coverage note are present, they are joined as `coverage · source`. Reorder
+to `source · coverage` — benchmark quality is a global caveat and more fundamental;
+coverage detail (which specific ranks are missing) is a specific follow-on.
+
+## Non-Goals
+- No changes to note content or conditions
+- No redesign
+- No new note types
+
+## Affected Files
+- `components/rank/rank-report-section.tsx` — swap note order
+- `components/rank/rank-share-card.tsx`     — swap note order, update comment
+
+## Risks
+- None — display-only reorder; both notes still appear when applicable
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. Fallback + incomplete profile: compact card shows source note first, coverage note second
+
+---
+
+# Addendum: P303 — Priority-lock: suppress comparisonNote when isLowConfidence
+
+## Task Summary
+In `composeRankReport`, the `comparisonNote` slot (cross-rank gap insight) is currently
+not gated on `isLowConfidence`. When the benchmark is fallback/invalid, showing a
+cross-rank comparison implies a precision level the source cannot deliver. Gate it out.
+In normal healthy state, comparisonNote appears as before.
+
+## Non-Goals
+- No changes to getRankInsight logic
+- No changes to how isLowConfidence is determined
+- No changes to any other slot
+
+## Affected Files
+- `lib/utils/rank-report-composer.ts` — add `|| isLowConfidence` to comparisonNote gate
+
+## Risks
+- Compact cards in fallback state lose the cross-rank note; they still show interpretation
+  (slot 2) and optionally the profile-completeness action (slot 4)
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. Healthy state: cross-rank note still appears when present
+3. Fallback state: compact card shows interpretation only (no cross-rank note)
+
+---
+
 # Addendum: P291 — Calmness pass for top-line summary wording
 
 ## Task Summary

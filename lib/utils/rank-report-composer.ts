@@ -64,7 +64,12 @@ export function composeRankReport(
   // notes (Rules 3 & 4 — "add birth year/gender in Settings") would duplicate the same
   // remediation in two adjacent slots. Gap-analysis notes (Rules 1 & 2) are also
   // premature when the profile is incomplete — ranks will shift once gaps are filled.
-  const comparisonNote = nextAction !== null ? null : getRankInsight(ranks)
+  //
+  // Also suppressed when isLowConfidence — a cross-rank gap comparison implies
+  // precision that a fallback/invalid source cannot reliably deliver. The
+  // interpretation (slot 2) remains the primary signal; source framing in the
+  // trust block below handles the caveat without adding a competing note here.
+  const comparisonNote = nextAction !== null || isLowConfidence ? null : getRankInsight(ranks)
 
   return {
     highlight,

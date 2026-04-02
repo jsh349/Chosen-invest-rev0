@@ -106,8 +106,8 @@ export function RankReportSection({ ranks, nextHint, sourceNote = null, isLowCon
         {(isPartial || sourceNote) && (
           <p className="text-[10px] text-gray-600">
             {[
-              isPartial ? `${availableCount} of ${ranks.length} ranks available — some inputs are missing.` : null,
               sourceNote ?? null,
+              isPartial ? `${availableCount} of ${ranks.length} ranks available — some inputs are missing.` : null,
             ].filter(Boolean).join(' · ')}
           </p>
         )}
