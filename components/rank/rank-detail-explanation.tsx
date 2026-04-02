@@ -63,7 +63,7 @@ export function RankDetailExplanationBlock({ nextHint, rankInsight, rankGoalInsi
           {item.href && (
             <Link
               href={item.href}
-              className="shrink-0 text-xs text-brand-400 hover:text-brand-300 transition-colors"
+              className="shrink-0 text-xs text-brand-300 hover:text-brand-200 transition-colors"
             >
               {linkLabel(item.href)}
             </Link>

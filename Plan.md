@@ -431,3 +431,36 @@ No new suppression logic — just wording alignment.
 2. `npx jest rank-next-hint rank-actions` → all tests pass
 3. Fallback state + gender missing: hint says "for age and gender comparison" (no "peer")
 4. Fallback state + profile incomplete: action label says "Complete profile for all rank types"
+
+---
+
+# Addendum: P296 — Action prominence parity pass
+
+## Task Summary
+Action links in the detail explanation block and the compact report section both
+used `text-brand-400`, giving equal visual weight despite the surfaces having
+different depth and intent. Two targeted class changes differentiate them.
+
+## Goal
+- Detail explanation block: action link is one step brighter (`text-brand-300`) —
+  clearer forward step in the dedicated rank detail context.
+- Report section action slot: action link is slightly muted (`text-brand-400/75`) —
+  secondary feel appropriate for the compact embedded surface.
+
+## Non-Goals
+- No changes to rank actions card (`text-brand-400` — already in a dedicated card)
+- No changes to footer link, prose text, or any logic
+- No redesign
+
+## Affected Files
+- `components/rank/rank-detail-explanation.tsx` — link `text-brand-400` → `text-brand-300 hover:text-brand-200`
+- `components/rank/rank-report-section.tsx`     — normal-confidence link `text-brand-400 hover:text-brand-300` → `text-brand-400/75 hover:text-brand-400`
+
+## Risks
+- None — CSS class changes only
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. Detail page with nextHint: action link reads visibly brighter than before (brand-300)
+3. Report section with nextAction: action link is subtly more muted than the detail link
+4. Report section low-confidence: unchanged (`text-brand-400/60`) — stays most muted

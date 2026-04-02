@@ -91,7 +91,7 @@ export function RankReportSection({ ranks, nextHint, sourceNote = null, isLowCon
               'shrink-0 text-xs transition-colors',
               isLowConfidence
                 ? 'text-brand-400/60 hover:text-brand-400'
-                : 'text-brand-400 hover:text-brand-300',
+                : 'text-brand-400/75 hover:text-brand-400',
             )}
           >
             Settings →
