@@ -295,6 +295,65 @@ Eliminate silent data loss, missing user-facing error states, a trust-breaking s
 
 ---
 
+# Addendum: P306 — Non-overlap pass: coverage footnote vs action CTA
+
+## Task Summary
+In RankReportSection, when nextAction (Slot 4) is present, it already communicates
+profile incompleteness ("Add your birth year for age-based comparison.").
+The coverage footnote below ("X of N ranks available — some inputs are missing.")
+repeats the same message in a weaker, generic form. Gate the coverage note on !nextAction.
+The sourceNote (benchmark quality) is independent and still shows regardless.
+
+## Non-Goals
+- No changes to nextAction logic or wording
+- No changes to sourceNote
+- No changes to RankShareCard (no nextAction slot there)
+
+## Affected Files
+- `components/rank/rank-report-section.tsx` — gate coverage note: `!nextAction && isPartial`
+
+## Risks
+- None — purely suppressive; the CTA already covers the message more specifically
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. Incomplete profile (no birth year): Slot 4 shows action, coverage note NOT shown below
+3. Incomplete profile + degraded source: action shown, sourceNote still shown, coverage note suppressed
+4. No nextAction + partial: coverage note still shown (unchanged)
+
+---
+
+# Addendum: P307 — Fallback tone parity: detail action link
+
+## Task Summary
+In fallback state, RankDetailExplanationBlock has no isLowConfidence awareness —
+its action link stays text-brand-300 (the bright detail value from P296) while
+the compact card mutes it to text-brand-400/60. In fallback, an action that implies
+a reliable rank improvement should not feel more confident in the detail surface
+than in the compact surface.
+
+Fix: add isLowConfidence prop to RankDetailExplanationBlock. When true, step the
+action link from text-brand-300 to text-brand-400 — measured, not suppressed.
+
+## Non-Goals
+- No changes to action text, routes, or suppression logic
+- No changes to RankReportSection (already has its own fallback treatment)
+- No changes to non-action items in the explanation block
+
+## Affected Files
+- `components/rank/rank-detail-explanation.tsx` — add isLowConfidence prop, conditional link color
+- `app/(app)/rank/page.tsx`                     — pass isLowConfidence to RankDetailExplanationBlock
+
+## Risks
+- None — prop addition only; no logic change
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. Healthy benchmark: explanation block action link is text-brand-300 (bright, unchanged)
+3. Fallback benchmark: action link steps back to text-brand-400 (measured)
+
+---
+
 # Addendum: P301 — Hierarchy spacing pass for primary rank headline
 
 ## Task Summary

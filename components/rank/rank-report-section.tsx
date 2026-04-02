@@ -103,11 +103,16 @@ export function RankReportSection({ ranks, nextHint, sourceNote = null, isLowCon
           so the transition from "what this means" to "how strongly to trust it"
           reads as a single block rather than two orphaned lines. */}
       <div className="border-t border-surface-border pt-2 space-y-1.5">
-        {(isPartial || sourceNote) && (
+        {/* Coverage note is suppressed when nextAction is active — the action slot's
+            specific "add X for rank Y" message already communicates profile incompleteness
+            and is more actionable than the generic coverage count below it. */}
+        {((!nextAction && isPartial) || sourceNote) && (
           <p className="text-[10px] text-gray-600">
             {[
               sourceNote ?? null,
-              isPartial ? `${availableCount} of ${ranks.length} ranks available — some inputs are missing.` : null,
+              (!nextAction && isPartial)
+                ? `${availableCount} of ${ranks.length} ranks available — some inputs are missing.`
+                : null,
             ].filter(Boolean).join(' · ')}
           </p>
         )}

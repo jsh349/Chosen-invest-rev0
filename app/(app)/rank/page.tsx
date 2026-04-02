@@ -559,6 +559,7 @@ export default function RankPage() {
             rankInsight={rankInsight}
             rankGoalInsight={rankGoalInsight}
             rankAllocationInsight={rankAllocationInsight}
+            isLowConfidence={benchmarkHealth.status !== 'healthy'}
           />
 
           {/* 4. Narrative summary — synthesis after the core numbers and hints.

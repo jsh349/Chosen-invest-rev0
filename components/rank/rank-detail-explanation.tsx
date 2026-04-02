@@ -14,6 +14,12 @@ type Props = {
   rankInsight:          string | null
   rankGoalInsight:      string | null
   rankAllocationInsight: string | null
+  /**
+   * When true (fallback / invalid benchmark), the action link steps back from
+   * the bright detail style to a measured neutral — matching the restraint used
+   * in the compact card's fallback treatment. Text and routes are unchanged.
+   */
+  isLowConfidence?: boolean
 }
 
 /**
@@ -26,7 +32,7 @@ type Props = {
  *
  * Renders nothing when all inputs are null.
  */
-export function RankDetailExplanationBlock({ nextHint, rankInsight, rankGoalInsight, rankAllocationInsight }: Props) {
+export function RankDetailExplanationBlock({ nextHint, rankInsight, rankGoalInsight, rankAllocationInsight, isLowConfidence = false }: Props) {
   // Build a flat ordered list of candidate items
   const candidates: Array<{ key: string; text: string; href?: string }> = []
   if (nextHint)              candidates.push({ key: 'hint',       text: nextHint.text,        href: nextHint.href })
@@ -70,7 +76,12 @@ export function RankDetailExplanationBlock({ nextHint, rankInsight, rankGoalInsi
           {item.href && (
             <Link
               href={item.href}
-              className="shrink-0 text-xs text-brand-300 hover:text-brand-200 transition-colors"
+              className={cn(
+                'shrink-0 text-xs transition-colors',
+                isLowConfidence
+                  ? 'text-brand-400 hover:text-brand-300'
+                  : 'text-brand-300 hover:text-brand-200',
+              )}
             >
               {linkLabel(item.href)}
             </Link>
