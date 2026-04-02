@@ -474,8 +474,12 @@ export default function SettingsPage() {
       <details className="rounded-xl border border-surface-border bg-surface-card px-4 py-3">
         <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wide text-gray-600 select-none">
           Benchmark Diagnostics <span className="normal-case font-normal text-gray-700">(internal)</span>
-          <span className={debugReady ? 'ml-2 normal-case font-normal text-emerald-500' : 'ml-2 normal-case font-normal text-amber-500'}>
-            · {debugReady ? 'ready' : 'not ready'}
+          <span className={
+            debugReady && debugHealth.status === 'healthy' ? 'ml-2 normal-case font-normal text-emerald-500' :
+            debugReady ? 'ml-2 normal-case font-normal text-amber-400' :
+            'ml-2 normal-case font-normal text-amber-500'
+          }>
+            · {debugReady && debugHealth.status !== 'healthy' ? 'degraded' : debugReady ? 'ready' : 'not ready'}
           </span>
         </summary>
         <div className="mt-3 space-y-1.5 font-mono text-[11px] text-gray-500">
@@ -492,9 +496,9 @@ export default function SettingsPage() {
           <p>
             <span className="inline-block w-36 text-gray-600">Health</span>
             <span className={
-              debugHealth.status === 'healthy'  ? 'text-emerald-400' :
-              debugHealth.status === 'partial'  ? 'text-amber-400'   :
-              debugHealth.status === 'fallback' ? 'text-amber-400'   :
+              debugHealth.status === 'healthy'  ? 'text-emerald-400'    :
+              debugHealth.status === 'partial'  ? 'text-amber-400/60'  :
+              debugHealth.status === 'fallback' ? 'text-amber-400'     :
                                                   'text-red-400'
             }>
               {debugHealth.status}
