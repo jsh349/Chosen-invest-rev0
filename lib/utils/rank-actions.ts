@@ -56,7 +56,7 @@ export function getRankActions(
     returnMissing &&
     !actions.some((a) => a.href === ROUTES.settings)
   ) {
-    actions.push({ label: 'Add return estimate for investment rank', href: ROUTES.settings })
+    actions.push({ label: 'Add return estimate for return rank', href: ROUTES.settings })
   }
 
   // Rule 4: overall rank available but no goals set

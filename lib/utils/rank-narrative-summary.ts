@@ -38,7 +38,7 @@ export function getRankNarrativeSummary(ranks: RankResult[]): string {
   // No overall data — nothing meaningful to say yet
   if (overallPct === null) {
     return profileIncomplete
-      ? 'Rank comparisons are not yet available — add profile details to unlock more comparisons.'
+      ? 'Rank comparisons are not yet available — add profile details to get started.'
       : 'Overall wealth rank is unavailable with current portfolio data.'
   }
 

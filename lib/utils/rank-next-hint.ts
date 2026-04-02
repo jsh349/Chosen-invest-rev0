@@ -22,19 +22,19 @@ export function getNextRankHint(profile: {
 }): RankHint | null {
   if (!profile.hasAge) {
     return {
-      text: 'Add your birth year in Settings to unlock age-based rank comparison.',
+      text: 'Add your birth year to unlock age-based rank comparison.',
       href: ROUTES.settings,
     }
   }
   if (!profile.hasGender) {
     return {
-      text: 'Add your gender in Settings for a more detailed age and gender comparison.',
+      text: 'Add your gender for a more specific age and gender comparison.',
       href: ROUTES.settings,
     }
   }
   if (!profile.hasReturn) {
     return {
-      text: 'Add an estimated annual return in Settings to unlock investment rank.',
+      text: 'Add an estimated annual return to unlock return rank.',
       href: ROUTES.settings,
     }
   }
@@ -87,8 +87,8 @@ export function getPrimaryRankNextAction(
     return {
       href: ROUTES.settings,
       text: isLowConfidence
-        ? 'Add an estimated annual return to include investment rank.'
-        : 'Add an estimated annual return to unlock investment rank.',
+        ? 'Add an estimated annual return to include return rank.'
+        : 'Add an estimated annual return to unlock return rank.',
     }
   }
 
