@@ -36,12 +36,12 @@ export function getRankAllocationInsight(
 
   // Rule 1: strong wealth rank but concentrated
   if (overallPct !== null && overallPct >= 75 && top.percentage >= CONCENTRATION_THRESHOLD) {
-    return `Wealth rank is strong, but holdings are concentrated in ${top.label}. Consider whether this concentration fits your risk outlook.`
+    return `Wealth rank is strong, but holdings are concentrated in ${top.label}.`
   }
 
   // Rule 2: weak return rank with single category
   if (retPct !== null && retPct < 40 && categoryBreakdown.length === 1) {
-    return `Return rank is below the benchmark median with holdings in a single category. Broader allocation may improve future return prospects.`
+    return `Return rank is below the benchmark median with holdings in a single category.`
   }
 
   // Rule 3: strong return rank concentrated in a volatile category

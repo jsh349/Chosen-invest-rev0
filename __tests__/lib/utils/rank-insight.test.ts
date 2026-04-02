@@ -32,8 +32,8 @@ describe('getRankInsight', () => {
 
   it('Rule 1: does NOT fire when gap is 19', () => {
     const insight = getRankInsight([overall(74), ret(55), ageBased(null, 'birth year'), ageGender(null, 'birth year and gender')])
-    // gap = 19 → Rule 1 skipped; Rule 3 fires instead
-    expect(insight).not.toContain('Overall wealth rank is stronger')
+    // gap = 19 → below threshold; no other conditions met → null
+    expect(insight).toBeNull()
   })
 
   // Rule 2 — return significantly above wealth
@@ -42,29 +42,26 @@ describe('getRankInsight', () => {
     expect(insight).toContain('Return rank is higher')
   })
 
-  // Rule 3 — overall available but age missing
-  it('Rule 3: fires when age missing field is set', () => {
+  // Profile-gap rules (Rules 3 & 4) were removed in a prior refactor.
+  // Profile completeness hints are now handled by rank-next-hint / rank-checklist.
+  it('returns null when gap < threshold and no rule conditions met (age missing)', () => {
     const insight = getRankInsight([overall(60), ret(55), ageBased(null, 'birth year'), ageGender(null, 'birth year')])
-    expect(insight).toContain('birth year')
+    expect(insight).toBeNull()
   })
 
-  // Rule 4 — age available but gender missing
-  it('Rule 4: fires when ageBased has percentile and ageGender has missingField', () => {
+  it('returns null when gap < threshold and no rule conditions met (gender missing)', () => {
     const insight = getRankInsight([overall(60), ret(55), ageBased(75), ageGender(null, 'gender')])
-    expect(insight).toContain('gender')
+    expect(insight).toBeNull()
   })
 
-  // LOW fix regression — Rule 4 must NOT fire when ageBased percentile is null
-  it('Rule 4 regression: null ageBased percentile does not trigger Rule 4', () => {
-    // ageBased.percentile = null  → ageBased?.percentile != null is false → Rule 4 skipped
+  it('returns null when gap < threshold and ageBased percentile is null', () => {
     const insight = getRankInsight([overall(60), ret(55), ageBased(null), ageGender(null, 'gender')])
     expect(insight).toBeNull()
   })
 
   // Priority — first matching rule wins
-  it('Rule 1 takes priority over Rule 3', () => {
+  it('Rule 1 fires when wealth–return gap ≥ threshold (gap-based insight, not profile note)', () => {
     const insight = getRankInsight([overall(80), ret(55), ageBased(null, 'birth year'), ageGender(null, 'birth year and gender')])
     expect(insight).toContain('Overall wealth rank is stronger')
-    expect(insight).not.toContain('birth year')
   })
 })

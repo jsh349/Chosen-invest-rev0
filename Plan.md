@@ -290,3 +290,38 @@ without changing the factual content or benchmark framing.
 1. `npx tsc --noEmit` → 0 errors
 2. `npx jest rank-narrative-summary` → all 18 tests pass
 3. Rank page with assets: narrative summary reads "Your overall assets rank [above/below/near/well above/well below] the benchmark median."
+
+---
+
+# Addendum: P292 — Restraint pass for supporting copy in rank detail
+
+## Task Summary
+Trim the second (prescriptive or speculative) sentence from insight strings
+where the main interpretation already covers the observation, and where
+action CTAs are separately available in the UI.
+
+## Goal
+Each insight is one factual, benchmark-grounded observation.
+No speculation ("may be conservative"), no financial outcome claims
+("could improve wealth position"), no risk-tolerance advice
+("consider whether this concentration fits your risk outlook").
+
+## Non-Goals
+- No changes to rule logic or thresholds
+- No changes to rank-next-hint.ts (action hints are intentionally prescriptive)
+- No changes to rank-interpretation.ts or percentile-label.ts
+- No redesign or new insights
+
+## Affected Files
+- `lib/utils/rank-insight.ts`           — trim second sentence from Rules 1 & 2
+- `lib/utils/rank-goal-insight.ts`      — trim prescriptive endings from Rules 1–3
+- `lib/utils/rank-allocation-insight.ts` — trim advice/prediction endings from Rules 1–2
+- `__tests__/lib/utils/rank-insight.test.ts` — fix 3 stale tests (removed Rules 3 & 4)
+
+## Risks
+- None — display-only string changes; all test substrings are still present after trimming
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. `npx jest rank-insight rank-goal-insight rank-allocation-insight` → all tests pass
+3. Explanation block on rank page: each insight is one sentence, no financial advice framing
