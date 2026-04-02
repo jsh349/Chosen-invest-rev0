@@ -581,7 +581,7 @@ export default function RankPage() {
           {reviewVisible && (
             <div className="flex items-center justify-between gap-3 rounded-xl border border-brand-500/20 bg-brand-500/5 px-5 py-3">
               <p className="text-xs text-brand-300 leading-relaxed">
-                Your rank inputs have changed — the numbers below may have shifted.
+                Your rank inputs have changed — the figures below may have updated.
               </p>
               <div className="flex items-center gap-3 shrink-0">
                 <Link
@@ -685,7 +685,7 @@ export default function RankPage() {
                     ? 'text-amber-500/70'
                     : 'text-gray-500',
                 )}>
-                  {rankReviewSummary.some((i) => i.status === 'missing') ? 'Needs attention' : 'For your review'}
+                  {rankReviewSummary.some((i) => i.status === 'missing') ? 'Needs attention' : 'For reference'}
                 </span>
               </div>
               <ul className="space-y-2.5">

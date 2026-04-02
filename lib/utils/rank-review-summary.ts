@@ -83,7 +83,7 @@ export function getRankReviewSummary(
       return {
         topic: 'wealth', label: 'Wealth rank',
         status: 'review',
-        note: 'Below the benchmark median — review your allocation.',
+        note: 'Below the benchmark median.',
       }
     }
     return {
@@ -106,7 +106,7 @@ export function getRankReviewSummary(
       return {
         topic: 'return', label: 'Return rank',
         status: 'review',
-        note: 'Below the benchmark median — review your return estimate.',
+        note: 'Below the benchmark median.',
       }
     }
     return {
