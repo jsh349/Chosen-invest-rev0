@@ -21,6 +21,12 @@ type Props = {
    * is degraded (fallback, partial, or invalid). Null → footer is clean.
    */
   sourceNote?: string | null
+  /**
+   * When true (fallback / invalid benchmark source), interpretation text
+   * uses "reference estimate" instead of "benchmark median" — mirrors the
+   * same flag in RankReportSection / composeRankReport for parity.
+   */
+  isLowConfidence?: boolean
 }
 
 
@@ -30,7 +36,7 @@ type Props = {
  * image capture without importing an export library here.
  */
 export const RankShareCard = forwardRef<HTMLDivElement, Props>(
-  function RankShareCard({ ranks, mode = 'individual', sourceNote = null }, ref) {
+  function RankShareCard({ ranks, mode = 'individual', sourceNote = null, isLowConfidence = false }, ref) {
     const hero      = getPrimaryRank(ranks)
     const secondary = SECONDARY_TYPES
       .filter((type) => type !== hero?.type)
@@ -84,7 +90,7 @@ export const RankShareCard = forwardRef<HTMLDivElement, Props>(
                       </span>
                     </div>
                     <p className="mt-1.5 text-[11px] text-gray-500 leading-relaxed">
-                      {getRankInterpretation(hero.percentile!)}
+                      {getRankInterpretation(hero.percentile!, isLowConfidence)}
                     </p>
                   </>
                 ) : (

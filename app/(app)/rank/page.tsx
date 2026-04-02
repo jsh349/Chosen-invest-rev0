@@ -759,7 +759,7 @@ export default function RankPage() {
                already shows confidenceNote.text when the benchmark source is
                degraded. Passing it here would duplicate the same line on the
                same page. The prop is preserved on RankShareCard for standalone use. */}
-          {summary.assetCount > 0 && <RankShareCard ranks={ranks} mode={mode} sourceNote={null} />}
+          {summary.assetCount > 0 && <RankShareCard ranks={ranks} mode={mode} sourceNote={null} isLowConfidence={benchmarkHealth.status !== 'healthy'} />}
         </>
       )}
 
