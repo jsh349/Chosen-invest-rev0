@@ -105,4 +105,25 @@ describe('getPrimaryRankNextAction — confidence-sensitive wording', () => {
     expect(port!.href).toContain('portfolio')
     expect(goal!.href).toContain('goal')
   })
+
+  it('gender hint uses soft wording (no "peer") when isLowConfidence', () => {
+    const hint = getPrimaryRankNextAction(
+      { ...fullProfile, hasGender: false },
+      [],
+      { isLowConfidence: true },
+    )
+    expect(hint).not.toBeNull()
+    expect(hint!.text).not.toMatch(/peer/)
+    expect(hint!.text).toMatch(/age and gender comparison/)
+  })
+
+  it('gender hint uses peer framing in normal confidence', () => {
+    const hint = getPrimaryRankNextAction(
+      { ...fullProfile, hasGender: false },
+      [],
+      { isLowConfidence: false },
+    )
+    expect(hint).not.toBeNull()
+    expect(hint!.text).toMatch(/peer/)
+  })
 })

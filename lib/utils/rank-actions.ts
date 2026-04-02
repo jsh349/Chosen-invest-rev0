@@ -33,7 +33,10 @@ export function getRankActions(
 
   // Rule 1: profile incomplete (age / gender) → complete in Settings
   if (overallPct !== null && profileIncomplete) {
-    actions.push({ label: 'Complete profile for full ranking', href: ROUTES.settings })
+    actions.push({
+      label: isLowConfidence ? 'Complete profile for all rank types' : 'Complete profile for full ranking',
+      href: ROUTES.settings,
+    })
   }
 
   // Rule 2: wealth rank below the 75th percentile → review portfolio.

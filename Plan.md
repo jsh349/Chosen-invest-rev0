@@ -391,3 +391,43 @@ when action is active; footer link = primary when profile is complete.
 2. RankReportSection with nextAction: footer says "See full ranking →" (secondary)
 3. RankReportSection without nextAction, not partial: "Review in detail →" (primary)
 4. RankReportSection partial: "View full ranking →" (unchanged)
+
+---
+
+# Addendum: P295 — Fallback CTA wording consistency pass
+
+## Task Summary
+Two gaps in the existing isLowConfidence softening pattern:
+
+1. getPrimaryRankNextAction gender hint has no isLowConfidence variant.
+   Normal: "for a more specific peer comparison" implies reliable peer data.
+   Low confidence: should drop "peer" and the reliability claim.
+
+2. getRankActions Rule 1 label is "Complete profile for full ranking".
+   "full ranking" implies a complete/reliable ranking — overstated in fallback.
+   Low confidence: "Complete profile for all rank types" (factual, no promise).
+
+## Goal
+All CTA wording that carries an outcome promise has a soft fallback variant.
+No new suppression logic — just wording alignment.
+
+## Non-Goals
+- No changes to other hints (age/return already have soft variants)
+- No changes to getRankActions Rule 3 ('Add return estimate' is already neutral)
+- No route changes
+- No logic changes
+
+## Affected Files
+- `lib/utils/rank-next-hint.ts`  — add isLowConfidence branch for gender hint
+- `lib/utils/rank-actions.ts`   — add isLowConfidence branch for Rule 1 label
+- `__tests__/lib/utils/rank-next-hint.test.ts` — add gender isLowConfidence test
+- `__tests__/lib/utils/rank-actions.test.ts`   — add Rule 1 isLowConfidence test
+
+## Risks
+- None — wording-only additions inside existing isLowConfidence pattern
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. `npx jest rank-next-hint rank-actions` → all tests pass
+3. Fallback state + gender missing: hint says "for age and gender comparison" (no "peer")
+4. Fallback state + profile incomplete: action label says "Complete profile for all rank types"

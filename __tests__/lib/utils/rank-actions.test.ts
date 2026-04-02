@@ -110,6 +110,21 @@ describe('getRankActions', () => {
     expect(returnIdx).toBeLessThan(goalsIdx)
   })
 
+  // Rule 1 — isLowConfidence label variant
+  it('Rule 1: uses soft label when isLowConfidence', () => {
+    const actions = getRankActions(makeRanks({ ageMissing: true }), { hasGoals: true, isLowConfidence: true })
+    const settingsAction = actions.find((a) => a.href === ROUTES.settings)
+    expect(settingsAction).not.toBeUndefined()
+    expect(settingsAction!.label).toBe('Complete profile for all rank types')
+  })
+
+  it('Rule 1: uses full-ranking label in normal confidence', () => {
+    const actions = getRankActions(makeRanks({ ageMissing: true }), { hasGoals: true, isLowConfidence: false })
+    const settingsAction = actions.find((a) => a.href === ROUTES.settings)
+    expect(settingsAction).not.toBeUndefined()
+    expect(settingsAction!.label).toBe('Complete profile for full ranking')
+  })
+
   // Cap at 2
   it('result is capped at 2 even when all rules would fire', () => {
     const actions = getRankActions(
