@@ -39,28 +39,28 @@ export function getRankReviewSummary(
       return {
         topic: 'profile', label: 'Profile',
         status: 'missing',
-        note: 'Add birth year to unlock age-based comparison.',
+        note: 'Add birth year for age-based comparison.',
       }
     }
     if (!profile.hasGender && !profile.hasReturn) {
       return {
         topic: 'profile', label: 'Profile',
         status: 'review',
-        note: 'Add gender and return estimate to complete your profile.',
+        note: 'Add gender and return estimate.',
       }
     }
     if (!profile.hasGender) {
       return {
         topic: 'profile', label: 'Profile',
         status: 'review',
-        note: 'Add gender to unlock age and gender comparison.',
+        note: 'Add gender for age and gender comparison.',
       }
     }
     if (!profile.hasReturn) {
       return {
         topic: 'profile', label: 'Profile',
         status: 'review',
-        note: 'Add a return estimate to unlock return rank.',
+        note: 'Add a return estimate for return rank.',
       }
     }
     return {
@@ -83,7 +83,7 @@ export function getRankReviewSummary(
       return {
         topic: 'wealth', label: 'Wealth rank',
         status: 'review',
-        note: 'Below the benchmark median — consider adjusting your portfolio allocation.',
+        note: 'Below the benchmark median — review your allocation.',
       }
     }
     return {
@@ -106,13 +106,13 @@ export function getRankReviewSummary(
       return {
         topic: 'return', label: 'Return rank',
         status: 'review',
-        note: 'Below the benchmark median — consider reviewing your return estimate.',
+        note: 'Below the benchmark median — review your return estimate.',
       }
     }
     return {
       topic: 'return', label: 'Return rank',
       status: 'ok',
-      note: 'Estimated return is at or above the benchmark median.',
+      note: 'At or above the benchmark median.',
     }
   })()
 
