@@ -498,3 +498,37 @@ Enforce distinct roles: chip = comparison mode only; source framing stays in the
 3. RankShareCard healthy curated: chip shows "individual" (no incorrect "built-in reference")
 4. Degraded state: source note still appears in trust block — unaffected
 5. Footer disclaimer unchanged on both surfaces
+
+---
+
+# Addendum: P299 — Internal diagnostics meaning-first ordering pass
+
+## Task Summary
+Benchmark Diagnostics expanded rows were ordered active source → fallback →
+health → capabilities, leading with context (which source) before status (is it
+working). Reordered to health → capabilities → fallback → active source so the
+most critical readiness signal appears first when scanning the block.
+
+## Goal
+Opening the diagnostics panel immediately shows health status and capabilities
+(what's broken), then fallback (what's compensating), then source (what triggered
+this). Faster operational scan with no content changes.
+
+## Non-Goals
+- No changes to the summary label (already shows ready/degraded/not ready)
+- No new rows or fields
+- No changes below the first separator (Comparison mode, Version, Last applied, Pending)
+- No changes to any other file
+
+## Affected Files
+- `app/(app)/settings/page.tsx` — reorder 4 rows in the diagnostics source group + update comment
+
+## Risks
+- None — pure render reordering; all values and logic unchanged
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. Open Benchmark Diagnostics: first row is Health, second is Capabilities
+3. Fallback row is third, Active source row is fourth
+4. Everything below the separator (Comparison mode, Version, etc.) is unchanged
+5. Summary label (ready/degraded/not ready) is unchanged
