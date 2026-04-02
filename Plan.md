@@ -464,3 +464,37 @@ different depth and intent. Two targeted class changes differentiate them.
 2. Detail page with nextHint: action link reads visibly brighter than before (brand-300)
 3. Report section with nextAction: action link is subtly more muted than the detail link
 4. Report section low-confidence: unchanged (`text-brand-400/60`) — stays most muted
+
+---
+
+# Addendum: P298 — Compact source-related UI harmony pass
+
+## Task Summary
+The context chip in RankReportSection and RankShareCard appended '· built-in reference'
+when sourceNote was null — but null also covers healthy curated sources (P243 made curated
+return null for healthy state). The chip was incorrectly claiming "built-in reference" for
+curated sources, and doing double duty (mode + source) when source framing belongs in the
+trust block and footer only.
+
+## Goal
+Enforce distinct roles: chip = comparison mode only; source framing stays in the trust block
+(source note when degraded) and the footer disclaimer.
+
+## Non-Goals
+- No changes to RankOverviewCard (dashboard surface, separate concern)
+- No changes to trust block or footer disclaimer text
+- No new props or patterns
+
+## Affected Files
+- `components/rank/rank-report-section.tsx` — remove `{!sourceNote && ' · built-in reference'}` from chip
+- `components/rank/rank-share-card.tsx`     — remove `{!sourceNote && ' · built-in reference'}` from chip
+
+## Risks
+- None — presentation-only removal; no logic path changes
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. RankReportSection healthy: chip shows only "individual" (no source suffix)
+3. RankShareCard healthy curated: chip shows "individual" (no incorrect "built-in reference")
+4. Degraded state: source note still appears in trust block — unaffected
+5. Footer disclaimer unchanged on both surfaces
