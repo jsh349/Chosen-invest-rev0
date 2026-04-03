@@ -36,7 +36,7 @@ export function getRankAllocationInsight(
 
   // Rule 1: strong wealth rank but concentrated
   if (overallPct !== null && overallPct >= 75 && top.percentage >= CONCENTRATION_THRESHOLD) {
-    return `Wealth rank is strong, but holdings are concentrated in ${top.label}.`
+    return `Overall wealth rank is strong, but holdings are concentrated in ${top.label}.`
   }
 
   // Rule 2: weak return rank with single category

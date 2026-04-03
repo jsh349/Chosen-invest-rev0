@@ -14,7 +14,7 @@ export function getRankGoalInsight(ranks: RankResult[], goals: Goal[]): string |
 
   // Rule 1: strong wealth rank but no goals set
   if (overallPct !== null && overallPct >= 75 && goals.length === 0) {
-    return 'Your wealth rank is strong, but no financial goals are set.'
+    return 'Your overall wealth rank is strong, but no financial goals are set.'
   }
 
   // Rule 2: moderate+ wealth rank, goals exist but none have a target date

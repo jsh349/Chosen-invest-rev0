@@ -90,7 +90,7 @@ export function RankReportSection({ ranks, nextHint, sourceNote = null, isLowCon
       {nextAction && (
         <div className="border-t border-surface-border pt-2 space-y-2">
           {sourceNote && (
-            <p className="text-[10px] text-gray-600">{sourceNote}</p>
+            <p className="text-[10px] text-gray-500">{sourceNote}</p>
           )}
           <div className="flex items-start justify-between gap-3">
             <p className={cn('text-xs leading-relaxed', isLowConfidence ? 'text-gray-600' : 'text-gray-500')}>
@@ -124,7 +124,7 @@ export function RankReportSection({ ranks, nextHint, sourceNote = null, isLowCon
             source note as a single sentence; "some inputs are missing" is dropped because
             the source caveat already frames the reliability context. */}
         {!nextAction && (isPartial || sourceNote) && (
-          <p className="text-[10px] text-gray-600">
+          <p className="text-[10px] text-gray-500">
             {sourceNote && isPartial
               ? `${sourceNote} ${availableCount} of ${ranks.length} ranks available.`
               : sourceNote
