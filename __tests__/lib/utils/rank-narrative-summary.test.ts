@@ -86,9 +86,9 @@ describe('getRankNarrativeSummary — opening sentence', () => {
 // ---------------------------------------------------------------------------
 
 describe('getRankNarrativeSummary — return gap second sentence', () => {
-  it('notes lower return rank when overall − return ≥ 20', () => {
+  it('notes weaker return rank when overall − return ≥ 20', () => {
     const text = getRankNarrativeSummary([OVERALL(70), RETURN(45)])
-    expect(text).toMatch(/return rank is notably lower/)
+    expect(text).toMatch(/return rank is notably weaker/)
   })
 
   it('notes stronger return rank when return − overall ≥ 20', () => {
@@ -124,7 +124,7 @@ describe('getRankNarrativeSummary — profile incomplete note', () => {
     const text = getRankNarrativeSummary([
       OVERALL(70), RETURN(45), AGE(null, 'age'),
     ])
-    expect(text).toMatch(/return rank is notably lower/)
+    expect(text).toMatch(/return rank is notably weaker/)
     // Should not also say "profile inputs"
     expect(text).not.toMatch(/profile inputs/)
   })

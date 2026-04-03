@@ -90,7 +90,7 @@ export function getPrimaryRankNextAction(
       href: ROUTES.settings,
       text: isLowConfidence
         ? 'Add an estimated annual return to include return rank.'
-        : 'Add an estimated annual return to unlock return rank.',
+        : 'Add an estimated annual return for return rank.',
     }
   }
 
