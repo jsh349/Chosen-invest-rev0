@@ -46,14 +46,14 @@ describe('Rule 1: strong wealth rank + concentrated allocation', () => {
   it('fires when overall >= 75 and top category >= 70%', () => {
     const insight = getRankAllocationInsight([overall(80)], [slice('real_estate', 75, 'Real Estate')])
     expect(insight).not.toBeNull()
-    expect(insight).toContain('Wealth rank is strong')
+    expect(insight).toContain('Overall wealth rank is strong')
     expect(insight).toContain('Real Estate')
   })
 
   it('fires exactly at the boundary (overall=75, top=70)', () => {
     const insight = getRankAllocationInsight([overall(75)], [slice('cash', 70, 'Cash & Savings')])
     expect(insight).not.toBeNull()
-    expect(insight).toContain('Wealth rank is strong')
+    expect(insight).toContain('Overall wealth rank is strong')
   })
 
   it('does NOT fire when overall is 74', () => {
@@ -146,7 +146,7 @@ describe('rule priority', () => {
       [slice('crypto', 80, 'Crypto')],
     )
     // Rule 1 fires first
-    expect(insight).toContain('Wealth rank is strong')
+    expect(insight).toContain('Overall wealth rank is strong')
     expect(insight).not.toContain('Return rank is strong')
   })
 })
