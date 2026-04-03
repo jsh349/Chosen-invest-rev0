@@ -74,7 +74,7 @@ function isSafeToRestore(key: string, value: unknown): boolean {
  */
 function sanitizeSettingsForRestore(raw: Record<string, unknown>): Record<string, unknown> {
   const out: Record<string, unknown> = {}
-  if (VALID_CURRENCY_CODES.has(raw.currency as string)) out.currency = raw.currency
+  if (typeof raw.currency === 'string' && VALID_CURRENCY_CODES.has(raw.currency)) out.currency = raw.currency
   if (typeof raw.showCents === 'boolean') out.showCents = raw.showCents
   if (typeof raw.birthYear === 'number' && raw.birthYear >= 1900 && raw.birthYear <= 2100) out.birthYear = raw.birthYear
   if (typeof raw.gender === 'string' && VALID_GENDER_VALUES.has(raw.gender)) out.gender = raw.gender

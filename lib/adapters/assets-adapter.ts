@@ -22,8 +22,8 @@ export const assetsAdapter: AssetsAdapter = {
     const data = await res.json() as Asset[]
     return data
       .filter((a) => {
-        if (!a.id || !Number.isFinite(a.value) || !a.name || !a.createdAt) {
-          console.warn('[assetsAdapter] Skipping malformed asset — missing id, value, name, or createdAt.', a)
+        if (!a.id || !Number.isFinite(a.value) || !a.name || !a.createdAt || !a.currency) {
+          console.warn('[assetsAdapter] Skipping malformed asset — missing id, value, name, createdAt, or currency.', a)
           return false
         }
         return true

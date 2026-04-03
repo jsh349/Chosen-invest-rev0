@@ -14,8 +14,8 @@ const AssetSchema = z.object({
   category:  z.enum(ASSET_CATEGORY_KEYS),
   value:     z.number().finite().nonnegative(),
   currency:  z.enum(['USD', 'EUR', 'GBP', 'JPY', 'KRW']),
-  createdAt: z.string().min(1),
-  updatedAt: z.string().min(1),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
   // userId is resolved server-side from the session — not accepted from client
   userId:    z.string().optional(),
 })
@@ -32,8 +32,8 @@ const GoalSchema = z.object({
   currentAmount: z.number().finite().nonnegative(),
   targetDate:    z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   shared:        z.boolean().optional(),
-  createdAt:     z.string().min(1),
-  updatedAt:     z.string().min(1),
+  createdAt:     z.string().datetime(),
+  updatedAt:     z.string().datetime(),
 }).refine((g) => g.currentAmount <= g.targetAmount, {
   message: 'currentAmount must not exceed targetAmount',
   path: ['currentAmount'],
@@ -52,7 +52,7 @@ const TransactionSchema = z.object({
   // Derived from TRANSACTION_CATEGORIES so adding a new category only requires
   // updating the constant — no need to edit this file separately.
   category:    z.enum(TRANSACTION_CATEGORIES as unknown as [string, ...string[]]),
-  createdAt:   z.string().min(1),
+  createdAt:   z.string().datetime(),
 })
 
 export const TransactionsPayloadSchema = z.array(TransactionSchema).max(2000)

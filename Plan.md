@@ -1024,3 +1024,39 @@ When !nextAction && sourceNote:
 3. Card with sourceNote, no nextAction: sourceNote stays in trust block footer as usual
 4. Card with nextAction, no sourceNote: no change — action renders exactly as before
 5. Card with coverage note only: coverage note in footer as usual
+
+---
+
+# Addendum: Debugging Audit Fixes
+
+## Task Summary
+Apply confirmed bug fixes from the comprehensive debugging audit. Four targeted
+fixes covering validator strictness, a settings type safety gap, an adapter
+filter gap, and an SSR guard.
+
+## Goal
+Close the confirmed bugs without touching unrelated code.
+
+## Non-Goals
+- No refactoring of unrelated store files
+- No changes to route logic or error handling
+- No amount precision refine (floating-point false-positive risk, UI already constrains input)
+- No changes to handleEditSave (optimistic UI is by design)
+- No changes to use-format-currency deps (symbol already captures currency — not a bug)
+
+## Affected Files
+- `lib/api/validators.ts`           — createdAt/updatedAt → z.string().datetime()
+- `app/(app)/settings/page.tsx`     — typeof check before currency Set.has()
+- `lib/adapters/assets-adapter.ts`  — add currency field presence check
+- `lib/store/audit-store.tsx`       — add top-level SSR guard in recordAudit
+
+## Risks
+- `z.string().datetime()` is stricter than `z.string().min(1)`; any client sending
+  non-ISO timestamps would now receive a 400. All stores use `new Date().toISOString()`
+  so no existing client is affected.
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. `npm test -- --ci` → all tests pass
+3. POST /api/assets with `createdAt: "not-a-date"` → 400 validation error
+4. POST /api/assets with `createdAt: "2024-01-15T10:30:00.000Z"` → 200 ok
