@@ -64,7 +64,7 @@ export function RankReportSection({ ranks, nextHint, sourceNote = null, isLowCon
 
       {/* Slot 1 — primary rank highlight */}
       <div className="space-y-0.5">
-        <p className="text-[10px] uppercase tracking-wide text-gray-600">{highlight.label}</p>
+        <p className="text-[10px] uppercase tracking-wide text-gray-500">{highlight.label}</p>
         <p className={cn('text-2xl font-bold tabular-nums leading-none', percentileColor(highlight.percentile!))}>
           Top {topPctLabel(highlight.percentile!)}
         </p>
