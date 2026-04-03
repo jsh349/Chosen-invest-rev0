@@ -127,7 +127,7 @@ export const RankShareCard = forwardRef<HTMLDivElement, Props>(
                 source caveat already frames the reliability context.
                 border-t separates trust context from the rank data above. */}
             {(isPartial || sourceNote) && (
-              <p className="border-t border-surface-border pt-2 text-[10px] text-gray-500">
+              <p className="border-t border-surface-border pt-2 text-[10px] text-gray-600">
                 {sourceNote && isPartial
                   ? `${sourceNote} ${availableCount}/${totalCount} ranks available.`
                   : sourceNote
