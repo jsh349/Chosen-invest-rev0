@@ -36,7 +36,7 @@ export function getRankConfidenceNote(params: {
 
   if (benchmarkHealthStatus === 'invalid') {
     return {
-      text:  'Selected source not connected — using built-in ranges.',
+      text:  'Selected source not yet available — using built-in ranges.',
       level: 'low',
     }
   }

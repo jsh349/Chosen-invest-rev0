@@ -756,3 +756,65 @@ this). Faster operational scan with no content changes.
 3. Fallback row is third, Active source row is fourth
 4. Everything below the separator (Comparison mode, Version, etc.) is unchanged
 5. Summary label (ready/degraded/not ready) is unchanged
+
+---
+
+# Addendum: P308 — Title/chip complementarity pass
+
+## Task Summary
+Rank page header subtitle restated the mode and benchmark source that the chip
+already shows, creating redundancy. Subtitles changed to describe the ranking
+dimensions instead, so title describes the subject, subtitle describes the scope,
+and chip describes the context.
+
+## Goal
+- Individual subtitle: "Your individual portfolio ranked against reference benchmarks"
+  → "Portfolio rank across wealth, age, and return"
+- Household subtitle: "Combined household wealth ranked against reference benchmarks"
+  → "Combined household wealth rank"
+- Chip is unchanged ("Individual · Built-in reference" / "Household · Curated data")
+
+## Non-Goals
+- No changes to chip wording
+- No changes to any other surface (report section, share card, etc.)
+
+## Affected Files
+- `app/(app)/rank/page.tsx` — two subtitle strings
+
+## Risks
+- None — string-only change in presentation layer
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. Individual mode: subtitle reads "Portfolio rank across wealth, age, and return"
+3. Household mode: subtitle reads "Combined household wealth rank"
+4. Chip unchanged
+
+---
+
+# Addendum: P309 — Terminology compatibility pass
+
+## Task Summary
+`getRankConfidenceNote` for 'invalid' status said "not connected", which implies
+a network or connectivity failure rather than a configuration/availability gap.
+Changed to "not yet available" — calmer and accurate without implying a broken link.
+
+## Goal
+- `invalid` note: "Selected source not connected — using built-in ranges."
+  → "Selected source not yet available — using built-in ranges."
+
+## Non-Goals
+- No changes to 'fallback' or 'partial' notes
+- No changes to settings diagnostics page (uses separate internal labels)
+- No test changes — `/not connected|built-in ranges/i` regex still matches "built-in ranges"
+
+## Affected Files
+- `lib/utils/rank-confidence-note.ts` — one string
+
+## Risks
+- None — the test assertion uses an OR pattern; "built-in ranges" still satisfies it
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. `npx jest --ci rank-confidence-note` → all pass
+3. Settings diagnostics: unchanged (uses separate vocabulary)

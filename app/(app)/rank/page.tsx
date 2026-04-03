@@ -418,8 +418,8 @@ export default function RankPage() {
             <h1 className="text-xl font-bold text-white">Wealth Rank</h1>
             <p className="mt-0.5 text-sm text-gray-500">
               {mode === 'individual'
-                ? 'Your individual portfolio ranked against reference benchmarks'
-                : 'Combined household wealth ranked against reference benchmarks'}
+                ? 'Portfolio rank across wealth, age, and return'
+                : 'Combined household wealth rank'}
             </p>
           </div>
           <ModeToggle mode={mode} onChange={(m) => { setMode(m); writeScalar(STORAGE_KEYS.rankComparisonMode, m) }} />
