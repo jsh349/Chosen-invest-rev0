@@ -65,9 +65,11 @@ export const RankShareCard = forwardRef<HTMLDivElement, Props>(
       >
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div>
+          {/* Title and mode on one baseline row — mode qualifies the title rather
+              than claiming a standalone line between the section label and the data. */}
+          <div className="flex items-baseline gap-2">
             <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Rank Summary</p>
-            <p className="mt-0.5 text-[10px] capitalize text-gray-600">{mode}</p>
+            <span className="text-[10px] capitalize text-gray-600">{mode}</span>
           </div>
           <span className="text-[10px] text-gray-600">{dateStr}</span>
         </div>

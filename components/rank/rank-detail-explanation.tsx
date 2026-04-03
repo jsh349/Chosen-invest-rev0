@@ -72,7 +72,12 @@ export function RankDetailExplanationBlock({ nextHint, rankInsight, rankGoalInsi
             i > 0 && item.href && 'border-t border-surface-border pt-2',
           )}
         >
-          <p className="text-xs text-gray-400 leading-relaxed">{item.text}</p>
+          {/* Interpretation items (no link) read as primary content; action items
+              (with link) are secondary — one step dimmer so the explanation
+              leads and the CTA follows visually. */}
+          <p className={cn('text-xs leading-relaxed', item.href ? 'text-gray-400' : 'text-gray-300')}>
+            {item.text}
+          </p>
           {item.href && (
             <Link
               href={item.href}

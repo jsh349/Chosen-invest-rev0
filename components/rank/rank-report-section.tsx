@@ -55,8 +55,12 @@ export function RankReportSection({ ranks, nextHint, sourceNote = null, isLowCon
       aria-label="Rank Report"
       className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-3"
     >
-      <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Rank Report</p>
-      <p className="text-[10px] capitalize text-gray-600">{mode}</p>
+      {/* Title and mode on one baseline row — mode qualifies the title rather
+          than claiming a standalone line between the section label and the data. */}
+      <div className="flex items-baseline gap-2">
+        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Rank Report</p>
+        <span className="text-[10px] capitalize text-gray-600">{mode}</span>
+      </div>
 
       {/* Slot 1 — primary rank highlight */}
       <div className="space-y-0.5">
@@ -79,38 +83,48 @@ export function RankReportSection({ ranks, nextHint, sourceNote = null, isLowCon
       {/* Slot 4 — next action (omitted when null).
           Layout matches the detail surface: prose text + short link label,
           rather than the full sentence as link text. composeRankReport ensures
-          nextAction.href is always ROUTES.settings here. */}
+          nextAction.href is always ROUTES.settings here.
+          When a sourceNote is active, it prefixes the action here rather than
+          appearing in the footer trust block — trust context should precede the
+          recommendation, not follow it. */}
       {nextAction && (
-        <div className="border-t border-surface-border pt-2 flex items-start justify-between gap-3">
-          <p className={cn('text-xs leading-relaxed', isLowConfidence ? 'text-gray-600' : 'text-gray-500')}>
-            {nextAction.text}
-          </p>
-          <Link
-            href={nextAction.href}
-            className={cn(
-              'shrink-0 text-xs transition-colors',
-              isLowConfidence
-                ? 'text-brand-400/60 hover:text-brand-400'
-                : 'text-brand-400/75 hover:text-brand-400',
-            )}
-          >
-            Settings →
-          </Link>
+        <div className="border-t border-surface-border pt-2 space-y-2">
+          {sourceNote && (
+            <p className="text-[10px] text-gray-600">{sourceNote}</p>
+          )}
+          <div className="flex items-start justify-between gap-3">
+            <p className={cn('text-xs leading-relaxed', isLowConfidence ? 'text-gray-600' : 'text-gray-500')}>
+              {nextAction.text}
+            </p>
+            <Link
+              href={nextAction.href}
+              className={cn(
+                'shrink-0 text-xs transition-colors',
+                isLowConfidence
+                  ? 'text-brand-400/60 hover:text-brand-400'
+                  : 'text-brand-400/75 hover:text-brand-400',
+              )}
+            >
+              Settings →
+            </Link>
+          </div>
         </div>
       )}
 
       {/* Trust framing — source/coverage note and disclaimer share one separator
           so the transition from "what this means" to "how strongly to trust it"
-          reads as a single block rather than two orphaned lines. */}
+          reads as a single block rather than two orphaned lines.
+          sourceNote is shown here only when nextAction is absent — when an action
+          is present, sourceNote already appears above the action as trust context. */}
       <div className="border-t border-surface-border pt-2 space-y-1.5">
         {/* Coverage note is suppressed when nextAction is active — the action slot's
             specific "add X for rank Y" message already communicates profile incompleteness
             and is more actionable than the generic coverage count below it. */}
-        {((!nextAction && isPartial) || sourceNote) && (
+        {!nextAction && (isPartial || sourceNote) && (
           <p className="text-[10px] text-gray-600">
             {[
               sourceNote ?? null,
-              (!nextAction && isPartial)
+              isPartial
                 ? `${availableCount} of ${ranks.length} ranks available — some inputs are missing.`
                 : null,
             ].filter(Boolean).join(' · ')}

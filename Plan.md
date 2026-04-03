@@ -922,3 +922,105 @@ Note: audit-store.tsx window guard was reported as missing but is already presen
 3. Manual: Goals "Clear All" — data clears (DELETE route fix)
 4. Manual: Rank page with household mode stored — no hydration warning in console
 5. Manual: Add transaction with invalid state → success → error banner gone
+
+---
+
+# Addendum: P311 — Summary card header compactness pass
+
+## Task Summary
+In RankReportSection and RankShareCard, the comparison mode ("individual" /
+"household") sits as an orphaned standalone paragraph directly under the section
+title. This creates three metadata rows before the rank headline number and makes
+the mode feel like a competing element rather than a title qualifier.
+
+## Goal
+Inline the mode text next to the section title on the same baseline row,
+removing the standalone paragraph. The change is structural only — content and
+wording are identical.
+
+## Non-Goals
+- No changes to rank logic, wording, or props
+- No changes to PrimaryRankHighlight (already correct)
+- No changes to RankOverviewCard (no mode text shown there)
+
+## Affected Files
+- `components/rank/rank-report-section.tsx` — header area (lines 58–59)
+- `components/rank/rank-share-card.tsx`     — header area (lines 67–71)
+
+## Risks
+- None — pure layout restructuring; same text content
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. Compact card: "Rank Report" and "individual" appear on the same row
+3. Share card: "Rank Summary" and "individual" appear on the same row, date stays right
+4. Household mode: "household" appears inline correctly
+
+---
+
+# Addendum: P312 — Detail explanation block hierarchy pass
+
+## Task Summary
+In RankDetailExplanationBlock, interpretation/insight text and action prose both
+use text-gray-400. The action link (text-brand-300) becomes the most visually
+prominent element, making the CTA feel primary even though the explanation should
+be the primary signal. Bump interpretation text one step brighter (text-gray-300)
+so it reads as the principal content; action prose stays at text-gray-400.
+
+## Goal
+- Insight/interpretation items (no href): text-gray-300 — reading-grade
+- Action items (has href) prose: text-gray-400 — secondary
+- Action link color unchanged
+
+## Non-Goals
+- No changes to link colors, ordering logic, or structure
+
+## Affected Files
+- `components/rank/rank-detail-explanation.tsx` — one className change in text rendering
+
+## Risks
+- None — single CSS class change; no logic path changes
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. Detail block with interpretation + hint: interpretation text is visibly slightly brighter
+3. Detail block with hint only: hint prose uses text-gray-400 (unchanged)
+4. Detail block with insight only: insight prose uses text-gray-300
+
+---
+
+# Addendum: P313 — Compact report trust-before-action sequencing pass
+
+## Task Summary
+When both sourceNote and nextAction are present in the compact report, the
+flow is: explanation → action → sourceNote. But sourceNote (confidence qualifier)
+should precede the action recommendation so the user understands benchmark quality
+before being directed to act. Only the nextAction+sourceNote coexistence case is
+affected.
+
+## Goal
+When nextAction && sourceNote:
+  render sourceNote as a prefix inside the nextAction slot (before action text)
+  remove sourceNote from the trust block footer (already shown above)
+
+When !nextAction && sourceNote:
+  render sourceNote in the trust block as before (no change)
+
+## Non-Goals
+- No changes to the trust block disclaimer or review link
+- No changes to coverage note logic
+- No changes to composeRankReport or slot ordering
+
+## Affected Files
+- `components/rank/rank-report-section.tsx` — nextAction slot + trust block condition
+
+## Risks
+- None — content identical; only render order changes for the specific case where
+  nextAction and sourceNote coexist
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. Card with sourceNote + nextAction: sourceNote appears above the action text, not in footer
+3. Card with sourceNote, no nextAction: sourceNote stays in trust block footer as usual
+4. Card with nextAction, no sourceNote: no change — action renders exactly as before
+5. Card with coverage note only: coverage note in footer as usual
