@@ -126,10 +126,10 @@ export function RankReportSection({ ranks, nextHint, sourceNote = null, isLowCon
         {!nextAction && (isPartial || sourceNote) && (
           <p className="text-[10px] text-gray-500">
             {sourceNote && isPartial
-              ? `${sourceNote} ${availableCount} of ${ranks.length} ranks available.`
+              ? `${sourceNote} ${availableCount}/${ranks.length} ranks available.`
               : sourceNote
                 ? sourceNote
-                : `${availableCount} of ${ranks.length} ranks available — some inputs are missing.`
+                : `${availableCount}/${ranks.length} ranks — some inputs missing.`
             }
           </p>
         )}

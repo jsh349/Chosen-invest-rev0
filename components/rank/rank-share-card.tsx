@@ -129,10 +129,10 @@ export const RankShareCard = forwardRef<HTMLDivElement, Props>(
             {(isPartial || sourceNote) && (
               <p className="border-t border-surface-border pt-2 text-[10px] text-gray-500">
                 {sourceNote && isPartial
-                  ? `${sourceNote} ${availableCount} of ${totalCount} ranks available.`
+                  ? `${sourceNote} ${availableCount}/${totalCount} ranks available.`
                   : sourceNote
                     ? sourceNote
-                    : `${availableCount} of ${totalCount} ranks available — some inputs are missing.`
+                    : `${availableCount}/${totalCount} ranks — some inputs missing.`
                 }
               </p>
             )}
