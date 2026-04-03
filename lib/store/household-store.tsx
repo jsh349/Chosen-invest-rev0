@@ -60,20 +60,32 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const addMember = useCallback((member: HouseholdMember) => {
+    const prev = membersRef.current
     const memberWithUser: HouseholdMember = { ...member, userId: member.userId ?? currentUserId }
     const updated = [...membersRef.current, memberWithUser]
     membersRef.current = updated
     setMembers(updated)
-    void householdAdapter.saveAll(updated).catch(() => { console.error('[household] save failed'); if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('persist-error')) })
+    void householdAdapter.saveAll(updated).catch(() => {
+      console.error('[household] save failed')
+      membersRef.current = prev
+      setMembers(prev)
+      if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('persist-error'))
+    })
     recordAudit('Household member added', memberWithUser.name)
   }, [currentUserId])
 
   const removeMember = useCallback((id: string) => {
+    const prev = membersRef.current
     const target = membersRef.current.find((m) => m.id === id)
     const updated = membersRef.current.filter((m) => m.id !== id)
     membersRef.current = updated
     setMembers(updated)
-    void householdAdapter.saveAll(updated).catch(() => { console.error('[household] save failed'); if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('persist-error')) })
+    void householdAdapter.saveAll(updated).catch(() => {
+      console.error('[household] save failed')
+      membersRef.current = prev
+      setMembers(prev)
+      if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('persist-error'))
+    })
     if (target) recordAudit('Household member removed', target.name)
   }, [])
 

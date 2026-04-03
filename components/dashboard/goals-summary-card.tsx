@@ -12,8 +12,8 @@ import type { Goal } from '@/lib/types/goal'
 function nearestGoal(goals: Goal[]): Goal | null {
   if (goals.length === 0) return null
   const withDate = goals
-    .filter((g) => g.targetDate)
-    .sort((a, b) => a.targetDate!.localeCompare(b.targetDate!))
+    .filter((g): g is Goal & { targetDate: string } => g.targetDate != null)
+    .sort((a, b) => a.targetDate.localeCompare(b.targetDate))
   if (withDate[0]) return withDate[0]
   // No goals have a target date — fall back to the goal with the highest progress ratio
   return goals.reduce((best, g) => {

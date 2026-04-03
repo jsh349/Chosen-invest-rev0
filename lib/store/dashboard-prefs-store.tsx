@@ -6,6 +6,7 @@ import {
   useState,
   useEffect,
   useCallback,
+  useRef,
   type ReactNode,
 } from 'react'
 
@@ -61,6 +62,12 @@ const DashboardPrefsContext = createContext<DashboardPrefsContextType>({
 export function DashboardPrefsProvider({ children }: { children: ReactNode }) {
   const [prefs, setPrefs] = useState<Record<DashboardCardKey, boolean>>(DEFAULT_PREFS)
   const [isLoaded, setIsLoaded] = useState(false)
+  // Ref mirrors state so toggle can read and write current value without
+  // closing over stale state inside the setState updater. This prevents
+  // React Strict Mode from double-firing the localStorage write (updater
+  // functions run twice in dev) and keeps the pattern compatible with
+  // future async saves.
+  const prefsRef = useRef<Record<DashboardCardKey, boolean>>(DEFAULT_PREFS)
 
   useEffect(() => {
     const stored = readJSON<Record<string, unknown>>(LS_KEY, {})
@@ -74,17 +81,18 @@ export function DashboardPrefsProvider({ children }: { children: ReactNode }) {
           sanitized[key as DashboardCardKey] = value
         }
       }
-      setPrefs({ ...DEFAULT_PREFS, ...sanitized })
+      const loaded = { ...DEFAULT_PREFS, ...sanitized }
+      prefsRef.current = loaded
+      setPrefs(loaded)
     }
     setIsLoaded(true)
   }, [])
 
   const toggle = useCallback((key: DashboardCardKey) => {
-    setPrefs((prev) => {
-      const updated = { ...prev, [key]: !prev[key] }
-      writeJSON(LS_KEY, updated)
-      return updated
-    })
+    const updated = { ...prefsRef.current, [key]: !prefsRef.current[key] }
+    prefsRef.current = updated
+    setPrefs(updated)
+    writeJSON(LS_KEY, updated)
   }, [])
 
   return (

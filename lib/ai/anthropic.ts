@@ -26,6 +26,7 @@ export async function askClaude(prompt: string): Promise<string> {
       timeout,
     ])
     const block = message.content[0]
+    if (!block) return ''
     return block.type === 'text' ? block.text : ''
   } catch (err) {
     // Log only the message — never the full SDK error object, which may carry

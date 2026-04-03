@@ -101,7 +101,9 @@ export function RankOverviewCard({ rank, ageRank, ageGenderRank, returnRank, tot
             <span>50th</span>
             <span>100th</span>
           </div>
-          <p className="text-xs text-gray-400">{primary && getRankInterpretation(primary.percentile!)}</p>
+          {primary?.percentile != null && (
+            <p className="text-xs text-gray-400">{getRankInterpretation(primary.percentile)}</p>
+          )}
         </div>
       </div>
 

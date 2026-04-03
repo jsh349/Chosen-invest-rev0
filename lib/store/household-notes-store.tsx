@@ -58,24 +58,30 @@ export function HouseholdNotesProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const addNote = useCallback((note: HouseholdNote) => {
+    const prev = notesRef.current
     const noteWithUser: HouseholdNote = { ...note, userId: note.userId ?? currentUserId }
     const updated = [noteWithUser, ...notesRef.current]
     notesRef.current = updated
     setNotes(updated)
     void householdNotesAdapter.saveAll(updated).catch((err) => {
       console.error('[HouseholdNotesStore] addNote save failed', err)
+      notesRef.current = prev
+      setNotes(prev)
       if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('persist-error'))
     })
     recordAudit('Note added', noteWithUser.title)
   }, [currentUserId])
 
   const removeNote = useCallback((id: string) => {
+    const prev = notesRef.current
     const target = notesRef.current.find((n) => n.id === id)
     const updated = notesRef.current.filter((n) => n.id !== id)
     notesRef.current = updated
     setNotes(updated)
     void householdNotesAdapter.saveAll(updated).catch((err) => {
       console.error('[HouseholdNotesStore] removeNote save failed', err)
+      notesRef.current = prev
+      setNotes(prev)
       if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('persist-error'))
     })
     if (target) recordAudit('Note deleted', target.title)

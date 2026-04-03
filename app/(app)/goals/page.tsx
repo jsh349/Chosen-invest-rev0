@@ -225,6 +225,7 @@ export default function GoalsPage() {
     })
     setEditingId(null)
     setEditForm(EMPTY_FORM)
+    setEditError('')
   }
 
   return (

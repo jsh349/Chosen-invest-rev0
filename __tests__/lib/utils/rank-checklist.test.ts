@@ -90,13 +90,14 @@ describe('getRankChecklist — cap at 4', () => {
     expect(result.length).toBeLessThanOrEqual(4)
   })
 
-  it('allocation review is included at position 4; goals item is cut off at cap', () => {
-    // Phase 168: allocation moved before goals in priority order.
-    // With 3 missing profile inputs + low rank: [birth year, gender, return, allocation]
-    // Goals is at position 5 and is excluded by the cap.
+  it('allocation is NOT added without age context; goals fills position 4', () => {
+    // Allocation review requires hasAge — the rank signal is unreliable without
+    // age context (overall percentile may shift substantially once age is added).
+    // With emptyProfile (hasAge: false) + low rank: [birth year, gender, return, goals]
+    // Allocation is excluded; goals remains at position 4 within the cap.
     const result = getRankChecklist(emptyProfile, [overall(20)])
-    expect(result.some((i) => i.text.toLowerCase().includes('allocation'))).toBe(true)
-    expect(result.some((i) => i.text.toLowerCase().includes('goal'))).toBe(false)
+    expect(result.some((i) => i.text.toLowerCase().includes('allocation'))).toBe(false)
+    expect(result.some((i) => i.text.toLowerCase().includes('goal'))).toBe(true)
   })
 
   it('allocation review IS included when fewer than 4 profile items fill the cap', () => {

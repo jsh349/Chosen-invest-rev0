@@ -16,7 +16,7 @@ export function benchmarkVersionNote(snapshots: { savedAt: string }[]): string |
   const benchmarkDate = new Date(getActiveBenchmarkMeta().updatedAt)
   const hasOlderSnapshot = snapshots.some((s) => new Date(s.savedAt) < benchmarkDate)
   if (!hasOlderSnapshot) return null
-  return 'Rank comparisons may reflect updated reference ranges.'
+  return 'Rank comparisons may reflect updated benchmark reference ranges.'
 }
 
 const LS_KEY = STORAGE_KEYS.benchmarkSeen

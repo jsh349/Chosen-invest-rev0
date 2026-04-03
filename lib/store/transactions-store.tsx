@@ -57,20 +57,32 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const addTransaction = useCallback((t: Transaction) => {
+    const prev = transactionsRef.current
     const updated = [t, ...transactionsRef.current]
     transactionsRef.current = updated
     setTransactions(updated)
-    void transactionsAdapter.saveAll(updated).catch(() => { console.error('[transactions] save failed'); if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('persist-error')) })
+    void transactionsAdapter.saveAll(updated).catch(() => {
+      console.error('[transactions] save failed')
+      transactionsRef.current = prev
+      setTransactions(prev)
+      if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('persist-error'))
+    })
     recordAudit('Transaction added', t.description)
   }, [])
 
   const removeTransaction = useCallback((id: string) => {
+    const prev = transactionsRef.current
     const target = transactionsRef.current.find((t) => t.id === id)
     if (target) recordAudit('Transaction deleted', target.description)
     const updated = transactionsRef.current.filter((t) => t.id !== id)
     transactionsRef.current = updated
     setTransactions(updated)
-    void transactionsAdapter.saveAll(updated).catch(() => { console.error('[transactions] save failed'); if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('persist-error')) })
+    void transactionsAdapter.saveAll(updated).catch(() => {
+      console.error('[transactions] save failed')
+      transactionsRef.current = prev
+      setTransactions(prev)
+      if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('persist-error'))
+    })
   }, [])
 
   return (

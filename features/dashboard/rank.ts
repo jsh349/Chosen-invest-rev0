@@ -15,12 +15,13 @@ const _caps = getBenchmarkCapabilities(getActiveBenchmarkSourceId())
  * Returns the percentile for the bucket whose range contains `value`.
  * Bucket matching is inclusive-lower / exclusive-upper: `minValue <= value < maxValue`.
  * Values exceeding all bucket upper bounds fall into the last bucket (open-ended top tier).
- * Returns 1 (bottom 1%) if buckets is empty — this indicates corrupted benchmark data.
+ * Callers must guard against empty buckets before calling — all compute* functions check
+ * buckets.length === 0 and return percentile: null early, so this branch should never fire.
  */
 function findPercentile(buckets: BenchmarkBucket[], value: number): number {
   if (buckets.length === 0) {
     if (process.env.NODE_ENV !== 'production') {
-      console.warn('[findPercentile] Called with empty bucket array — benchmark data may be corrupted.')
+      console.warn('[findPercentile] Called with empty bucket array — caller should have returned percentile: null.')
     }
     return 1
   }
@@ -71,6 +72,9 @@ export function computeOverallWealthRank(totalAssetValue: number): RankResult {
   const guard = capabilityGuardedResult(_caps.supportsWealth, 'overall_wealth', 'Overall Wealth Rank')
   if (guard) return guard
   const buckets = rankBenchmarksAdapter.getOverallWealthBenchmarks()
+  if (buckets.length === 0) {
+    return { type: 'overall_wealth', label: 'Overall Wealth Rank', percentile: null, message: 'Benchmark data unavailable.' }
+  }
   const percentile = findPercentile(buckets, totalAssetValue)
   const bucket = findBucket(buckets, totalAssetValue)
   const topPct = 100 - percentile
@@ -229,6 +233,9 @@ export function computeReturnRank(annualReturnPct?: number): RankResult {
   }
 
   const retBuckets = rankBenchmarksAdapter.getReturnBenchmarks()
+  if (retBuckets.length === 0) {
+    return { type: 'investment_return', label: 'Investment Return Rank', percentile: null, message: 'Benchmark data unavailable.' }
+  }
   const percentile = findPercentile(retBuckets, annualReturnPct)
   const bucket = findBucket(retBuckets, annualReturnPct)
   const topPct = 100 - percentile

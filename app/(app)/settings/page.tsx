@@ -216,6 +216,10 @@ export default function SettingsPage() {
           window.localStorage.setItem(key, STRING_KEYS.has(key) ? (toWrite as string) : JSON.stringify(toWrite))
           restored++
         }
+        if (restored === 0) {
+          setImportStatus({ type: 'error', message: 'No valid data sections found in this backup file.' })
+          return
+        }
         setImportStatus({ type: 'success', message: `${restored} data section${restored !== 1 ? 's' : ''} restored. Reloading…` })
         setTimeout(() => window.location.reload(), 1200)
       } catch {
