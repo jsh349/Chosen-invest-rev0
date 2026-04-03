@@ -75,8 +75,8 @@ export function generateAISummary(ctx: AdvisorContext): AIAnalysisResult {
   // non-null assertion and the redundant linear scan.
   const retirementSlice = categoryBreakdown.find((s) => s.category === 'retirement')
   if (retirementSlice) {
-    lines.push(`Retirement savings are present at ${retirementSlice.percentage.toFixed(0)}% — a strong long-term foundation.`)
-    keyPoints.push(`Retirement at ${retirementSlice.percentage.toFixed(0)}% — solid base`)
+    lines.push(`Retirement savings are present at ${(retirementSlice.percentage ?? 0).toFixed(0)}% — a strong long-term foundation.`)
+    keyPoints.push(`Retirement at ${(retirementSlice.percentage ?? 0).toFixed(0)}% — solid base`)
   } else {
     lines.push('No retirement assets detected. Adding retirement savings can significantly improve long-term security.')
     keyPoints.push('No retirement savings — consider adding')

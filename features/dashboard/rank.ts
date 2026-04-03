@@ -9,6 +9,8 @@ import { capabilityGuardedResult } from '@/lib/utils/benchmark-capability-guard'
 // forces window.location.reload() after changing the active source, which re-initialises
 // the module. If that forced reload is ever removed, _caps will be stale and rank
 // computations will silently use wrong capabilities.
+// TODO(api): Before activating a live benchmark source, move _caps inside computeRanks()
+// so capability state is always current without requiring a page reload.
 const _caps = getBenchmarkCapabilities(getActiveBenchmarkSourceId())
 
 /**

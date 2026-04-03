@@ -48,7 +48,7 @@ function RankTile({ result }: { result: RankResult }) {
         {result.label}
       </p>
       {topPct != null ? (
-        <p className={cn('text-2xl font-bold tracking-tight', percentileColor(100 - topPct))}>
+        <p className={cn('text-2xl font-bold tracking-tight', percentileColor(result.percentile!))}>
           Top {topPct}%
         </p>
       ) : (

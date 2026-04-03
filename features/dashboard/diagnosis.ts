@@ -103,7 +103,7 @@ export function generateHealthCards(summary: PortfolioSummary): FinancialHealthC
       ? `Assets spread across ${categoryCount} categories. Solid foundation.`
       : categoryCount >= 3
       ? `${categoryCount} asset categories — consider broadening exposure.`
-      : `Only ${categoryCount} category. Portfolio needs more diversification.`
+      : `Only ${categoryCount} ${categoryCount === 1 ? 'category' : 'categories'}. Portfolio needs more diversification.`
 
   // Concentration: topPct >60% → 30 (attention), >40% → 55 (warning), ≤40% → 80 (good)
   const topSlice = categoryBreakdown[0]
