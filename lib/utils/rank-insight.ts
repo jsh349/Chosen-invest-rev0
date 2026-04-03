@@ -23,7 +23,7 @@ export function getRankInsight(ranks: RankResult[]): string | null {
 
   // Rule 2: return rank significantly stronger than wealth rank
   if (overallPct !== null && retPct !== null && retPct - overallPct >= RANK_GAP_THRESHOLD) {
-    return 'Return rank is higher than overall wealth rank.'
+    return 'Return rank is stronger than overall wealth rank.'
   }
 
   return null

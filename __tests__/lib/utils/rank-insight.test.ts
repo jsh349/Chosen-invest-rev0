@@ -39,7 +39,7 @@ describe('getRankInsight', () => {
   // Rule 2 — return significantly above wealth
   it('Rule 2: fires when return exceeds wealth by 20+', () => {
     const insight = getRankInsight([overall(50), ret(75), ageBased(null, 'birth year'), ageGender(null, 'birth year and gender')])
-    expect(insight).toContain('Return rank is higher')
+    expect(insight).toContain('Return rank is stronger')
   })
 
   // Profile-gap rules (Rules 3 & 4) were removed in a prior refactor.
