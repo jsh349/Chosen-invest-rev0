@@ -152,7 +152,7 @@ export const RankShareCard = forwardRef<HTMLDivElement, Props>(
               href={ROUTES.rank}
               className="shrink-0 text-[10px] text-brand-400 hover:text-brand-300 transition-colors"
             >
-              {isPartial ? 'View full ranking →' : 'Review in detail →'}
+              {isPartial ? 'View full ranking →' : 'View ranking →'}
             </Link>
           )}
         </div>
