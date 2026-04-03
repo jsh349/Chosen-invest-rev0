@@ -4,6 +4,13 @@ export type RankConfidenceLevel = 'low' | 'moderate'
 
 export type RankConfidenceNote = {
   text:  string
+  /**
+   * Severity tier for the confidence concern.
+   * Reserved for future UI treatment differentiation (e.g. colour, icon, or
+   * prominence adjustments per tier when external benchmark sources arrive).
+   * Currently only `text` is consumed at runtime — callers use `.text` directly.
+   * Do not remove: the field is tested and intended for future consumer use.
+   */
   level: RankConfidenceLevel
 }
 

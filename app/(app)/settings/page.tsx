@@ -234,8 +234,12 @@ export default function SettingsPage() {
   const debugHealth     = getBenchmarkHealthStatus(debugCaps, debugFallback)
   const debugMode       = mounted ? (readScalar(STORAGE_KEYS.rankComparisonMode) ?? 'individual') : 'individual'
   const debugActiveMeta = mounted ? getActiveBenchmarkMeta()      : { version: BENCHMARK_META.version, updatedAt: BENCHMARK_META.updatedAt, sourceLabel: BENCHMARK_META.sourceLabel }
+  // Full readiness: active source has valid metadata, is not a stub, all 4 rank
+  // categories supported, health is not invalid, and no benchmark update is pending.
+  // 'fallback' (preferred unavailable, built-in active) is intentionally allowed —
+  // rank output is still correct in that state; the badge shows 'fallback' not 'ready'.
   const debugReady =
-    !!(BENCHMARK_META.version && BENCHMARK_META.updatedAt && BENCHMARK_META.sourceLabel) &&
+    !!(debugActiveMeta.version && debugActiveMeta.updatedAt && debugActiveMeta.sourceLabel) &&
     !debugCaps.isFallbackOnly &&
     debugCaps.supportsWealth && debugCaps.supportsAge && debugCaps.supportsAgeGender && debugCaps.supportsReturn &&
     debugHealth.status !== 'invalid' &&
@@ -478,11 +482,15 @@ export default function SettingsPage() {
         <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wide text-gray-600 select-none">
           Benchmark Diagnostics <span className="normal-case font-normal text-gray-700">(internal)</span>
           <span className={
-            debugReady && debugHealth.status === 'healthy' ? 'ml-2 normal-case font-normal text-emerald-500' :
-            debugReady ? 'ml-2 normal-case font-normal text-amber-400' :
-            'ml-2 normal-case font-normal text-amber-500'
+            debugReady && debugHealth.status === 'healthy'  ? 'ml-2 normal-case font-normal text-emerald-500'   :
+            debugReady && debugHealth.status === 'fallback' ? 'ml-2 normal-case font-normal text-amber-400'     :
+            debugReady                                      ? 'ml-2 normal-case font-normal text-amber-400/60'  :
+                                                              'ml-2 normal-case font-normal text-amber-500'
           }>
-            · {debugReady && debugHealth.status !== 'healthy' ? 'degraded' : debugReady ? 'ready' : 'not ready'}
+            · {debugReady && debugHealth.status === 'healthy'  ? 'ready'    :
+               debugReady && debugHealth.status === 'fallback' ? 'fallback' :
+               debugReady                                      ? 'degraded' :
+                                                                 'not ready'}
           </span>
         </summary>
         <div className="mt-3 space-y-1.5 font-mono text-[11px] text-gray-500">
