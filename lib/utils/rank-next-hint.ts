@@ -103,7 +103,7 @@ export function getPrimaryRankNextAction(
       text: isLowConfidence
         ? 'Consider reviewing your portfolio allocation.'
         : mode === 'household'
-          ? 'Adjust your portfolio allocation.'
+          ? 'Adjust your portfolio allocation to improve your household rank.'
           : 'Adjust your portfolio allocation to improve your rank position.',
       href: ROUTES.portfolioList,
     }

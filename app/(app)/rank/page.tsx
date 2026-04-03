@@ -688,7 +688,7 @@ export default function RankPage() {
           {rankReviewSummary && !reviewVisible && !reviewDismissed && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-3">
               <div className="flex items-center justify-between gap-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Rank Assessment</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Rank Review</p>
                 <span className={cn(
                   'text-[10px]',
                   rankReviewSummary.some((i) => i.status === 'missing')
