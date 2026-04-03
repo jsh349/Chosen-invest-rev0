@@ -36,14 +36,14 @@ export function getRankConfidenceNote(params: {
 
   if (benchmarkHealthStatus === 'fallback') {
     return {
-      text:  'Preferred source unavailable — using built-in ranges.',
+      text:  'Source unavailable — using built-in ranges.',
       level: 'moderate',
     }
   }
 
   if (benchmarkHealthStatus === 'invalid') {
     return {
-      text:  'Selected source not yet available — using built-in ranges.',
+      text:  'Source not yet available — using built-in ranges.',
       level: 'low',
     }
   }
