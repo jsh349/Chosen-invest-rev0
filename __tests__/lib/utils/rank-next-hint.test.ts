@@ -72,7 +72,7 @@ describe('getPrimaryRankNextAction — confidence-sensitive wording', () => {
   it('uses soft wording for portfolio action when isLowConfidence', () => {
     const hint = getPrimaryRankNextAction({ ...fullProfile }, [overall(30)], { isLowConfidence: true })
     expect(hint).not.toBeNull()
-    expect(hint!.text).toMatch(/consider reviewing/i)
+    expect(hint!.text).toMatch(/consider adjusting/i)
     expect(hint!.text).not.toMatch(/to improve your rank position/)
   })
 

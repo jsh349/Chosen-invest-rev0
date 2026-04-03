@@ -101,7 +101,7 @@ export function getPrimaryRankNextAction(
   if (overall?.percentile !== null && overall?.percentile !== undefined && overall.percentile < 40) {
     return {
       text: isLowConfidence
-        ? 'Consider reviewing your portfolio allocation.'
+        ? 'Consider adjusting your portfolio allocation.'
         : mode === 'household'
           ? 'Adjust your portfolio allocation to improve your household rank.'
           : 'Adjust your portfolio allocation to improve your rank position.',
