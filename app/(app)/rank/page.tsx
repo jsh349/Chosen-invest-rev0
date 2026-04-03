@@ -576,8 +576,12 @@ export default function RankPage() {
                confidence than the limited data warrants.
                Also suppressed when the review summary card is active: the review
                card already provides a structured breakdown of wealth and return
-               standing, making the narrative's synthesis sentence redundant. */}
-          {narrativeSummary && availableCount > 1 && !rankReviewSummary && (
+               standing, making the narrative's synthesis sentence redundant.
+               Also suppressed when rankInsight is active: the explanation block
+               already shows the cross-rank gap as a direct signal, and the
+               narrative would duplicate both that and the interpretation line
+               in PrimaryRankHighlight. */}
+          {narrativeSummary && availableCount > 1 && !rankReviewSummary && !rankInsight && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3">
               <p className="text-sm text-gray-300 leading-relaxed">{narrativeSummary}</p>
             </div>
