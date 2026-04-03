@@ -5,10 +5,10 @@ interface HealthCardsGridProps {
   cards: FinancialHealthCard[]
 }
 
-const statusConfig: Record<HealthStatus, { label: string; dotClass: string; textClass: string }> = {
-  good:      { label: 'Good',      dotClass: 'bg-emerald-500', textClass: 'text-emerald-400' },
-  warning:   { label: 'Watch',     dotClass: 'bg-amber-400',   textClass: 'text-amber-400'   },
-  attention: { label: 'Attention', dotClass: 'bg-red-500',     textClass: 'text-red-400'     },
+const statusConfig: Record<HealthStatus, { label: string; dotClass: string; textClass: string; cardBorderClass: string }> = {
+  good:      { label: 'Good',      dotClass: 'bg-emerald-500', textClass: 'text-emerald-400', cardBorderClass: 'border-surface-border'  },
+  warning:   { label: 'Watch',     dotClass: 'bg-amber-400',   textClass: 'text-amber-400',   cardBorderClass: 'border-surface-border'  },
+  attention: { label: 'Attention', dotClass: 'bg-red-500',     textClass: 'text-red-400',     cardBorderClass: 'border-red-500/25'      },
 }
 
 function ScoreBar({ score }: { score: number }) {
@@ -33,7 +33,7 @@ export function HealthCardsGrid({ cards }: HealthCardsGridProps) {
         return (
           <div
             key={card.key}
-            className="rounded-xl border border-surface-border bg-surface-card p-4 space-y-3"
+            className={cn('rounded-xl border bg-surface-card p-4 space-y-3', cfg.cardBorderClass)}
           >
             <div className="flex items-center justify-between">
               <p className="text-sm font-semibold text-white">{card.title}</p>
