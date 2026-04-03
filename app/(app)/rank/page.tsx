@@ -197,7 +197,7 @@ function PrimaryRankHighlight({ ranks, mode, benchmarkLabel, isLowConfidence = f
       <p className={cn('text-4xl font-bold tracking-tight', percentileColor(primary.percentile!))}>
         {percentileBandLabel(primary.percentile!)}
       </p>
-      <p className="text-xs text-gray-500 leading-relaxed">
+      <p className="text-xs text-gray-400 leading-relaxed">
         {getRankInterpretation(primary.percentile!, isLowConfidence)}
       </p>
       <p className="mt-1 text-[10px] capitalize text-gray-600">{mode} · {benchmarkLabel}</p>

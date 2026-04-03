@@ -88,9 +88,6 @@ export const RankShareCard = forwardRef<HTMLDivElement, Props>(
                       <span className={cn('text-2xl font-bold tabular-nums leading-none', percentileColor(hero.percentile))}>
                         Top {topPctLabel(hero.percentile)}
                       </span>
-                      <span className="text-xs text-gray-600 tabular-nums">
-                        {hero.percentile}th pct.
-                      </span>
                     </div>
                     <p className="mt-1.5 text-[11px] text-gray-500 leading-relaxed">
                       {getRankInterpretation(hero.percentile!, isLowConfidence)}
