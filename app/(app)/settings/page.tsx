@@ -505,7 +505,7 @@ export default function SettingsPage() {
               debugHealth.status === 'healthy'  ? 'text-emerald-400'    :
               debugHealth.status === 'partial'  ? 'text-amber-400/60'  :
               debugHealth.status === 'fallback' ? 'text-amber-400'     :
-                                                  'text-red-400'
+                                                  'text-amber-400'
             }>
               {debugHealth.status}
             </span>
