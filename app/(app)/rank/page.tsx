@@ -696,7 +696,7 @@ export default function RankPage() {
                       : 'text-gray-500',
                 )}>
                   {rankReviewSummary.some((i) => i.status === 'missing')
-                    ? 'Needs attention'
+                    ? 'Worth a look'
                     : rankReviewSummary.some((i) => i.status === 'review')
                       ? 'Worth reviewing'
                       : 'For reference'}
