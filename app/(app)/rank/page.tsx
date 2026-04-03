@@ -131,7 +131,7 @@ function RankRow({ result, coverageNote, isLowConfidence = false }: { result: Ra
           ) : (
             <p className="text-2xl font-bold text-gray-600">—</p>
           )}
-          <p className="text-sm text-gray-300 leading-relaxed">
+          <p className="text-xs text-gray-400 leading-relaxed">
             {hasPct ? getRankInterpretation(result.percentile!, isLowConfidence) : result.message}
           </p>
           {hasPct && (

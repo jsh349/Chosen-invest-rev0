@@ -486,7 +486,7 @@ export default function SettingsPage() {
         <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wide text-gray-600 select-none">
           Benchmark Diagnostics <span className="normal-case font-normal text-gray-700">(internal)</span>
           <span className={
-            debugReady && debugHealth.status === 'healthy'  ? 'ml-2 normal-case font-normal text-emerald-500'   :
+            debugReady && debugHealth.status === 'healthy'  ? 'ml-2 normal-case font-normal text-gray-500'     :
             debugReady && debugHealth.status === 'fallback' ? 'ml-2 normal-case font-normal text-amber-400'     :
             debugReady                                      ? 'ml-2 normal-case font-normal text-amber-400/60'  :
                                                               'ml-2 normal-case font-normal text-amber-500'
@@ -502,7 +502,7 @@ export default function SettingsPage() {
           <p>
             <span className="inline-block w-36 text-gray-600">Health</span>
             <span className={
-              debugHealth.status === 'healthy'  ? 'text-emerald-400'    :
+              debugHealth.status === 'healthy'  ? 'text-gray-500'       :
               debugHealth.status === 'partial'  ? 'text-amber-400/60'  :
               debugHealth.status === 'fallback' ? 'text-amber-400'     :
                                                   'text-amber-400'
