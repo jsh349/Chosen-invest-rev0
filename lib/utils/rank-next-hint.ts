@@ -34,7 +34,7 @@ export function getNextRankHint(profile: {
   }
   if (!profile.hasReturn) {
     return {
-      text: 'Add an estimated annual return to unlock return rank.',
+      text: 'Add an estimated annual return for return rank.',
       href: ROUTES.settings,
     }
   }
