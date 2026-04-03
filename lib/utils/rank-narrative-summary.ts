@@ -51,7 +51,7 @@ export function getRankNarrativeSummary(ranks: RankResult[]): string {
   } else if (overallPct >= 50) {
     opening = 'Your overall assets rank above the benchmark median.'
   } else if (overallPct >= 40) {
-    opening = 'Your overall assets rank near the benchmark median.'
+    opening = 'Your overall assets rank around the benchmark median.'
   } else if (overallPct >= 25) {
     opening = 'Your overall assets rank below the benchmark median.'
   } else {

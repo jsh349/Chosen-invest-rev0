@@ -15,7 +15,7 @@ export function getRankInterpretation(percentile: number, isLowConfidence = fals
   const comparison = 'benchmark median'
   if (percentile >= 75) return `Well above the ${comparison}.`
   if (percentile >= 50) return `Above the ${comparison}.`
-  if (percentile >= 40) return `Near the ${comparison}.`
+  if (percentile >= 40) return `Around the ${comparison}.`
   if (percentile >= 25) return `Below the ${comparison}.`
   return `Well below the ${comparison}.`
 }
