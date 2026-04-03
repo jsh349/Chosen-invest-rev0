@@ -818,3 +818,50 @@ Changed to "not yet available" — calmer and accurate without implying a broken
 1. `npx tsc --noEmit` → 0 errors
 2. `npx jest --ci rank-confidence-note` → all pass
 3. Settings diagnostics: unchanged (uses separate vocabulary)
+
+---
+
+# Addendum: P310 — Pre-external polish pass (doc/comment/label consistency)
+
+## Task Summary
+Four narrow fixes across three files before external benchmark rollout:
+
+1. `rank-interpretation.ts` — JSDoc incorrectly states isLowConfidence produces
+   "reference estimate". Tests confirm it always uses "benchmark median"
+   (confidence is communicated by getRankConfidenceNote, not the interpretation band).
+   Fix: correct the JSDoc to match the actual tested behavior.
+
+2. `rank-share-card.tsx` — isLowConfidence prop JSDoc repeats the same incorrect
+   claim. Fix: remove the misleading sentence.
+
+3. `rank-report-composer.ts` — comment references "Rules 3 & 4" of getRankInsight
+   that no longer exist (profile-gap rules were removed in a prior pass). Fix:
+   remove the stale parenthetical so the comment matches the current 2-rule state.
+
+4. `rank-report-section.tsx` — footer link label uses "View full ranking →" for
+   isPartial and "See full ranking →" for nextAction. Near-identical strings that
+   will drift. Fix: unify both to "View full ranking →".
+
+## Goal
+No JSDoc or comment describes behavior that doesn't exist. No two labels for the
+same destination diverge for no reason.
+
+## Non-Goals
+- No changes to getRankInterpretation logic or output
+- No changes to any test assertions
+- No changes to any other surface
+
+## Affected Files
+- `lib/utils/rank-interpretation.ts` — JSDoc only
+- `components/rank/rank-share-card.tsx` — prop JSDoc only
+- `lib/utils/rank-report-composer.ts` — inline comment only
+- `components/rank/rank-report-section.tsx` — one label string
+
+## Risks
+- None for doc fixes (zero runtime impact)
+- "See full ranking" → "View full ranking" is a copy-only change; no logic path changes
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. `npx jest --ci rank-interpretation rank-report-composer rank-report-section` → all pass
+3. Manual: compact card footer link reads "View full ranking →" in both partial and nextAction states

@@ -60,10 +60,10 @@ export function composeRankReport(
       : rawAction
 
   // comparisonNote (slot 3) is suppressed when nextAction (slot 4) is present.
-  // When a profile-completeness action is already shown, getRankInsight's profile-gap
-  // notes (Rules 3 & 4 — "add birth year/gender in Settings") would duplicate the same
-  // remediation in two adjacent slots. Gap-analysis notes (Rules 1 & 2) are also
-  // premature when the profile is incomplete — ranks will shift once gaps are filled.
+  // When a profile-completeness action is already shown, the gap-analysis notes from
+  // getRankInsight (Rules 1 & 2 — wealth/return cross-rank gaps) are premature:
+  // ranks will shift once profile gaps are filled, so surfacing a gap comparison
+  // before the profile is complete implies a precision that may not hold.
   //
   // Also suppressed when isLowConfidence — a cross-rank gap comparison implies
   // precision that a fallback/invalid source cannot reliably deliver. The

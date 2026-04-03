@@ -22,9 +22,10 @@ type Props = {
    */
   sourceNote?: string | null
   /**
-   * When true (fallback / invalid benchmark source), interpretation text
-   * uses "reference estimate" instead of "benchmark median" — mirrors the
-   * same flag in RankReportSection / composeRankReport for parity.
+   * When true (fallback / invalid benchmark source), passes the flag through
+   * to getRankInterpretation for parity with other rank surfaces. Wording of
+   * the interpretation sentence is unchanged — confidence caveats are handled
+   * by getRankConfidenceNote / sourceNote, not by this flag directly.
    */
   isLowConfidence?: boolean
 }

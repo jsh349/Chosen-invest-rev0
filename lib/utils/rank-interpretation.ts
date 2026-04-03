@@ -6,9 +6,10 @@
  * relative to the benchmark median.
  *
  * @param percentile      The user's percentile score (0–100).
- * @param isLowConfidence When true (fallback / invalid benchmark source), the
- *   comparison point is described as "reference estimate" rather than
- *   "benchmark median" to avoid implying a precision the source cannot deliver.
+ * @param isLowConfidence Reserved for parity with other rank utilities that accept
+ *   this flag. Interpretation wording is unchanged — "benchmark median" is used
+ *   consistently regardless of source health. Confidence caveats are communicated
+ *   by getRankConfidenceNote, not by altering the interpretation band label.
  */
 export function getRankInterpretation(percentile: number, isLowConfidence = false): string {
   const comparison = 'benchmark median'
