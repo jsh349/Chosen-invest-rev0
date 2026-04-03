@@ -234,7 +234,11 @@ export default function RankPage() {
   const { snapshots, isLoaded: snapshotsLoaded, saveSnapshot } = useRankSnapshots()
   const { goals, isLoaded: goalsLoaded } = useGoals()
   const currentUserId = useCurrentUserId()
-  const [mode, setMode] = useState<RankMode>(readPersistedMode)
+  // Initialise with the SSR-safe default. readPersistedMode() reads localStorage,
+  // which returns null on the server — so using it as a lazy initialiser produces
+  // 'individual' server-side but potentially 'household' client-side, causing a
+  // React hydration mismatch. Instead, read localStorage in useEffect after mount.
+  const [mode, setMode] = useState<RankMode>('individual')
   const [benchmarkAlertVisible, setBenchmarkAlertVisible] = useState(false)
   const [benchmarkTransitionNote, setBenchmarkTransitionNote] = useState<string | null>(null)
   const [sourceSummary, setSourceSummary] = useState<BenchmarkSourceSummary | null>(null)
@@ -363,6 +367,11 @@ export default function RankPage() {
   const rankChecklist = isFullyLoaded && goalsLoaded && summary.assetCount > 0
     ? getRankChecklist(profileInputs, ranks)
     : []
+
+  // Restore persisted comparison mode after mount. Must run in useEffect so the
+  // server and initial client renders both produce 'individual' (no hydration mismatch),
+  // then the stored preference takes effect on the client.
+  useEffect(() => { setMode(readPersistedMode()) }, [])
 
   // Rules of Hooks: useEffect must be before any conditional return.
   // Guard inside the effect so it only fires once all data is loaded.

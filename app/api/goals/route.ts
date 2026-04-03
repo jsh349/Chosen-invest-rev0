@@ -96,6 +96,14 @@ export async function DELETE() {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  await db.delete(goals).where(eq(goals.userId, session.user.id))
+  let userId: string
+  try {
+    userId = await ensureUser(session.user.id, session.user.email, session.user.name)
+  } catch (err) {
+    console.error('[DELETE /api/goals] ensureUser failed:', err)
+    return Response.json({ error: 'Failed to resolve user record' }, { status: 500 })
+  }
+
+  await db.delete(goals).where(eq(goals.userId, userId))
   return Response.json({ ok: true })
 }

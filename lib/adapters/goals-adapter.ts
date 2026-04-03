@@ -21,29 +21,33 @@ export const goalsAdapter: GoalsAdapter = {
     const res = await fetch('/api/goals', { credentials: 'include' })
     if (!res.ok) throw new Error(`[goalsAdapter] getAll failed: ${res.status}`)
     const data = await res.json() as Goal[]
-    return data.filter((g) => {
-      if (!g.id || !g.name || !Number.isFinite(g.targetAmount) || !Number.isFinite(g.currentAmount)) {
-        console.warn('[goalsAdapter] Skipping malformed goal — missing required fields.', g)
-        return false
-      }
-      if (!isValidGoalType(g.type)) {
-        console.warn(`[goalsAdapter] Unknown goal type "${g.type}" on goal "${g.id}" — skipped.`)
-        return false
-      }
-      if (g.currentAmount < 0) {
-        console.warn(`[goalsAdapter] Negative currentAmount on goal "${g.id}" — skipped.`)
-        return false
-      }
-      if (g.currentAmount > g.targetAmount) {
-        console.warn(`[goalsAdapter] currentAmount exceeds targetAmount on goal "${g.id}" — capping to targetAmount.`)
-        g.currentAmount = g.targetAmount
-      }
-      if (g.targetDate && !/^\d{4}-\d{2}-\d{2}$/.test(g.targetDate)) {
-        console.warn(`[goalsAdapter] Invalid targetDate format on goal "${g.id}" — skipped.`)
-        return false
-      }
-      return true
-    })
+    return data
+      .filter((g) => {
+        if (!g.id || !g.name || !Number.isFinite(g.targetAmount) || !Number.isFinite(g.currentAmount)) {
+          console.warn('[goalsAdapter] Skipping malformed goal — missing required fields.', g)
+          return false
+        }
+        if (!isValidGoalType(g.type)) {
+          console.warn(`[goalsAdapter] Unknown goal type "${g.type}" on goal "${g.id}" — skipped.`)
+          return false
+        }
+        if (g.currentAmount < 0) {
+          console.warn(`[goalsAdapter] Negative currentAmount on goal "${g.id}" — skipped.`)
+          return false
+        }
+        if (g.targetDate && !/^\d{4}-\d{2}-\d{2}$/.test(g.targetDate)) {
+          console.warn(`[goalsAdapter] Invalid targetDate format on goal "${g.id}" — skipped.`)
+          return false
+        }
+        return true
+      })
+      .map((g): Goal => {
+        if (g.currentAmount > g.targetAmount) {
+          console.warn(`[goalsAdapter] currentAmount exceeds targetAmount on goal "${g.id}" — capping to targetAmount.`)
+          return { ...g, currentAmount: g.targetAmount }
+        }
+        return g
+      })
   },
 
   async saveAll(goals) {

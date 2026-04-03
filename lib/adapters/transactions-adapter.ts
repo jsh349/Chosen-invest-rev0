@@ -20,17 +20,21 @@ export const transactionsAdapter: TransactionsAdapter = {
     const res = await fetch('/api/transactions', { credentials: 'include' })
     if (!res.ok) throw new Error(`[transactionsAdapter] getAll failed: ${res.status}`)
     const data = await res.json() as Transaction[]
-    return data.filter((t) => {
-      if (!t.id || !Number.isFinite(t.amount) || !t.date || !t.description) {
-        console.warn('[transactionsAdapter] Skipping malformed transaction — missing id, amount, date, or description.', t)
-        return false
-      }
-      if (!isValidCategory(t.category)) {
-        console.warn(`[transactionsAdapter] Unknown category "${t.category}" on transaction "${t.id}" — skipped.`)
-        return false
-      }
-      return true
-    })
+    return data
+      .filter((t) => {
+        if (!t.id || !Number.isFinite(t.amount) || !t.date || !t.description) {
+          console.warn('[transactionsAdapter] Skipping malformed transaction — missing id, amount, date, or description.', t)
+          return false
+        }
+        return true
+      })
+      .map((t): Transaction => {
+        if (!isValidCategory(t.category)) {
+          console.warn(`[transactionsAdapter] Unknown category "${t.category}" on transaction "${t.id}" — coerced to 'Other'.`)
+          return { ...t, category: 'Other' }
+        }
+        return t
+      })
   },
 
   async saveAll(transactions) {

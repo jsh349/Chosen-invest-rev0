@@ -81,6 +81,7 @@ export default function TransactionsPage() {
       createdAt:   new Date().toISOString(),
     })
     setForm(EMPTY_FORM)
+    setError('')
   }
 
   // Summary always uses all transactions

@@ -20,17 +20,21 @@ export const assetsAdapter: AssetsAdapter = {
     const res = await fetch('/api/assets', { credentials: 'include' })
     if (!res.ok) throw new Error(`[assetsAdapter] getAll failed: ${res.status}`)
     const data = await res.json() as Asset[]
-    return data.filter((a) => {
-      if (!a.id || !Number.isFinite(a.value) || !a.name || !a.createdAt) {
-        console.warn('[assetsAdapter] Skipping malformed asset — missing id, value, name, or createdAt.', a)
-        return false
-      }
-      if (!isValidAssetCategory(a.category)) {
-        console.warn(`[assetsAdapter] Unknown category "${a.category}" on asset "${a.id}" — coerced to 'other'.`)
-        a.category = 'other'
-      }
-      return true
-    })
+    return data
+      .filter((a) => {
+        if (!a.id || !Number.isFinite(a.value) || !a.name || !a.createdAt) {
+          console.warn('[assetsAdapter] Skipping malformed asset — missing id, value, name, or createdAt.', a)
+          return false
+        }
+        return true
+      })
+      .map((a): Asset => {
+        if (!isValidAssetCategory(a.category)) {
+          console.warn(`[assetsAdapter] Unknown category "${a.category}" on asset "${a.id}" — coerced to 'other'.`)
+          return { ...a, category: 'other' }
+        }
+        return a
+      })
   },
 
   async saveAll(assets) {

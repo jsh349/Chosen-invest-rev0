@@ -865,3 +865,60 @@ same destination diverge for no reason.
 1. `npx tsc --noEmit` → 0 errors
 2. `npx jest --ci rank-interpretation rank-report-composer rank-report-section` → all pass
 3. Manual: compact card footer link reads "View full ranking →" in both partial and nextAction states
+
+---
+
+# Addendum: Audit Bug Fixes (Round 3)
+
+## Task Summary
+Fix 7 confirmed bugs identified in the Round 3 debugging audit.
+No features, no refactors, no unrelated changes.
+
+## Goal
+All confirmed bugs are resolved. Each fix is the smallest safe change.
+
+## Non-Goals
+- No changes to store architecture (fire-and-forget remains intentional)
+- No new UI for persistence errors (persist-error-banner already exists)
+- No household API migration (out of scope per Plan.md non-goals)
+
+## Affected Files + Fix Summary
+
+1. `app/api/goals/route.ts`
+   DELETE handler: add ensureUser() + use returned userId in WHERE
+
+2. `app/api/transactions/route.ts`
+   DELETE handler: same as above
+
+3. `app/(app)/rank/page.tsx`
+   useState(readPersistedMode) → useState('individual') + useEffect to restore
+
+4. `lib/adapters/assets-adapter.ts`
+   Mutates a.category in-place → return { ...a, category: 'other' } via .map()
+
+5. `lib/adapters/goals-adapter.ts`
+   Mutates g.currentAmount in-place → return { ...g, currentAmount: g.targetAmount } via .map()
+
+6. `lib/adapters/transactions-adapter.ts`
+   Unknown category drops transaction → coerce to 'Other' (match assets pattern)
+
+7. `app/(app)/transactions/page.tsx`
+   handleSubmit success path missing setError('') → add after setForm(EMPTY_FORM)
+
+8. `app/(app)/household/page.tsx`
+   ROLE_COLORS[m.role] has no fallback → add ?? 'text-gray-400 bg-surface-muted'
+
+Note: audit-store.tsx window guard was reported as missing but is already present (lines 40-42). No change needed.
+
+## Risks
+- DELETE route fix: additive only — adds ensureUser() which already exists in POST
+- Rank hydration fix: mode briefly shows 'individual' before useEffect fires; acceptable
+- Adapter .filter().map() refactor: same logic, different structure; output identical
+- Transactions coerce-vs-skip: changes behaviour for malformed API data; no data loss
+
+## Validation Steps
+1. npx tsc --noEmit → 0 errors
+2. npx jest --ci → all previously passing tests still pass
+3. Manual: Goals "Clear All" — data clears (DELETE route fix)
+4. Manual: Rank page with household mode stored — no hydration warning in console
+5. Manual: Add transaction with invalid state → success → error banner gone

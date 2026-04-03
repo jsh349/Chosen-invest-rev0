@@ -180,7 +180,7 @@ export default function HouseholdPage() {
                     <p className="truncate text-sm font-medium text-white">{m.name}</p>
                     <p className="truncate text-xs text-gray-500">{m.email}</p>
                   </div>
-                  <span className={cn('shrink-0 rounded-full px-2 py-0.5 text-xs font-medium capitalize', ROLE_COLORS[m.role])}>
+                  <span className={cn('shrink-0 rounded-full px-2 py-0.5 text-xs font-medium capitalize', ROLE_COLORS[m.role] ?? 'text-gray-400 bg-surface-muted')}>
                     {m.role}
                   </span>
                   <button
