@@ -73,7 +73,7 @@ export function getPrimaryRankNextAction(
     return {
       href: ROUTES.settings,
       text: isLowConfidence
-        ? 'Add your birth year to include age in your comparison.'
+        ? 'Add your birth year for an age-based comparison.'
         : 'Add your birth year to unlock age-based comparison.',
     }
   }
@@ -89,8 +89,8 @@ export function getPrimaryRankNextAction(
     return {
       href: ROUTES.settings,
       text: isLowConfidence
-        ? 'Add an estimated annual return to include return rank.'
-        : 'Add an estimated annual return for return rank.',
+        ? 'Add an estimated annual return for return rank.'
+        : 'Add an estimated annual return to include return rank.',
     }
   }
 
