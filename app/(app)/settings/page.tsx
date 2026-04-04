@@ -527,8 +527,8 @@ export default function SettingsPage() {
                                                               'ml-2 normal-case font-normal text-amber-500'
           }>
             · {debugReady && debugHealth.status === 'healthy'  ? 'ready'         :
-               debugReady && debugHealth.status === 'fallback' ? 'fallback'       :
-               debugReady && debugHealth.status === 'partial'  ? 'partial'        :
+               debugReady && debugHealth.status === 'fallback' ? 'degraded'       :
+               debugReady && debugHealth.status === 'partial'  ? 'limited'        :
                debugReady && debugHealth.status === 'invalid'  ? 'not connected'  :
                debugReady                                      ? 'degraded'       :
                                                                  'not ready'}
@@ -544,8 +544,10 @@ export default function SettingsPage() {
               debugHealth.status === 'fallback' ? 'text-amber-400'     :
                                                   'text-amber-500'
             }>
-              {debugHealth.status === 'healthy'  ? 'ready'        :
-               debugHealth.status === 'invalid'  ? 'not connected' :
+              {debugHealth.status === 'healthy'  ? 'ready'         :
+               debugHealth.status === 'invalid'  ? 'not connected'  :
+               debugHealth.status === 'fallback' ? 'degraded'       :
+               debugHealth.status === 'partial'  ? 'limited'        :
                debugHealth.status}
             </span>
             {debugHealth.note && <span className="ml-2 text-gray-600">{debugHealth.note}</span>}

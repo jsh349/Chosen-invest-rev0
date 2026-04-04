@@ -996,7 +996,7 @@ export default function RankPage() {
             <span className={benchmarkHealth.status !== 'healthy' ? 'text-amber-500/60' : undefined}>
               {benchmarkHealth.status === 'healthy'  ? 'ready' :
                benchmarkHealth.status === 'fallback' ? 'degraded' :
-               benchmarkHealth.status === 'partial'  ? 'partial' :
+               benchmarkHealth.status === 'partial'  ? 'limited' :
                'not ready'}
             </span>
           </span>
