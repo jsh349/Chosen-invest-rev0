@@ -83,7 +83,9 @@ export function getRankReviewSummary(
       return {
         topic: 'wealth', label: 'Wealth rank',
         status: 'review',
-        note: 'Tracking below the benchmark median.',
+        note: overallPct >= 40
+          ? 'Around the benchmark midpoint.'
+          : 'Tracking below the benchmark midpoint.',
       }
     }
     return {
@@ -106,7 +108,9 @@ export function getRankReviewSummary(
       return {
         topic: 'return', label: 'Return rank',
         status: 'review',
-        note: 'Tracking below the benchmark median.',
+        note: returnPct >= 40
+          ? 'Around the benchmark midpoint.'
+          : 'Tracking below the benchmark midpoint.',
       }
     }
     return {

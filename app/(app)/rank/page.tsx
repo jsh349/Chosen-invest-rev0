@@ -200,7 +200,9 @@ function PrimaryRankHighlight({ ranks, mode, benchmarkLabel, isLowConfidence = f
       <p className="text-xs text-gray-400 leading-relaxed">
         {getRankInterpretation(primary.percentile!, isLowConfidence)}
       </p>
-      <p className="mt-1 text-[10px] capitalize text-gray-600">{mode} · {benchmarkLabel}</p>
+      <p className="mt-1 text-[10px] capitalize text-gray-600">
+        {isLowConfidence ? mode : `${mode} · ${benchmarkLabel}`}
+      </p>
     </div>
   )
 }
@@ -705,9 +707,9 @@ export default function RankPage() {
                         : 'text-gray-500',
                   )}>
                     {rankReviewSummary.some((i) => i.status === 'missing')
-                      ? 'Worth a look'
+                      ? 'Worth reviewing'
                       : rankReviewSummary.some((i) => i.status === 'review')
-                        ? 'Worth reviewing'
+                        ? 'Worth a look'
                         : 'For reference'}
                   </span>
                 )}

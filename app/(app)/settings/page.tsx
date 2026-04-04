@@ -488,12 +488,16 @@ export default function SettingsPage() {
           <span className={
             debugReady && debugHealth.status === 'healthy'  ? 'ml-2 normal-case font-normal text-gray-500'     :
             debugReady && debugHealth.status === 'fallback' ? 'ml-2 normal-case font-normal text-amber-400'     :
+            debugReady && debugHealth.status === 'partial'  ? 'ml-2 normal-case font-normal text-amber-400/60'  :
+            debugReady && debugHealth.status === 'invalid'  ? 'ml-2 normal-case font-normal text-amber-500'     :
             debugReady                                      ? 'ml-2 normal-case font-normal text-amber-400/60'  :
                                                               'ml-2 normal-case font-normal text-amber-500'
           }>
-            · {debugReady && debugHealth.status === 'healthy'  ? 'ready'    :
-               debugReady && debugHealth.status === 'fallback' ? 'fallback' :
-               debugReady                                      ? 'degraded' :
+            · {debugReady && debugHealth.status === 'healthy'  ? 'ready'         :
+               debugReady && debugHealth.status === 'fallback' ? 'fallback'       :
+               debugReady && debugHealth.status === 'partial'  ? 'partial'        :
+               debugReady && debugHealth.status === 'invalid'  ? 'not connected'  :
+               debugReady                                      ? 'degraded'       :
                                                                  'not ready'}
           </span>
         </summary>

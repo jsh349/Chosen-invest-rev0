@@ -1094,3 +1094,42 @@ Four small, focused presentation refinements across rank summary and detail surf
 3. Rank page detail rows: raw percentile number (right side) is gray, clearly secondary to the band label
 4. Rank report card: action slot feels slightly less cramped after explanation text
 5. Review banner with healthy benchmark: "Review inputs →"; with fallback benchmark: "Check inputs →"
+
+---
+
+# Addendum: P355–P360 — Duplication cap, escalation, vocabulary, diagnostics, QA freeze
+
+## Task Summary
+Six focused passes: source deduplication, badge escalation fix, vocabulary alignment,
+diagnostics differentiation, and final QA continuity freeze.
+
+## Goal
+- P355: Suppress duplicate benchmark label from PrimaryRankHighlight in low-confidence state
+- P356: Fix inverted badge escalation (missing → stronger label, review → lighter label)
+- P357/358: Align review notes to "midpoint" vocabulary matching P341/P350 interpretation
+- P359: Differentiate `partial` vs `invalid` in internal diagnostics chip (text + color)
+- P360: Make review notes band-aware (40-49 "around" zone gets "Around the benchmark midpoint.")
+
+## Non-Goals
+- No redesign, no new surfaces, no new logic, no AI API
+- No changes to routing, interpretation thresholds, or report composition
+
+## Affected Files
+- `app/(app)/rank/page.tsx`                                  — P355 + P356
+- `lib/utils/rank-review-summary.ts`                         — P357+P358+P360
+- `__tests__/lib/utils/rank-review-summary.test.ts`          — update assertions for P360
+- `app/(app)/settings/page.tsx`                              — P359
+
+## Risks
+- P360 changes the boundary condition: percentile 40 goes from "Tracking below" to "Around."
+  The affected test case uses `overall(40)` — updating to `overall(39)` preserves test intent.
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. `npm test -- --ci` → all tests pass
+3. Rank page fallback state: PrimaryRankHighlight shows mode only (no "Built-in reference" suffix)
+4. Review card with missing items: badge shows "Worth reviewing"; review-only shows "Worth a look"
+5. Overall percentile 45: review note shows "Around the benchmark midpoint."
+6. Overall percentile 39: review note shows "Tracking below the benchmark midpoint."
+7. Settings diagnostics partial source: chip shows "· partial" in amber-400/60
+8. Settings diagnostics invalid source: chip shows "· not connected" in amber-500

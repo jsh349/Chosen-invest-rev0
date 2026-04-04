@@ -78,11 +78,18 @@ describe('wealth item', () => {
     expect(wealth.status).toBe('missing')
   })
 
-  it('overall < 50 → wealth status is review', () => {
-    const result = getRankReviewSummary([overall(40), ret(60)], fullProfile)!
+  it('overall < 40 → wealth status is review with below-midpoint note', () => {
+    const result = getRankReviewSummary([overall(39), ret(60)], fullProfile)!
     const wealth = result.find((i) => i.topic === 'wealth')!
     expect(wealth.status).toBe('review')
-    expect(wealth.note).toMatch(/below.*median/i)
+    expect(wealth.note).toMatch(/below.*midpoint/i)
+  })
+
+  it('overall 40–49 → wealth status is review with around-midpoint note', () => {
+    const result = getRankReviewSummary([overall(45), ret(60)], fullProfile)!
+    const wealth = result.find((i) => i.topic === 'wealth')!
+    expect(wealth.status).toBe('review')
+    expect(wealth.note).toMatch(/around.*midpoint/i)
   })
 
   it('overall = 49 → wealth status is review', () => {
@@ -115,11 +122,11 @@ describe('return item', () => {
     expect(retItem.note).toMatch(/no return estimate/i)
   })
 
-  it('return < 50 → return status is review', () => {
+  it('return < 40 → return status is review with below-midpoint note', () => {
     const result = getRankReviewSummary([overall(60), ret(30)], fullProfile)!
     const retItem = result.find((i) => i.topic === 'return')!
     expect(retItem.status).toBe('review')
-    expect(retItem.note).toMatch(/below.*median/i)
+    expect(retItem.note).toMatch(/below.*midpoint/i)
   })
 
   it('return = 50 → return status is ok', () => {
