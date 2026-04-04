@@ -28,7 +28,7 @@ export function buildPortfolioSummary(
   const categoryBreakdown: AllocationSlice[] = Object.entries(grouped)
     .map(([category, value]) => {
       const meta = CATEGORY_MAP[category]
-      if (!meta && process.env.NODE_ENV !== 'production') {
+      if (!meta) {
         console.warn(`[buildPortfolioSummary] Unknown asset category: "${category}" — falling back to defaults.`)
       }
       return {

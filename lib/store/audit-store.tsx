@@ -34,13 +34,13 @@ export function recordAudit(action: string, detail: string) {
       timestamp: new Date().toISOString(),
     }
     writeJSON(LS_KEY, [entry, ...existing].slice(0, MAX_ENTRIES))
+    // Notify the AuditProvider so its in-memory state stays in sync with
+    // localStorage without requiring a page navigation or manual refresh.
+    window.dispatchEvent(new CustomEvent('audit-updated'))
   } catch (e) {
-    // Never break the app for audit, but surface the failure so the
-    // PersistErrorBanner fires — consistent with every other store.
+    // Audit failure is non-critical — log quietly, do not show the
+    // PersistErrorBanner (which is reserved for data-loss-risk failures).
     console.warn('[audit] failed to record:', e)
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('persist-error'))
-    }
   }
 }
 
@@ -69,6 +69,10 @@ export function AuditProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     load()
     setIsLoaded(true)
+    // Keep in-memory state in sync with localStorage writes from recordAudit(),
+    // which writes directly outside the React context.
+    window.addEventListener('audit-updated', load)
+    return () => window.removeEventListener('audit-updated', load)
   }, [load])
 
   const refresh = useCallback(() => load(), [load])

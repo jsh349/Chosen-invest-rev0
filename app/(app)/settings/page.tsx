@@ -35,6 +35,18 @@ const ARRAY_KEYS: ReadonlySet<string> = new Set([
   STORAGE_KEYS.rankSnapshots,
 ])
 
+/**
+ * Keys for data that is now persisted via the API (Turso), not localStorage.
+ * Importing these from a backup would write to localStorage but the stores
+ * would ignore it — the API adapter is the source of truth for these keys.
+ * Skip them during import to avoid silent no-ops.
+ */
+const API_BACKED_KEYS: ReadonlySet<string> = new Set([
+  STORAGE_KEYS.assets,
+  STORAGE_KEYS.goals,
+  STORAGE_KEYS.transactions,
+])
+
 /** Keys whose stored value must be a plain string. */
 const STRING_KEYS: ReadonlySet<string> = new Set([
   STORAGE_KEYS.benchmarkSource,
@@ -217,6 +229,9 @@ export default function SettingsPage() {
         for (const key of ALL_STORAGE_KEYS) {
           const value = (data as Record<string, unknown>)[key]
           if (value === null || value === undefined) continue
+          // API-backed stores read from the server, not localStorage — skip these
+          // keys so an old backup cannot silently overwrite with stale local data.
+          if (API_BACKED_KEYS.has(key)) continue
           if (!isSafeToRestore(key, value)) continue
           // Settings: sanitize individual fields rather than accepting/rejecting all-or-nothing.
           // Invalid fields are stripped; valid fields are preserved.
@@ -389,7 +404,7 @@ export default function SettingsPage() {
         <div className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm font-medium text-white">Export data</p>
-            <p className="text-xs text-gray-500">Download all local app data as a JSON backup file</p>
+            <p className="text-xs text-gray-500">Download local preferences, settings, and rank data as a JSON backup (assets, goals, and transactions are synced to your account)</p>
           </div>
           <button
             onClick={handleExport}

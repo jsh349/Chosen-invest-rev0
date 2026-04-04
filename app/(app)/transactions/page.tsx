@@ -92,19 +92,22 @@ export default function TransactionsPage() {
     ? transactions
     : transactions.filter((t) => t.category === filterCategory)
 
-  const sorted = [...filtered].sort((a, b) => {
+  // Precompute date timestamps once so the sort comparator doesn't create
+  // Date objects on every pairwise comparison (O(N log N) allocations avoided).
+  const withTs = filtered.map((t) => ({ t, ts: new Date(t.date).getTime() }))
+  const sorted = withTs.sort((a, b) => {
     // Primary sort — then fall back to id comparison for a stable order when
     // primary keys are equal (e.g. two transactions on the same date).
     let primary: number
     switch (sortKey) {
-      case 'date-desc':   primary = new Date(b.date).getTime() - new Date(a.date).getTime(); break
-      case 'date-asc':    primary = new Date(a.date).getTime() - new Date(b.date).getTime(); break
-      case 'amount-desc': primary = Math.abs(b.amount) - Math.abs(a.amount); break
-      case 'amount-asc':  primary = Math.abs(a.amount) - Math.abs(b.amount); break
+      case 'date-desc':   primary = b.ts - a.ts; break
+      case 'date-asc':    primary = a.ts - b.ts; break
+      case 'amount-desc': primary = Math.abs(b.t.amount) - Math.abs(a.t.amount); break
+      case 'amount-asc':  primary = Math.abs(a.t.amount) - Math.abs(b.t.amount); break
       default:            primary = 0
     }
-    return primary !== 0 ? primary : a.id.localeCompare(b.id)
-  })
+    return primary !== 0 ? primary : a.t.id.localeCompare(b.t.id)
+  }).map(({ t }) => t)
 
   return (
     <div className="space-y-6">

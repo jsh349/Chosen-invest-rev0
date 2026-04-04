@@ -11,12 +11,15 @@ import type { Goal } from '@/lib/types/goal'
 
 function nearestGoal(goals: Goal[]): Goal | null {
   if (goals.length === 0) return null
-  const withDate = goals
+  // Prefer incomplete goals — a completed goal shouldn't dominate the spotlight.
+  const incomplete = goals.filter((g) => g.currentAmount < g.targetAmount)
+  const candidates = incomplete.length > 0 ? incomplete : goals
+  const withDate = candidates
     .filter((g): g is Goal & { targetDate: string } => g.targetDate != null)
     .sort((a, b) => a.targetDate.localeCompare(b.targetDate))
   if (withDate[0]) return withDate[0]
-  // No goals have a target date — fall back to the goal with the highest progress ratio
-  return goals.reduce((best, g) => {
+  // No candidates have a target date — fall back to highest progress ratio
+  return candidates.reduce((best, g) => {
     const bestPct = best.targetAmount > 0 ? best.currentAmount / best.targetAmount : 0
     const gPct    = g.targetAmount    > 0 ? g.currentAmount    / g.targetAmount    : 0
     return gPct > bestPct ? g : best

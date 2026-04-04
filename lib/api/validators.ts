@@ -28,7 +28,7 @@ const GoalSchema = z.object({
   id:            z.string().min(1).max(100),
   name:          z.string().min(1).max(200).trim(),
   type:          z.enum(['savings', 'investment', 'retirement', 'purchase', 'debt', 'other']),
-  targetAmount:  z.number().finite().nonnegative(),
+  targetAmount:  z.number().finite().positive(),
   currentAmount: z.number().finite().nonnegative(),
   targetDate:    z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   shared:        z.boolean().optional(),

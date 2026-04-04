@@ -19,7 +19,7 @@ type GoalsContextType = {
   isLoaded: boolean
   /** True when the initial load failed. isLoaded is also true in this state. */
   isLoadError: boolean
-  setGoals: (goals: Goal[]) => void
+  setGoals: (goals: Goal[]) => Promise<void>
   addGoal: (goal: Goal) => void
   updateGoal: (id: string, patch: Partial<Omit<Goal, 'id' | 'createdAt'>>) => void
   removeGoal: (id: string) => void
@@ -30,7 +30,7 @@ const GoalsContext = createContext<GoalsContextType>({
   hasGoals: false,
   isLoaded: false,
   isLoadError: false,
-  setGoals: () => {},
+  setGoals: () => Promise.resolve(),
   addGoal: () => {},
   updateGoal: () => {},
   removeGoal: () => {},
@@ -66,7 +66,7 @@ export function GoalsProvider({ children }: { children: ReactNode }) {
     const prev = goalsRef.current
     goalsRef.current = newGoals
     setGoalsState(newGoals)
-    void goalsAdapter.saveAll(newGoals).catch(() => {
+    return goalsAdapter.saveAll(newGoals).catch(() => {
       console.error('[goals] save failed')
       goalsRef.current = prev
       setGoalsState(prev)

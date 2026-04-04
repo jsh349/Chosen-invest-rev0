@@ -1,6 +1,6 @@
 'use client'
 
-import { forwardRef } from 'react'
+import { forwardRef, useMemo } from 'react'
 import Link from 'next/link'
 import type { RankResult } from '@/lib/types/rank'
 import { topPctLabel, percentileColor } from '@/lib/utils/rank-format'
@@ -50,9 +50,10 @@ export const RankShareCard = forwardRef<HTMLDivElement, Props>(
     const totalCount = 1 + secondary.length
     const isPartial  = availableCount > 0 && availableCount < totalCount
 
-    const dateStr = new Date().toLocaleDateString('en-US', {
+    // Memoized so the date doesn't change on re-renders (e.g. around midnight).
+    const dateStr = useMemo(() => new Date().toLocaleDateString('en-US', {
       month: 'short', day: 'numeric', year: 'numeric',
-    })
+    }), [])
 
     const hasAnyData = hero != null || secondary.length > 0
 
