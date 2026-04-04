@@ -34,7 +34,7 @@ export function getRankActions(
   // Rule 1: profile incomplete (age / gender) → complete in Settings
   if (overallPct !== null && profileIncomplete) {
     actions.push({
-      label: isLowConfidence ? 'Complete profile for all rank types' : 'Complete profile for full ranking',
+      label: isLowConfidence ? 'Complete profile' : 'Complete profile for full ranking',
       href: ROUTES.settings,
     })
   }

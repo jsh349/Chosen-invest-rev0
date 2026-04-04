@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils/cn'
 function linkLabel(href: string): string {
   if (href === ROUTES.portfolioList || href === ROUTES.portfolioInput) return 'Portfolio →'
   if (href === ROUTES.goals) return 'Goals →'
-  return 'Settings →'
+  return 'Update profile →'
 }
 
 type Props = {

@@ -115,7 +115,7 @@ describe('getRankActions', () => {
     const actions = getRankActions(makeRanks({ ageMissing: true }), { hasGoals: true, isLowConfidence: true })
     const settingsAction = actions.find((a) => a.href === ROUTES.settings)
     expect(settingsAction).not.toBeUndefined()
-    expect(settingsAction!.label).toBe('Complete profile for all rank types')
+    expect(settingsAction!.label).toBe('Complete profile')
   })
 
   it('Rule 1: uses full-ranking label in normal confidence', () => {

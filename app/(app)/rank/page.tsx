@@ -714,7 +714,7 @@ export default function RankPage() {
                   </span>
                 )}
               </div>
-              <ul className="space-y-2.5">
+              <ul className="space-y-2">
                 {rankReviewSummary.map((item) => (
                   <li key={item.topic} className="flex items-start gap-2.5">
                     <span className={cn(
