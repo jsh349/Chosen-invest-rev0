@@ -135,7 +135,12 @@ export function RankReportSection({ ranks, nextHint, sourceNote = null, isLowCon
         {(!nextAction || isLowConfidence) && (isPartial || sourceNote) && (
           <p className="text-[10px] text-gray-600">
             {sourceNote && isPartial
-              ? `${availableCount}/${ranks.length} ranks available — ${sourceNote.replace(/\.$/, '').toLowerCase()}.`
+              // When the action slot is active in a low-confidence state, it already
+              // signals that data is missing — showing a coverage count here too stacks
+              // the same caution twice. In that state, show only the source note.
+              ? (nextAction && isLowConfidence
+                  ? sourceNote
+                  : `${availableCount}/${ranks.length} ranks available — ${sourceNote.replace(/\.$/, '').toLowerCase()}.`)
               : sourceNote
                 ? sourceNote
                 : `${availableCount}/${ranks.length} ranks — some inputs missing.`

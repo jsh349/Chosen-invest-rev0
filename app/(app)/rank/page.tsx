@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import { Settings, Users } from 'lucide-react'
+import { Users } from 'lucide-react'
 import { useAssets } from '@/lib/store/assets-store'
 import { useHousehold } from '@/lib/store/household-store'
 import { useSettings } from '@/lib/store/settings-store'
@@ -168,13 +168,13 @@ function RankRow({ result, coverageNote, isLowConfidence = false }: { result: Ra
           </div>
         )}
       </div>
+      {/* message above already names the field; this link is navigation only */}
       {result.missingField && (
         <Link
           href={ROUTES.settings}
-          className="mt-3 inline-flex items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition-colors"
+          className="mt-3 inline-block text-xs text-brand-400 hover:text-brand-300 transition-colors"
         >
-          <Settings className="h-3 w-3" />
-          Set {result.missingField} in Settings
+          Settings →
         </Link>
       )}
     </div>
