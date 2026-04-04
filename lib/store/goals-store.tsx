@@ -20,7 +20,7 @@ type GoalsContextType = {
   /** True when the initial load failed. isLoaded is also true in this state. */
   isLoadError: boolean
   setGoals: (goals: Goal[]) => Promise<void>
-  addGoal: (goal: Goal) => void
+  addGoal: (goal: Goal) => Promise<void>
   updateGoal: (id: string, patch: Partial<Omit<Goal, 'id' | 'createdAt'>>) => void
   removeGoal: (id: string) => void
 }
@@ -31,7 +31,7 @@ const GoalsContext = createContext<GoalsContextType>({
   isLoaded: false,
   isLoadError: false,
   setGoals: () => Promise.resolve(),
-  addGoal: () => {},
+  addGoal: () => Promise.resolve(),
   updateGoal: () => {},
   removeGoal: () => {},
 })
@@ -74,18 +74,19 @@ export function GoalsProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
-  const addGoal = useCallback((goal: Goal) => {
+  const addGoal = useCallback((goal: Goal): Promise<void> => {
     const prev = goalsRef.current
     const updated = [...goalsRef.current, goal]
     goalsRef.current = updated
     setGoalsState(updated)
-    void goalsAdapter.saveAll(updated).catch(() => {
+    recordAudit('Goal added', goal.name)
+    return goalsAdapter.saveAll(updated).catch(() => {
       console.error('[goals] save failed')
       goalsRef.current = prev
       setGoalsState(prev)
       if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('persist-error'))
+      throw new Error('save failed')
     })
-    recordAudit('Goal added', goal.name)
   }, [])
 
   const updateGoal = useCallback((id: string, patch: Partial<Omit<Goal, 'id' | 'createdAt'>>) => {

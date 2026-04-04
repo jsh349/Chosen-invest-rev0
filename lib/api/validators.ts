@@ -30,7 +30,7 @@ const GoalSchema = z.object({
   type:          z.enum(['savings', 'investment', 'retirement', 'purchase', 'debt', 'other']),
   targetAmount:  z.number().finite().positive(),
   currentAmount: z.number().finite().nonnegative(),
-  targetDate:    z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  targetDate:    z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((v) => { const d = new Date(v); return !isNaN(d.getTime()) && d.toISOString().startsWith(v) }, { message: 'targetDate is not a valid calendar date' }).optional(),
   shared:        z.boolean().optional(),
   createdAt:     z.string().datetime(),
   updatedAt:     z.string().datetime(),
@@ -45,7 +45,7 @@ export const GoalsPayloadSchema = z.array(GoalSchema).max(200)
 
 const TransactionSchema = z.object({
   id:          z.string().min(1).max(100),
-  date:        z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  date:        z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((v) => { const d = new Date(v); return !isNaN(d.getTime()) && d.toISOString().startsWith(v) }, { message: 'date is not a valid calendar date' }),
   description: z.string().min(1).max(500).trim(),
   // Positive = income, negative = expense (zero is meaningless)
   amount:      z.number().finite().refine((v) => v !== 0, { message: 'amount must not be zero' }),

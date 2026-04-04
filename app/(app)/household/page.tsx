@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Link from 'next/link'
 import { Users, Trash2, Target, StickyNote } from 'lucide-react'
 import { useHousehold } from '@/lib/store/household-store'
@@ -40,6 +40,7 @@ export default function HouseholdPage() {
   const { fmt } = useFormatCurrency()
   const [form, setForm] = useState(EMPTY_FORM)
   const [error, setError] = useState('')
+  const submittingRef = useRef(false)
   const [noteForm, setNoteForm] = useState({ title: '', message: '' })
   const [noteError, setNoteError] = useState('')
 
@@ -78,6 +79,7 @@ export default function HouseholdPage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (submittingRef.current) return
     if (!isRequired(form.name)) { setError('Name is required.'); return }
     if (!isBasicEmail(form.email)) { setError('A valid email is required.'); return }
     const normalizedEmail = form.email.trim().toLowerCase()
@@ -85,6 +87,7 @@ export default function HouseholdPage() {
       setError('This email address is already in the household.')
       return
     }
+    submittingRef.current = true
     addMember({
       id:        crypto.randomUUID(),
       name:      form.name.trim(),
@@ -94,6 +97,7 @@ export default function HouseholdPage() {
     })
     setForm(EMPTY_FORM)
     setError('')
+    submittingRef.current = false
   }
 
   return (

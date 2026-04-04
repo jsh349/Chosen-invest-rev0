@@ -87,7 +87,7 @@ export default function PortfolioInputPage() {
     )
     if (validEntries.length === 0) {
       setSaving(false)
-      router.push(ROUTES.dashboard)
+      setSaveError('Add at least one asset with a name and value above zero.')
       return
     }
     const now = new Date().toISOString()

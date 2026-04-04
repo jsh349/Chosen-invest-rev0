@@ -217,6 +217,7 @@ export default function SettingsPage() {
     e.target.value = ''
 
     const reader = new FileReader()
+    reader.onerror = () => setImportStatus({ type: 'error', message: 'Could not read the file.' })
     reader.onload = (evt) => {
       try {
         const result = evt.target?.result

@@ -92,7 +92,9 @@ export function DashboardPrefsProvider({ children }: { children: ReactNode }) {
     const updated = { ...prefsRef.current, [key]: !prefsRef.current[key] }
     prefsRef.current = updated
     setPrefs(updated)
-    writeJSON(LS_KEY, updated)
+    if (!writeJSON(LS_KEY, updated)) {
+      if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('persist-error'))
+    }
   }, [])
 
   return (

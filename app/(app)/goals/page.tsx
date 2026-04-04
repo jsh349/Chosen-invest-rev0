@@ -169,7 +169,7 @@ export default function GoalsPage() {
     setAddError('')
   }
 
-  function handleAddSubmit(e: React.FormEvent) {
+  async function handleAddSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!isRequired(addForm.name)) { setAddError('Goal name is required.'); return }
     if (addForm.targetDate && !isDateFormat(addForm.targetDate)) { setAddError('Use YYYY-MM-DD date format.'); return }
@@ -177,20 +177,24 @@ export default function GoalsPage() {
     if (!amounts) { setAddError('Target amount must be a positive number and saved amount must be 0 or more.'); return }
     if (amounts.currentAmount > amounts.targetAmount) { setAddError('Saved amount cannot exceed the target amount.'); return }
     const now = new Date().toISOString()
-    addGoal({
-      id:            crypto.randomUUID(),
-      userId:        currentUserId,
-      name:          addForm.name.trim(),
-      type:          addForm.type,
-      targetAmount:  amounts.targetAmount,
-      currentAmount: amounts.currentAmount,
-      targetDate:    addForm.targetDate || undefined,
-      shared:        addForm.shared,
-      createdAt:     now,
-      updatedAt:     now,
-    })
-    setAddForm(EMPTY_FORM)
-    setAddError('')
+    try {
+      await addGoal({
+        id:            crypto.randomUUID(),
+        userId:        currentUserId,
+        name:          addForm.name.trim(),
+        type:          addForm.type,
+        targetAmount:  amounts.targetAmount,
+        currentAmount: amounts.currentAmount,
+        targetDate:    addForm.targetDate || undefined,
+        shared:        addForm.shared,
+        createdAt:     now,
+        updatedAt:     now,
+      })
+      setAddForm(EMPTY_FORM)
+      setAddError('')
+    } catch {
+      setAddError('Failed to save goal. Please try again.')
+    }
   }
 
   function startEdit(goal: Goal) {
