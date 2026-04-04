@@ -72,12 +72,11 @@ export function RankDetailExplanationBlock({ nextHint, rankInsight, rankGoalInsi
             i > 0 && item.href && 'border-t border-surface-border pt-2',
           )}
         >
-          {/* Both interpretation and action items sit at the same visual weight
-              as the interpretation line in PrimaryRankHighlight so this block
-              reads as reinforcing, not competing. The action link label
-              (colored Settings →, Portfolio →, Goals →) provides distinction
-              without needing the prose text to be brighter. */}
-          <p className="text-xs text-gray-400 leading-relaxed">
+          {/* Interpretation (slot 1) stays at text-gray-400 — the anchor.
+              Action/hint prose (slot 2, linked) steps back to text-gray-500:
+              the colored link label already signals it; the prose does not
+              need to compete with the interpretation for visual weight. */}
+          <p className={cn('text-xs leading-relaxed', i > 0 && item.href ? 'text-gray-500' : 'text-gray-400')}>
             {item.text}
           </p>
           {item.href && (

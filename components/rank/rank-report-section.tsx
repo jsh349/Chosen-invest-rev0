@@ -62,16 +62,21 @@ export function RankReportSection({ ranks, nextHint, sourceNote = null, isLowCon
         <span className="text-[10px] capitalize text-gray-600">{mode}</span>
       </div>
 
-      {/* Slot 1 — primary rank highlight */}
-      <div className="space-y-0.5">
-        <p className="text-[10px] uppercase tracking-wide text-gray-500">{highlight.label}</p>
-        <p className={cn('text-2xl font-bold tabular-nums leading-none', percentileColor(highlight.percentile!))}>
-          Top {topPctLabel(highlight.percentile!)}
-        </p>
-      </div>
+      {/* Primary meaning unit — number + interpretation are one block.
+          Tighter internal gap (space-y-1.5) signals they belong together;
+          the parent space-y-3 still separates this unit from all slots below. */}
+      <div className="space-y-1.5">
+        {/* Slot 1 — primary rank highlight */}
+        <div className="space-y-0.5">
+          <p className="text-[10px] uppercase tracking-wide text-gray-500">{highlight.label}</p>
+          <p className={cn('text-2xl font-bold tabular-nums leading-none', percentileColor(highlight.percentile!))}>
+            Top {topPctLabel(highlight.percentile!)}
+          </p>
+        </div>
 
-      {/* Slot 2 — short explanation */}
-      <p className="text-xs text-gray-400 leading-relaxed">{explanation}</p>
+        {/* Slot 2 — short explanation */}
+        <p className="text-xs text-gray-400 leading-relaxed">{explanation}</p>
+      </div>
 
       {/* Slot 3 — comparison note (omitted when null) */}
       {comparisonNote && (
