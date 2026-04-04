@@ -137,12 +137,14 @@ export function RankReportSection({ ranks, nextHint, sourceNote = null, isLowCon
           <p className="text-[10px] text-gray-600">
             Estimate · not financial advice · Chosen Invest
           </p>
-          <Link
-            href={ROUTES.rank}
-            className="shrink-0 text-[10px] text-brand-400 hover:text-brand-300 transition-colors"
-          >
-            {isPartial ? 'View full ranking →' : 'View ranking →'}
-          </Link>
+          {(isPartial || (highlight.percentile != null && highlight.percentile < 50)) && (
+            <Link
+              href={ROUTES.rank}
+              className="shrink-0 text-[10px] text-brand-400 hover:text-brand-300 transition-colors"
+            >
+              {isPartial ? 'View full ranking →' : 'View ranking →'}
+            </Link>
+          )}
         </div>
       </div>
     </div>
