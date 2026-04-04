@@ -1060,3 +1060,37 @@ Close the confirmed bugs without touching unrelated code.
 2. `npm test -- --ci` → all tests pass
 3. POST /api/assets with `createdAt: "not-a-date"` → 400 validation error
 4. POST /api/assets with `createdAt: "2024-01-15T10:30:00.000Z"` → 200 ok
+
+---
+
+# Addendum: P351–P354 — Hierarchy, quietness, breathing-room, confidence-fit passes
+
+## Task Summary
+Four small, focused presentation refinements across rank summary and detail surfaces.
+
+## Goal
+- P351: First-glance hierarchy lock — most important number reads clearly first on summary surfaces
+- P352: Quietness pass — supporting state elements in rank detail don't compete with the primary
+- P353: Breathing-room — cleaner transition from interpretation to CTA in compact reports
+- P354: Confidence-fit — review-entry link wording matches the active confidence level
+
+## Non-Goals
+- No redesign, no new surfaces, no new logic
+- No AI API, no methodology changes
+- No changes to routing, slot order, or report composition
+
+## Affected Files
+- `components/dashboard/rank-overview-card.tsx`   — P351: "total assets" text-sm → text-xs
+- `components/rank/rank-share-card.tsx`            — P351: secondary values text-sm → text-xs
+- `app/(app)/rank/page.tsx`                        — P352: RankRow percentile + detail block; P354: review banner link
+- `components/rank/rank-report-section.tsx`        — P353: nextAction pt-2 → pt-3
+
+## Risks
+- None — visual-only changes; no logic, no data, no routing
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. Dashboard: "total assets" reads clearly below the hero number, not at the same visual level
+3. Rank page detail rows: raw percentile number (right side) is gray, clearly secondary to the band label
+4. Rank report card: action slot feels slightly less cramped after explanation text
+5. Review banner with healthy benchmark: "Review inputs →"; with fallback benchmark: "Check inputs →"

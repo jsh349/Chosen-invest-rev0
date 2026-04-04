@@ -146,10 +146,10 @@ function RankRow({ result, coverageNote, isLowConfidence = false }: { result: Ra
           )}
           {result.detail && (
             <div className="mt-3 rounded-md bg-surface-muted/40 px-3 py-2 space-y-0.5">
-              <p className="text-[11px] text-gray-500">
+              <p className="text-[11px] text-gray-600">
                 <span className="text-gray-600">Basis: </span>{result.detail.comparisonBasis}
               </p>
-              <p className="text-[11px] text-gray-500">
+              <p className="text-[11px] text-gray-600">
                 <span className="text-gray-600">Band matched: </span>{result.detail.bandLabel}
               </p>
               {coverageNote && (
@@ -162,7 +162,7 @@ function RankRow({ result, coverageNote, isLowConfidence = false }: { result: Ra
         </div>
         {hasPct && (
           <div className="shrink-0 text-right">
-            <span className={cn('text-sm font-semibold tabular-nums', percentileColor(result.percentile!))}>
+            <span className="text-xs font-medium tabular-nums text-gray-500">
               {result.percentile}th pct.
             </span>
           </div>
@@ -600,7 +600,7 @@ export default function RankPage() {
                   href={ROUTES.settings}
                   className="text-xs text-brand-400 hover:text-brand-300 transition-colors"
                 >
-                  Review inputs →
+                  {benchmarkHealth.status !== 'healthy' ? 'Check inputs →' : 'Review inputs →'}
                 </Link>
                 <button
                   onClick={() => {

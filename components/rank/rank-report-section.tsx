@@ -88,7 +88,7 @@ export function RankReportSection({ ranks, nextHint, sourceNote = null, isLowCon
           appearing in the footer trust block — trust context should precede the
           recommendation, not follow it. */}
       {nextAction && (
-        <div className="border-t border-surface-border pt-2 space-y-2">
+        <div className="border-t border-surface-border pt-3 space-y-2">
           {sourceNote && (
             <p className="text-[10px] text-gray-600">{sourceNote}</p>
           )}

@@ -90,7 +90,7 @@ export function RankOverviewCard({ rank, ageRank, ageGenderRank, returnRank, tot
           ) : (
             <p className="text-4xl font-bold text-gray-600">—</p>
           )}
-          <p className="text-sm text-gray-500">
+          <p className="text-xs text-gray-500">
             {compact(totalValue)} total assets
           </p>
         </div>
