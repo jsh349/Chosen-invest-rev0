@@ -78,7 +78,7 @@ export function generateHealthCards(summary: PortfolioSummary): FinancialHealthC
   // Guard: empty portfolio or all-zero values produce undefined scores and
   // misleading messages (e.g. "Only 0 category", "Cash is under 5%").
   // Return stable, neutral cards instead of running the scoring logic.
-  if (assetCount === 0 || totalAssetValue === 0) {
+  if (assetCount === 0 || totalAssetValue <= 0) {
     const placeholder = (key: string, title: string): FinancialHealthCard => ({
       key,
       title,
@@ -108,13 +108,13 @@ export function generateHealthCards(summary: PortfolioSummary): FinancialHealthC
   // Concentration: topPct >60% → 30 (attention), >40% → 55 (warning), ≤40% → 80 (good)
   const topSlice = categoryBreakdown[0]
   const topPct = topSlice?.percentage ?? 0
-  const concentrationScore = topPct > 60 ? 30 : topPct > 40 ? 55 : 80
+  const concentrationScore = topPct > CONCENTRATION_THRESHOLDS.attention ? 30 : topPct > CONCENTRATION_THRESHOLDS.warning ? 55 : 80
   const concentrationMessage =
     !topSlice
       ? 'Add assets to see concentration analysis.'
-      : topPct > 60
+      : topPct > CONCENTRATION_THRESHOLDS.attention
       ? `${topSlice.label} is ${topPct.toFixed(0)}% of total. High concentration risk.`
-      : topPct > 40
+      : topPct > CONCENTRATION_THRESHOLDS.warning
       ? `${topSlice.label} is ${topPct.toFixed(0)}% of total. Single-asset dominance to watch.`
       : 'No single category dominates. Concentration looks healthy.'
 

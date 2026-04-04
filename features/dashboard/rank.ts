@@ -79,7 +79,7 @@ export function computeOverallWealthRank(totalAssetValue: number): RankResult {
   }
   const percentile = findPercentile(buckets, totalAssetValue)
   const bucket = findBucket(buckets, totalAssetValue)
-  const topPct = 100 - percentile
+  const topPct = Math.max(0, Math.min(100, 100 - percentile))
 
   let message: string
   if (percentile >= 90) message = `Top ${topPct}% nationally — in the highest benchmark range.`
@@ -121,7 +121,7 @@ export function computeAgeBasedRank(totalAssetValue: number, age?: number): Rank
 
   const percentile = findPercentile(ageBuckets, totalAssetValue)
   const bucket = findBucket(ageBuckets, totalAssetValue)
-  const topPct = 100 - percentile
+  const topPct = Math.max(0, Math.min(100, 100 - percentile))
   const ageRange = ageBuckets[0].ageRange!
 
   let message: string
@@ -202,7 +202,7 @@ export function computeAgeGenderRank(
 
   const percentile = findPercentile(buckets, totalAssetValue)
   const bucket = findBucket(buckets, totalAssetValue)
-  const topPct = 100 - percentile
+  const topPct = Math.max(0, Math.min(100, 100 - percentile))
   const ageRange = buckets[0].ageRange!
   const genderLabel = gender === 'male' ? 'men' : 'women'
   const genderCapital = gender === 'male' ? 'Men' : 'Women'
@@ -240,7 +240,7 @@ export function computeReturnRank(annualReturnPct?: number): RankResult {
   }
   const percentile = findPercentile(retBuckets, annualReturnPct)
   const bucket = findBucket(retBuckets, annualReturnPct)
-  const topPct = 100 - percentile
+  const topPct = Math.max(0, Math.min(100, 100 - percentile))
   const sign = annualReturnPct >= 0 ? '+' : ''
 
   let message: string

@@ -82,6 +82,19 @@ function sanitizeSettingsForRestore(raw: Record<string, unknown>): Record<string
   return out
 }
 
+const VALID_DASHBOARD_CARD_KEYS = new Set<string>([
+  'allocation', 'portfolioStatus', 'advisor', 'goals',
+  'transactions', 'taxOpportunity', 'cashFlowInsight', 'rank',
+])
+
+function sanitizeDashboardPrefsForRestore(raw: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(raw)) {
+    if (VALID_DASHBOARD_CARD_KEYS.has(key) && typeof value === 'boolean') out[key] = value
+  }
+  return out
+}
+
 const SELECT_CLASS = 'w-full rounded-lg border border-surface-border bg-surface-muted px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none'
 
 const CURRENCIES: { value: CurrencyCode; label: string }[] = [
@@ -145,6 +158,7 @@ export default function SettingsPage() {
 
   // Local raw strings so typing partial numbers (e.g. "199") doesn't reset the field.
   // Synced back from settings when settings change externally (e.g. Reset).
+  const [currentYear] = useState(() => new Date().getFullYear())
   const [birthYearRaw, setBirthYearRaw] = useState<string>(settings.birthYear?.toString() ?? '')
   const [returnRaw, setReturnRaw] = useState<string>(settings.annualReturnPct?.toString() ?? '')
   const [birthYearError, setBirthYearError] = useState('')
@@ -209,6 +223,10 @@ export default function SettingsPage() {
           let toWrite: unknown = value
           if (key === STORAGE_KEYS.settings) {
             toWrite = sanitizeSettingsForRestore(value as Record<string, unknown>)
+            if (Object.keys(toWrite as object).length === 0) continue
+          }
+          if (key === STORAGE_KEYS.dashboardPrefs) {
+            toWrite = sanitizeDashboardPrefsForRestore(value as Record<string, unknown>)
             if (Object.keys(toWrite as object).length === 0) continue
           }
           // Scalar string keys are stored as raw strings — no JSON layer.
@@ -294,7 +312,7 @@ export default function SettingsPage() {
           <input
             type="number"
             min={1920}
-            max={new Date().getFullYear() - 10}
+            max={currentYear - 10}
             placeholder="e.g. 1990"
             value={birthYearRaw}
             onChange={(e) => {
@@ -302,11 +320,11 @@ export default function SettingsPage() {
               setBirthYearRaw(raw)
               if (raw === '') { update({ birthYear: undefined }); setBirthYearError(''); return }
               const yr = parseInt(raw, 10)
-              if (yr >= 1920 && yr <= new Date().getFullYear() - 10) {
+              if (yr >= 1920 && yr <= currentYear - 10) {
                 update({ birthYear: yr })
                 setBirthYearError('')
               } else {
-                setBirthYearError(`Enter a year between 1920 and ${new Date().getFullYear() - 10}.`)
+                setBirthYearError(`Enter a year between 1920 and ${currentYear - 10}.`)
               }
             }}
             className={SELECT_CLASS}

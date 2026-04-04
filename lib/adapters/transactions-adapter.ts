@@ -22,7 +22,7 @@ export const transactionsAdapter: TransactionsAdapter = {
     const data = await res.json() as Transaction[]
     return data
       .filter((t) => {
-        if (!t.id || !Number.isFinite(t.amount) || !t.date || !t.description) {
+        if (!t.id || !Number.isFinite(t.amount) || !t.date || !/^\d{4}-\d{2}-\d{2}$/.test(t.date) || !t.description) {
           console.warn('[transactionsAdapter] Skipping malformed transaction — missing id, amount, date, or description.', t)
           return false
         }

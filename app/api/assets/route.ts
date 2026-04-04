@@ -5,6 +5,15 @@ import { eq } from 'drizzle-orm'
 import { AssetsPayloadSchema } from '@/lib/api/validators'
 import { ensureUser } from '@/lib/api/ensure-user'
 import type { Asset } from '@/lib/types/asset'
+import { ASSET_CATEGORIES } from '@/lib/constants/asset-categories'
+
+const VALID_ASSET_CATEGORY_SET = new Set<string>(ASSET_CATEGORIES.map((c) => c.key))
+
+function toAssetCategory(raw: string, id: string): Asset['category'] {
+  if (VALID_ASSET_CATEGORY_SET.has(raw)) return raw as Asset['category']
+  console.warn(`[GET /api/assets] Unknown category "${raw}" on asset "${id}" — coerced to 'other'.`)
+  return 'other' as Asset['category']
+}
 
 export async function GET() {
   const session = await auth()
@@ -21,7 +30,7 @@ export async function GET() {
     id:        row.id,
     userId:    row.userId,
     name:      row.name,
-    category:  row.category as Asset['category'],
+    category:  toAssetCategory(row.category, row.id),
     value:     row.valueCents / 100,
     currency:  row.currency,
     createdAt: row.createdAt,

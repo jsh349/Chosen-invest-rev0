@@ -5,6 +5,15 @@ import { eq } from 'drizzle-orm'
 import { TransactionsPayloadSchema } from '@/lib/api/validators'
 import { ensureUser } from '@/lib/api/ensure-user'
 import type { Transaction } from '@/lib/types/transaction'
+import { TRANSACTION_CATEGORIES } from '@/lib/types/transaction'
+
+const VALID_TRANSACTION_CATEGORY_SET = new Set<string>(TRANSACTION_CATEGORIES)
+
+function toTransactionCategory(raw: string, id: string): Transaction['category'] {
+  if (VALID_TRANSACTION_CATEGORY_SET.has(raw)) return raw as Transaction['category']
+  console.warn(`[GET /api/transactions] Unknown category "${raw}" on transaction "${id}" — coerced to 'Other'.`)
+  return 'Other' as Transaction['category']
+}
 
 export async function GET() {
   const session = await auth()
@@ -23,7 +32,7 @@ export async function GET() {
     date:        row.date,
     description: row.description,
     amount:      row.amountCents / 100,
-    category:    row.category as Transaction['category'],
+    category:    toTransactionCategory(row.category, row.id),
     createdAt:   row.createdAt,
   }))
 

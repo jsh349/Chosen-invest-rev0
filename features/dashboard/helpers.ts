@@ -13,7 +13,7 @@ export function buildPortfolioSummary(
   // FX conversion is not implemented — flag the condition so the UI can warn users.
   const currencies = new Set(assets.map((a) => a.currency).filter(Boolean))
   const hasMixedCurrencies = currencies.size > 1
-  if (hasMixedCurrencies && process.env.NODE_ENV !== 'production') {
+  if (hasMixedCurrencies) {
     console.warn(
       `[buildPortfolioSummary] Assets span ${currencies.size} currencies (${[...currencies].join(', ')}). ` +
       'totalAssetValue is not FX-normalized. Display total as approximate only.'

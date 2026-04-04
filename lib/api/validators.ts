@@ -47,8 +47,8 @@ const TransactionSchema = z.object({
   id:          z.string().min(1).max(100),
   date:        z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   description: z.string().min(1).max(500).trim(),
-  // Positive = income, negative = expense
-  amount:      z.number().finite(),
+  // Positive = income, negative = expense (zero is meaningless)
+  amount:      z.number().finite().refine((v) => v !== 0, { message: 'amount must not be zero' }),
   // Derived from TRANSACTION_CATEGORIES so adding a new category only requires
   // updating the constant — no need to edit this file separately.
   category:    z.enum(TRANSACTION_CATEGORIES as unknown as [string, ...string[]]),

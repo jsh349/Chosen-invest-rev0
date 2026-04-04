@@ -6,6 +6,14 @@ import { GoalsPayloadSchema } from '@/lib/api/validators'
 import { ensureUser } from '@/lib/api/ensure-user'
 import type { Goal } from '@/lib/types/goal'
 
+const VALID_GOAL_TYPE_SET = new Set(['savings', 'investment', 'retirement', 'purchase', 'debt', 'other'])
+
+function toGoalType(raw: string, id: string): Goal['type'] {
+  if (VALID_GOAL_TYPE_SET.has(raw)) return raw as Goal['type']
+  console.warn(`[GET /api/goals] Unknown type "${raw}" on goal "${id}" — coerced to 'other'.`)
+  return 'other' as Goal['type']
+}
+
 export async function GET() {
   const session = await auth()
   if (!session?.user?.id) {
@@ -21,7 +29,7 @@ export async function GET() {
     id:            row.id,
     userId:        row.userId,
     name:          row.name,
-    type:          row.type as Goal['type'],
+    type:          toGoalType(row.type, row.id),
     targetAmount:  row.targetAmountCents / 100,
     currentAmount: row.currentAmountCents / 100,
     targetDate:    row.targetDate ?? undefined,
