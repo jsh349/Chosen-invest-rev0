@@ -72,10 +72,12 @@ export function RankDetailExplanationBlock({ nextHint, rankInsight, rankGoalInsi
             i > 0 && item.href && 'border-t border-surface-border pt-2',
           )}
         >
-          {/* Interpretation items (no link) read as primary content; action items
-              (with link) are secondary — one step dimmer so the explanation
-              leads and the CTA follows visually. */}
-          <p className={cn('text-xs leading-relaxed', item.href ? 'text-gray-400' : 'text-gray-300')}>
+          {/* Both interpretation and action items sit at the same visual weight
+              as the interpretation line in PrimaryRankHighlight so this block
+              reads as reinforcing, not competing. The action link label
+              (colored Settings →, Portfolio →, Goals →) provides distinction
+              without needing the prose text to be brighter. */}
+          <p className="text-xs text-gray-400 leading-relaxed">
             {item.text}
           </p>
           {item.href && (

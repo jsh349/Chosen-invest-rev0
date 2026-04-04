@@ -84,12 +84,14 @@ export function RankReportSection({ ranks, nextHint, sourceNote = null, isLowCon
           Layout matches the detail surface: prose text + short link label,
           rather than the full sentence as link text. composeRankReport ensures
           nextAction.href is always ROUTES.settings here.
-          When a sourceNote is active, it prefixes the action here rather than
-          appearing in the footer trust block — trust context should precede the
-          recommendation, not follow it. */}
+          When a sourceNote is active and the benchmark is healthy, it prefixes
+          the action so trust context precedes the recommendation.
+          In low-confidence states the action is already visually dimmed and the
+          source note moves to the footer trust block to avoid stacking three
+          caution signals in one slot. */}
       {nextAction && (
         <div className="border-t border-surface-border pt-3 space-y-2">
-          {sourceNote && (
+          {sourceNote && !isLowConfidence && (
             <p className="text-[10px] text-gray-600">{sourceNote}</p>
           )}
           <div className="flex items-start justify-between gap-3">
@@ -114,16 +116,18 @@ export function RankReportSection({ ranks, nextHint, sourceNote = null, isLowCon
       {/* Trust framing — source/coverage note and disclaimer share one separator
           so the transition from "what this means" to "how strongly to trust it"
           reads as a single block rather than two orphaned lines.
-          sourceNote is shown here only when nextAction is absent — when an action
-          is present, sourceNote already appears above the action as trust context. */}
+          sourceNote is shown here when nextAction is absent, or when the
+          benchmark is low-confidence (action slot is already dimmed; the
+          source note moves to the footer rather than stacking above the action). */}
       <div className="border-t border-surface-border pt-2 space-y-1.5">
-        {/* Coverage note is suppressed when nextAction is active — the action slot's
-            specific "add X for rank Y" message already communicates profile incompleteness
-            and is more actionable than the generic coverage count below it.
+        {/* Coverage note is suppressed when nextAction is active and the source is
+            healthy — the action slot's specific message is more actionable than the
+            generic coverage count, and the healthy-source prefix in the action block
+            already provides trust context.
             When both sourceNote and isPartial coexist, the coverage count follows the
             source note as a single sentence; "some inputs are missing" is dropped because
             the source caveat already frames the reliability context. */}
-        {!nextAction && (isPartial || sourceNote) && (
+        {(!nextAction || isLowConfidence) && (isPartial || sourceNote) && (
           <p className="text-[10px] text-gray-600">
             {sourceNote && isPartial
               ? `${availableCount}/${ranks.length} ranks available — ${sourceNote.replace(/\.$/, '').toLowerCase()}.`
@@ -142,7 +146,7 @@ export function RankReportSection({ ranks, nextHint, sourceNote = null, isLowCon
               href={ROUTES.rank}
               className="shrink-0 text-[10px] text-brand-400 hover:text-brand-300 transition-colors"
             >
-              {isPartial ? 'View full ranking →' : 'View ranking →'}
+              {isPartial ? 'Full ranking →' : 'Ranking detail →'}
             </Link>
           )}
         </div>
