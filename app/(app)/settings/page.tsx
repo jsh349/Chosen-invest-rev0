@@ -524,12 +524,14 @@ export default function SettingsPage() {
           <p>
             <span className="inline-block w-36 text-gray-600">Health</span>
             <span className={
-              debugHealth.status === 'healthy'  ? 'text-gray-500'       :
+              debugHealth.status === 'healthy'  ? 'text-gray-500'      :
               debugHealth.status === 'partial'  ? 'text-amber-400/60'  :
               debugHealth.status === 'fallback' ? 'text-amber-400'     :
-                                                  'text-amber-400'
+                                                  'text-amber-500'
             }>
-              {debugHealth.status}
+              {debugHealth.status === 'healthy'  ? 'ready'        :
+               debugHealth.status === 'invalid'  ? 'not connected' :
+               debugHealth.status}
             </span>
             {debugHealth.note && <span className="ml-2 text-gray-600">{debugHealth.note}</span>}
           </p>
