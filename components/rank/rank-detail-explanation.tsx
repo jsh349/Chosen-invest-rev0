@@ -84,8 +84,8 @@ export function RankDetailExplanationBlock({ nextHint, rankInsight, rankGoalInsi
               className={cn(
                 'shrink-0 text-xs transition-colors',
                 isLowConfidence
-                  ? 'text-brand-400 hover:text-brand-300'
-                  : 'text-brand-300 hover:text-brand-200',
+                  ? 'text-brand-400/60 hover:text-brand-400'
+                  : 'text-brand-400 hover:text-brand-300',
               )}
             >
               {linkLabel(item.href)}

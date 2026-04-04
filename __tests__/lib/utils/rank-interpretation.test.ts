@@ -20,12 +20,14 @@ describe('getRankInterpretation', () => {
     expect(getRankInterpretation(74)).toContain('Above')
   })
 
-  it('returns around-midpoint copy at 40th percentile', () => {
-    expect(getRankInterpretation(40)).toContain('Around')
+  it('returns just-below copy at 40th percentile', () => {
+    expect(getRankInterpretation(40)).toContain('Just below')
+    expect(getRankInterpretation(40)).toContain('benchmark median')
   })
 
-  it('returns around-midpoint copy at 49th percentile', () => {
-    expect(getRankInterpretation(49)).toContain('Around')
+  it('returns just-below copy at 49th percentile', () => {
+    expect(getRankInterpretation(49)).toContain('Just below')
+    expect(getRankInterpretation(49)).toContain('benchmark median')
   })
 
   it('returns below-midpoint copy at 25th percentile', () => {
