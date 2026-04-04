@@ -81,10 +81,10 @@ export function computeOverallWealthRank(totalAssetValue: number): RankResult {
   const topPct = Math.max(0, Math.min(100, 100 - percentile))
 
   let message: string
-  if (percentile >= 90) message = `Top ${topPct}% nationally — in the highest benchmark range.`
-  else if (percentile >= 70) message = `Top ${topPct}% nationally — above average across all households.`
-  else if (percentile >= 50) message = `Top ${topPct}% nationally — above the median benchmark.`
-  else message = `Top ${topPct}% nationally — below the median benchmark.`
+  if (percentile >= 90) message = `Top ${topPct}% — in the upper benchmark range.`
+  else if (percentile >= 70) message = `Top ${topPct}% — above the benchmark median.`
+  else if (percentile >= 50) message = `Top ${topPct}% — above the benchmark median.`
+  else message = `Top ${topPct}% — below the benchmark median.`
 
   const detail: RankDetail = {
     comparisonBasis: 'All households (national estimate)',
@@ -124,7 +124,7 @@ export function computeAgeBasedRank(totalAssetValue: number, age?: number): Rank
   const ageRange = ageBuckets[0].ageRange!
 
   let message: string
-  if (percentile >= 75) message = `Top ${topPct}% among adults aged ${ageRange[0]}–${ageRange[1]} — above average for this age group.`
+  if (percentile >= 75) message = `Top ${topPct}% among adults aged ${ageRange[0]}–${ageRange[1]} — above the median for this age group.`
   else if (percentile >= 50) message = `Top ${topPct}% among adults aged ${ageRange[0]}–${ageRange[1]} — around the median for this age group.`
   else message = `Top ${topPct}% among adults aged ${ageRange[0]}–${ageRange[1]} — below the median for this age group.`
 
@@ -207,7 +207,7 @@ export function computeAgeGenderRank(
   const genderCapital = gender === 'male' ? 'Men' : 'Women'
 
   let message: string
-  if (percentile >= 75) message = `Top ${topPct}% among ${genderLabel} aged ${ageRange[0]}–${ageRange[1]} — above average for this group.`
+  if (percentile >= 75) message = `Top ${topPct}% among ${genderLabel} aged ${ageRange[0]}–${ageRange[1]} — above the median for this group.`
   else if (percentile >= 50) message = `Top ${topPct}% among ${genderLabel} aged ${ageRange[0]}–${ageRange[1]} — around the median for this group.`
   else message = `Top ${topPct}% among ${genderLabel} aged ${ageRange[0]}–${ageRange[1]} — below the median for this group.`
 
@@ -243,7 +243,7 @@ export function computeReturnRank(annualReturnPct?: number): RankResult {
   const sign = annualReturnPct >= 0 ? '+' : ''
 
   let message: string
-  if (percentile >= 80) message = `${sign}${annualReturnPct.toFixed(1)}% annual return — top ${topPct}% of investors, above the benchmark average.`
+  if (percentile >= 80) message = `${sign}${annualReturnPct.toFixed(1)}% annual return — top ${topPct}% of investors, above the benchmark median.`
   else if (percentile >= 50) message = `${sign}${annualReturnPct.toFixed(1)}% annual return — top ${topPct}% of investors, near the benchmark median.`
   else message = `${sign}${annualReturnPct.toFixed(1)}% annual return — top ${topPct}% of investors, below the benchmark median.`
 
