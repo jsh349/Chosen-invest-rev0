@@ -438,7 +438,7 @@ export default function RankPage() {
         {/* Context chip — sits below the full title+toggle row as a page-state
             indicator, so it contextualises the content below without competing
             with the page title or the mode toggle. */}
-        <span className="mt-2 inline-block rounded-full border border-surface-border bg-surface-muted px-2.5 py-0.5 text-[10px] font-medium text-gray-400">
+        <span className="mt-2 inline-block rounded-full border border-surface-border bg-surface-muted px-2.5 py-0.5 text-[10px] text-gray-500">
           {mode === 'individual' ? 'Individual' : 'Household'} · {(activeBenchmarkSource === 'default' || usingFallbackBenchmark) ? 'Built-in reference' : 'Curated data'}
         </span>
       </div>
@@ -968,7 +968,7 @@ export default function RankPage() {
       {/* Methodology note */}
       <div className="!mt-8 rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-1.5">
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">How this works</p>
-        <p className="text-xs text-gray-400 leading-relaxed">
+        <p className="text-xs text-gray-500 leading-relaxed">
           Rank estimates are based on local reference benchmark ranges, not real-time government or market data.
           {mode === 'individual'
             ? ' Results reflect your individual portfolio value and any profile inputs you have set (birth year, gender, estimated return).'
