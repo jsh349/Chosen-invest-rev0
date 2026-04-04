@@ -1016,7 +1016,7 @@ export default function RankPage() {
           </span>
           <span className="text-[10px] text-gray-600">
             <span className="text-gray-500">Status: </span>
-            {benchmarkHealth.status === 'healthy'  && 'Current'}
+            {benchmarkHealth.status === 'healthy'  && 'OK'}
             {benchmarkHealth.status === 'partial'  && <span className="text-amber-500/60">Partial — not all categories supported</span>}
             {benchmarkHealth.status === 'fallback' && <span className="text-amber-500/60">Using fallback</span>}
             {benchmarkHealth.status === 'invalid'  && <span className="text-amber-500/60">Not connected</span>}

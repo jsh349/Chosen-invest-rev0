@@ -91,7 +91,7 @@ export function getRankReviewSummary(
     return {
       topic: 'wealth', label: 'Wealth rank',
       status: 'ok',
-      note: 'At or above the benchmark median.',
+      note: 'Above the benchmark median.',
     }
   })()
 
@@ -116,7 +116,7 @@ export function getRankReviewSummary(
     return {
       topic: 'return', label: 'Return rank',
       status: 'ok',
-      note: 'At or above the benchmark median.',
+      note: 'Above the benchmark median.',
     }
   })()
 
