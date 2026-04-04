@@ -85,7 +85,7 @@ export function getRankReviewSummary(
         status: 'review',
         note: overallPct >= 40
           ? 'Just below the benchmark median.'
-          : 'Tracking below the benchmark midpoint.',
+          : 'Below the benchmark midpoint.',
       }
     }
     return {
@@ -110,7 +110,7 @@ export function getRankReviewSummary(
         status: 'review',
         note: returnPct >= 40
           ? 'Just below the benchmark median.'
-          : 'Tracking below the benchmark midpoint.',
+          : 'Below the benchmark midpoint.',
       }
     }
     return {
