@@ -64,12 +64,12 @@ describe('getRankNarrativeSummary — opening sentence', () => {
     expect(getRankNarrativeSummary([OVERALL(74)])).toMatch(/above the benchmark median/)
   })
 
-  it('uses "around the benchmark midpoint" for overall = 40', () => {
-    expect(getRankNarrativeSummary([OVERALL(40)])).toMatch(/around the benchmark midpoint/)
+  it('uses "just below the benchmark median" for overall = 40', () => {
+    expect(getRankNarrativeSummary([OVERALL(40)])).toMatch(/just below the benchmark median/)
   })
 
-  it('uses "around the benchmark midpoint" for overall = 49', () => {
-    expect(getRankNarrativeSummary([OVERALL(49)])).toMatch(/around the benchmark midpoint/)
+  it('uses "just below the benchmark median" for overall = 49', () => {
+    expect(getRankNarrativeSummary([OVERALL(49)])).toMatch(/just below the benchmark median/)
   })
 
   it('uses "below the benchmark midpoint" for overall = 39', () => {

@@ -85,11 +85,11 @@ describe('wealth item', () => {
     expect(wealth.note).toMatch(/below.*midpoint/i)
   })
 
-  it('overall 40–49 → wealth status is review with around-midpoint note', () => {
+  it('overall 40–49 → wealth status is review with just-below-median note', () => {
     const result = getRankReviewSummary([overall(45), ret(60)], fullProfile)!
     const wealth = result.find((i) => i.topic === 'wealth')!
     expect(wealth.status).toBe('review')
-    expect(wealth.note).toMatch(/around.*midpoint/i)
+    expect(wealth.note).toMatch(/just below.*median/i)
   })
 
   it('overall = 49 → wealth status is review', () => {
