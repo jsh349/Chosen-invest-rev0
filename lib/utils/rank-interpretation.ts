@@ -7,15 +7,14 @@
  *
  * @param percentile      The user's percentile score (0–100).
  * @param isLowConfidence Reserved for parity with other rank utilities that accept
- *   this flag. Interpretation wording is unchanged — "benchmark median" is used
- *   consistently regardless of source health. Confidence caveats are communicated
- *   by getRankConfidenceNote, not by altering the interpretation band label.
+ *   this flag. Interpretation wording is unchanged regardless of source health.
+ *   Confidence caveats are communicated by getRankConfidenceNote, not by altering
+ *   the interpretation band label.
  */
 export function getRankInterpretation(percentile: number, isLowConfidence = false): string {
-  const comparison = 'benchmark median'
-  if (percentile >= 75) return `Well above the ${comparison}.`
-  if (percentile >= 50) return `Above the ${comparison}.`
-  if (percentile >= 40) return `Just below the benchmark median.`
-  if (percentile >= 25) return `Below the benchmark midpoint.`
-  return `Well below the ${comparison}.`
+  if (percentile >= 75) return 'Well above the benchmark median.'
+  if (percentile >= 50) return 'Above the benchmark median.'
+  if (percentile >= 40) return 'Just below the benchmark median.'
+  if (percentile >= 25) return 'Below the benchmark midpoint.'
+  return 'Well below the benchmark median.'
 }
