@@ -982,6 +982,9 @@ export default function RankPage() {
               Sits above the individual detail chips so the overall state is readable first.
               Caution tokens (fallback, non-healthy readiness) are muted amber so they
               stand out on scan without making the internal view noisy. */}
+          {/* Compact status line: source · fallback flag · raw status (context, gray) · readiness meaning (amber when caution).
+              Raw status is intentionally uncolored — the readiness label is the alert signal;
+              the enum value is context that duplicates adjacent tokens if also amber. */}
           <span className="w-full text-[10px] text-gray-400">
             {activeBenchmarkSource}
             {' · '}
@@ -989,9 +992,7 @@ export default function RankPage() {
               {usingFallbackBenchmark ? 'fallback active' : 'no fallback'}
             </span>
             {' · '}
-            <span className={benchmarkHealth.status !== 'healthy' ? 'text-amber-500/60' : undefined}>
-              {benchmarkHealth.status}
-            </span>
+            {benchmarkHealth.status}
             {' · '}
             <span className={benchmarkHealth.status !== 'healthy' ? 'text-amber-500/60' : undefined}>
               {benchmarkHealth.status === 'healthy'  ? 'ready' :
