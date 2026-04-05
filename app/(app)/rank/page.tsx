@@ -94,7 +94,7 @@ function rankCompleteness(availableCount: number, total: number): { label: strin
  */
 function sourceNoteColor(note: { level: string } | null): string {
   if (!note) return 'text-gray-600'
-  return note.level === 'low' ? 'text-amber-500' : 'text-gray-500'
+  return note.level === 'low' ? 'text-amber-500/70' : 'text-gray-500'
 }
 
 

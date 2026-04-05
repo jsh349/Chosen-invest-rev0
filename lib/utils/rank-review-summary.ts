@@ -39,28 +39,28 @@ export function getRankReviewSummary(
       return {
         topic: 'profile', label: 'Profile',
         status: 'missing',
-        note: 'Birth year not set — age-based rank unavailable.',
+        note: 'Birth year needed for age-based comparison.',
       }
     }
     if (!profile.hasGender && !profile.hasReturn) {
       return {
         topic: 'profile', label: 'Profile',
         status: 'review',
-        note: 'Gender and return estimate not set.',
+        note: 'Gender and return estimate both needed.',
       }
     }
     if (!profile.hasGender) {
       return {
         topic: 'profile', label: 'Profile',
         status: 'review',
-        note: 'Gender not set — age-gender rank unavailable.',
+        note: 'Gender needed for age and gender comparison.',
       }
     }
     if (!profile.hasReturn) {
       return {
         topic: 'profile', label: 'Profile',
         status: 'review',
-        note: 'Return estimate not set — return rank unavailable.',
+        note: 'Return estimate needed for return rank.',
       }
     }
     return {
@@ -85,7 +85,9 @@ export function getRankReviewSummary(
         status: 'review',
         note: overallPct >= 40
           ? 'Just below the benchmark median.'
-          : 'Below the benchmark midpoint.',
+          : overallPct >= 25
+            ? 'Below the benchmark midpoint.'
+            : 'Well below the benchmark median.',
       }
     }
     return {
@@ -101,7 +103,7 @@ export function getRankReviewSummary(
       return {
         topic: 'return', label: 'Return rank',
         status: 'missing',
-        note: 'No return estimate — return rank unavailable.',
+        note: 'Return estimate needed for return rank.',
       }
     }
     if (returnPct < 50) {
@@ -110,7 +112,9 @@ export function getRankReviewSummary(
         status: 'review',
         note: returnPct >= 40
           ? 'Just below the benchmark median.'
-          : 'Below the benchmark midpoint.',
+          : returnPct >= 25
+            ? 'Below the benchmark midpoint.'
+            : 'Well below the benchmark median.',
       }
     }
     return {

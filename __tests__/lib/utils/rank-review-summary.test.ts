@@ -119,7 +119,7 @@ describe('return item', () => {
     const result = getRankReviewSummary([overall(60)], noReturn)!
     const retItem = result.find((i) => i.topic === 'return')!
     expect(retItem.status).toBe('missing')
-    expect(retItem.note).toMatch(/no return estimate/i)
+    expect(retItem.note).toMatch(/return estimate needed/i)
   })
 
   it('return < 40 → return status is review with below-midpoint note', () => {
