@@ -11,7 +11,7 @@ import { RANK_GAP_THRESHOLD } from '@/lib/utils/rank-insight'
  *   - Overall ≥ 75          → "well above the benchmark median"
  *   - Overall 50–74         → "above the benchmark median"
  *   - Overall 40–49         → "just below the benchmark median"
- *   - Overall 25–39         → "below the benchmark midpoint"
+ *   - Overall 25–39         → "below the benchmark median"
  *   - Overall < 25          → "well below the benchmark median"
  *
  * Tiers mirror getRankInterpretation so summary and detail surfaces use
@@ -53,7 +53,7 @@ export function getRankNarrativeSummary(ranks: RankResult[]): string {
   } else if (overallPct >= 40) {
     opening = 'Your overall assets rank just below the benchmark median.'
   } else if (overallPct >= 25) {
-    opening = 'Your overall assets rank below the benchmark midpoint.'
+    opening = 'Your overall assets rank below the benchmark median.'
   } else {
     opening = 'Your overall assets rank well below the benchmark median.'
   }

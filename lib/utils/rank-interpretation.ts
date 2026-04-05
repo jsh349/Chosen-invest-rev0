@@ -15,6 +15,6 @@ export function getRankInterpretation(percentile: number, isLowConfidence = fals
   if (percentile >= 75) return 'Well above the benchmark median.'
   if (percentile >= 50) return 'Above the benchmark median.'
   if (percentile >= 40) return 'Just below the benchmark median.'
-  if (percentile >= 25) return 'Below the benchmark midpoint.'
+  if (percentile >= 25) return 'Below the benchmark median.'
   return 'Well below the benchmark median.'
 }
