@@ -2,6 +2,7 @@ import {
   getRankReviewFingerprint,
   checkRankReviewDue,
   dismissRankReview,
+  markRankReviewSeen,
   RANK_REVIEW_COOLDOWN_MS,
   type RankReviewInputs,
 } from '@/lib/utils/rank-review'

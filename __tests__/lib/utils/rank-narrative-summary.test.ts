@@ -203,7 +203,7 @@ describe('getRankNarrativeSummary — specific missing input notes', () => {
     const text = getRankNarrativeSummary([
       OVERALL(70), RETURN(45), AGE(null, 'birth year'),
     ])
-    expect(text).toMatch(/return rank is notably lower/)
+    expect(text).toMatch(/return rank is weaker/)
     expect(text).not.toMatch(/birth year|profile inputs/)
   })
 })

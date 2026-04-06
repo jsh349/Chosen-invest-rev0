@@ -51,35 +51,47 @@ export function getRankNarrativeSummary(
   }
 
   // Opening sentence based on overall percentile.
-  // Wording anchors to getRankInterpretation tiers so summary and detail surfaces
-  // use recognisably related language for the same rank state.
+  // Normal mode uses "midpoint" for middle-distribution bands; low-confidence reverts to "median".
   let opening: string
   if (overallPct >= 75) {
     opening = isLowConfidence
       ? 'Your overall assets rank above the benchmark median.'
       : 'Your overall assets rank well above the benchmark median.'
   } else if (overallPct >= 50) {
-    opening = 'Your overall assets rank above the benchmark median.'
+    opening = isLowConfidence
+      ? 'Your overall assets rank above the benchmark median.'
+      : 'Your overall assets rank above the benchmark midpoint.'
   } else if (overallPct >= 40) {
     opening = 'Your overall assets rank just below the benchmark median.'
-  } else if (overallPct >= 25) {
-    opening = 'Your overall assets rank below the benchmark median.'
   } else {
+    // 25–39 and < 25 both use "midpoint" in normal mode; "median" in low confidence.
     opening = isLowConfidence
       ? 'Your overall assets rank below the benchmark median.'
-      : 'Your overall assets rank well below the benchmark median.'
+      : 'Your overall assets rank below the benchmark midpoint.'
   }
 
-  // Optional second sentence — return gap takes priority; profile note is fallback.
-  // Priority order: wealth > return gap → return > wealth gap → profile incomplete.
+  // Optional second sentence — first matching condition wins.
+  // Priority: gap detection > both-strong > specific missing > generic fallback.
+  const bothStrong = overallPct >= 75 && retPct !== null && retPct >= 75
+  const downGap    = retPct !== null && overallPct - retPct >= RANK_GAP_THRESHOLD
+  const upGap      = retPct !== null && retPct - overallPct >= RANK_GAP_THRESHOLD
+
   let second = ''
-  if (retPct !== null && overallPct - retPct >= RANK_GAP_THRESHOLD) {
-    second = ' Your return rank is weaker than your wealth rank.'
-  } else if (retPct !== null && retPct - overallPct >= RANK_GAP_THRESHOLD) {
+  if (downGap) {
+    second = bothStrong
+      ? ' Your return rank is notably lower than your wealth rank.'
+      : ' Your return rank is weaker than your wealth rank.'
+  } else if (upGap) {
     second = ' Your return rank is stronger than your wealth rank.'
+  } else if (bothStrong) {
+    second = ' Both wealth and return ranks compare favorably.'
+  } else if (missingReturn && !missingAge && !missingGender) {
+    second = ' Add a return estimate to complete your comparison.'
+  } else if (missingAge && !missingReturn) {
+    second = ' Add a birth year to complete your comparison.'
+  } else if (missingGender) {
+    second = ' Add your gender to complete your comparison.'
   } else if (profileIncomplete) {
-    // Aligns narrative with the profile-completion hint shown in the explanation block:
-    // both acknowledge that the current view is based on partial profile inputs.
     second = ' Some comparisons are unavailable based on current profile inputs.'
   }
 
