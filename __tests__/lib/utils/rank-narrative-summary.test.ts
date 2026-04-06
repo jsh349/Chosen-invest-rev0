@@ -82,6 +82,31 @@ describe('getRankNarrativeSummary — opening sentence', () => {
 })
 
 // ---------------------------------------------------------------------------
+// isLowConfidence — extreme bands are softened
+// ---------------------------------------------------------------------------
+
+describe('getRankNarrativeSummary — isLowConfidence', () => {
+  it('drops "well" from above at ≥ 75 in low-confidence mode', () => {
+    const text = getRankNarrativeSummary([OVERALL(80)], { isLowConfidence: true })
+    expect(text).toMatch(/rank above the benchmark median/)
+    expect(text).not.toMatch(/well above/)
+  })
+
+  it('drops "well" from below at < 25 in low-confidence mode', () => {
+    const text = getRankNarrativeSummary([OVERALL(10)], { isLowConfidence: true })
+    expect(text).toMatch(/rank below the benchmark median/)
+    expect(text).not.toMatch(/well below/)
+  })
+
+  it('middle bands are unchanged in low-confidence mode', () => {
+    const above = getRankNarrativeSummary([OVERALL(60)], { isLowConfidence: true })
+    expect(above).toMatch(/rank above the benchmark median/)
+    const justBelow = getRankNarrativeSummary([OVERALL(45)], { isLowConfidence: true })
+    expect(justBelow).toMatch(/just below the benchmark median/)
+  })
+})
+
+// ---------------------------------------------------------------------------
 // Second sentence — return gap
 // ---------------------------------------------------------------------------
 

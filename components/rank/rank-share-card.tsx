@@ -22,10 +22,11 @@ type Props = {
    */
   sourceNote?: string | null
   /**
-   * When true (fallback / invalid benchmark source), passes the flag through
-   * to getRankInterpretation for parity with other rank surfaces. Wording of
-   * the interpretation sentence is unchanged — confidence caveats are handled
-   * by getRankConfidenceNote / sourceNote, not by this flag directly.
+   * When true (fallback / invalid benchmark source), the two extreme
+   * interpretation bands are softened ("Likely above/below" instead of
+   * "Well above/below") — matching getRankInterpretation and
+   * getRankNarrativeSummary so all rank surfaces stay in sync.
+   * The primary confidence caveat is still communicated via sourceNote.
    */
   isLowConfidence?: boolean
 }

@@ -17,13 +17,20 @@ import { RANK_GAP_THRESHOLD } from '@/lib/utils/rank-insight'
  * Tiers mirror getRankInterpretation so summary and detail surfaces use
  * recognisably related language for the same rank state.
  *
+ * When isLowConfidence is true (fallback / invalid benchmark source), the two
+ * extreme bands drop "well" — matching the same restraint applied in
+ * getRankInterpretation so both surfaces stay in sync.
+ *
  * A second sentence is appended (at most one) when:
  *   - Return rank is ≥ 20 pts below overall  → note about return standing
  *   - Return rank is ≥ 20 pts above overall  → note about return strength
  *
  * Always returns a non-empty string.
  */
-export function getRankNarrativeSummary(ranks: RankResult[]): string {
+export function getRankNarrativeSummary(
+  ranks: RankResult[],
+  { isLowConfidence = false }: { isLowConfidence?: boolean } = {},
+): string {
   const { overall, ageBased, ageGender, ret } = indexRanks(ranks)
 
   const overallPct = overall?.percentile ?? null
@@ -47,7 +54,9 @@ export function getRankNarrativeSummary(ranks: RankResult[]): string {
   // use recognisably related language for the same rank state.
   let opening: string
   if (overallPct >= 75) {
-    opening = 'Your overall assets rank well above the benchmark median.'
+    opening = isLowConfidence
+      ? 'Your overall assets rank above the benchmark median.'
+      : 'Your overall assets rank well above the benchmark median.'
   } else if (overallPct >= 50) {
     opening = 'Your overall assets rank above the benchmark median.'
   } else if (overallPct >= 40) {
@@ -55,7 +64,9 @@ export function getRankNarrativeSummary(ranks: RankResult[]): string {
   } else if (overallPct >= 25) {
     opening = 'Your overall assets rank below the benchmark median.'
   } else {
-    opening = 'Your overall assets rank well below the benchmark median.'
+    opening = isLowConfidence
+      ? 'Your overall assets rank below the benchmark median.'
+      : 'Your overall assets rank well below the benchmark median.'
   }
 
   // Optional second sentence — return gap takes priority; profile note is fallback.

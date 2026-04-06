@@ -335,7 +335,7 @@ export default function RankPage() {
   const versionNote = snapshotsLoaded ? benchmarkVersionNote(snapshots) : null
 
   const narrativeSummary = isFullyLoaded && summary.assetCount > 0
-    ? getRankNarrativeSummary(ranks)
+    ? getRankNarrativeSummary(ranks, { isLowConfidence: benchmarkHealth.status !== 'healthy' })
     : null
 
   const rankReviewSummary = isFullyLoaded && summary.assetCount > 0
