@@ -25,5 +25,6 @@ export function getGoalStatus(currentAmount: number, targetAmount: number): Goal
  */
 export function goalProgressPct(goal: { currentAmount: number; targetAmount: number }): number {
   if (goal.targetAmount <= 0) return 0
-  return Math.min(100, (goal.currentAmount / goal.targetAmount) * 100)
+  if (!Number.isFinite(goal.currentAmount)) return 0
+  return Math.max(0, Math.min(100, (goal.currentAmount / goal.targetAmount) * 100))
 }

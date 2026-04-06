@@ -79,7 +79,7 @@ export const RankShareCard = forwardRef<HTMLDivElement, Props>(
                     </span>
                   </div>
                 ) : (
-                  <span className="text-sm text-gray-600">—</span>
+                  <span className="text-xs text-gray-600">—</span>
                 )}
               </div>
             )}
@@ -91,7 +91,7 @@ export const RankShareCard = forwardRef<HTMLDivElement, Props>(
                   <div key={r.type} className="flex items-center justify-between py-2">
                     <span className="text-xs text-gray-500">{r.label}</span>
                     {r.percentile != null ? (
-                      <span className={cn('text-sm font-semibold tabular-nums', percentileColor(r.percentile))}>
+                      <span className={cn('text-xs font-semibold tabular-nums', percentileColor(r.percentile))}>
                         Top {topPctLabel(r.percentile)}
                       </span>
                     ) : (
