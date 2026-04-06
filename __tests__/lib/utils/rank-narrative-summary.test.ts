@@ -56,28 +56,28 @@ describe('getRankNarrativeSummary — opening sentence', () => {
     expect(getRankNarrativeSummary([OVERALL(90)])).toMatch(/compares favorably/)
   })
 
-  it('uses "above the benchmark median" for overall = 50', () => {
-    expect(getRankNarrativeSummary([OVERALL(50)])).toMatch(/above the benchmark median/)
+  it('uses "above the benchmark midpoint" for overall = 50', () => {
+    expect(getRankNarrativeSummary([OVERALL(50)])).toMatch(/above the benchmark midpoint/)
   })
 
-  it('uses "above the benchmark median" for overall = 74', () => {
-    expect(getRankNarrativeSummary([OVERALL(74)])).toMatch(/above the benchmark median/)
+  it('uses "above the benchmark midpoint" for overall = 74', () => {
+    expect(getRankNarrativeSummary([OVERALL(74)])).toMatch(/above the benchmark midpoint/)
   })
 
-  it('uses "near the benchmark median" for overall = 40', () => {
-    expect(getRankNarrativeSummary([OVERALL(40)])).toMatch(/near the benchmark median/)
+  it('uses "near the benchmark midpoint" for overall = 40', () => {
+    expect(getRankNarrativeSummary([OVERALL(40)])).toMatch(/near the benchmark midpoint/)
   })
 
-  it('uses "near the benchmark median" for overall = 49', () => {
-    expect(getRankNarrativeSummary([OVERALL(49)])).toMatch(/near the benchmark median/)
+  it('uses "near the benchmark midpoint" for overall = 49', () => {
+    expect(getRankNarrativeSummary([OVERALL(49)])).toMatch(/near the benchmark midpoint/)
   })
 
-  it('uses "below the benchmark median" for overall = 39', () => {
-    expect(getRankNarrativeSummary([OVERALL(39)])).toMatch(/below the benchmark median/)
+  it('uses "below the benchmark midpoint" for overall = 39', () => {
+    expect(getRankNarrativeSummary([OVERALL(39)])).toMatch(/below the benchmark midpoint/)
   })
 
-  it('uses "below the benchmark median" for overall = 0', () => {
-    expect(getRankNarrativeSummary([OVERALL(0)])).toMatch(/below the benchmark median/)
+  it('uses "below the benchmark midpoint" for overall = 0', () => {
+    expect(getRankNarrativeSummary([OVERALL(0)])).toMatch(/below the benchmark midpoint/)
   })
 })
 

@@ -40,7 +40,7 @@ export function getRankNarrativeSummary(ranks: RankResult[]): string {
   // No overall data — nothing meaningful to say yet
   if (overallPct === null) {
     return profileIncomplete
-      ? 'Benchmark comparisons are not yet available. Add profile details to unlock rank comparisons.'
+      ? 'Benchmark comparisons are not yet available — complete your profile to unlock them.'
       : 'Overall wealth rank is unavailable with current portfolio data.'
   }
 
@@ -49,11 +49,11 @@ export function getRankNarrativeSummary(ranks: RankResult[]): string {
   if (overallPct >= 75) {
     opening = 'Your overall asset position compares favorably against the reference group.'
   } else if (overallPct >= 50) {
-    opening = 'Your overall asset position is above the benchmark median.'
+    opening = 'Your overall asset position is above the benchmark midpoint.'
   } else if (overallPct >= 40) {
-    opening = 'Your overall asset position is near the benchmark median.'
+    opening = 'Your overall asset position is near the benchmark midpoint.'
   } else {
-    opening = 'Your overall asset position is below the benchmark median.'
+    opening = 'Your overall asset position is below the benchmark midpoint.'
   }
 
   // Optional second sentence — evaluated in priority order, first match wins.

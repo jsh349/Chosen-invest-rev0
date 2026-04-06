@@ -83,13 +83,13 @@ export function getRankReviewSummary(
       return {
         topic: 'wealth', label: 'Wealth rank',
         status: 'review',
-        note: 'Below the benchmark median — consider reviewing your portfolio allocation.',
+        note: 'Below the benchmark midpoint.',
       }
     }
     return {
       topic: 'wealth', label: 'Wealth rank',
       status: 'ok',
-      note: 'At or above the benchmark median.',
+      note: 'At or above the benchmark midpoint.',
     }
   })()
 
@@ -106,13 +106,13 @@ export function getRankReviewSummary(
       return {
         topic: 'return', label: 'Return rank',
         status: 'review',
-        note: 'Estimated return is below the median investor benchmark.',
+        note: 'Below the benchmark midpoint.',
       }
     }
     return {
       topic: 'return', label: 'Return rank',
       status: 'ok',
-      note: 'Estimated return is at or above the median investor benchmark.',
+      note: 'At or above the benchmark midpoint.',
     }
   })()
 

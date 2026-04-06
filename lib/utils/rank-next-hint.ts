@@ -20,19 +20,19 @@ export function getNextRankHint(profile: {
 }): RankHint | null {
   if (!profile.hasAge) {
     return {
-      text: 'Add your birth year in Settings to unlock age-based rank comparison.',
+      text: 'Add birth year to enable age-based rank comparison.',
       href: ROUTES.settings,
     }
   }
   if (!profile.hasGender) {
     return {
-      text: 'Add your gender in Settings for a more detailed age and gender comparison.',
+      text: 'Add gender for a more specific peer group comparison.',
       href: ROUTES.settings,
     }
   }
   if (!profile.hasReturn) {
     return {
-      text: 'Add an estimated annual return in Settings to unlock investment rank.',
+      text: 'Add a return estimate to enable investment rank comparison.',
       href: ROUTES.settings,
     }
   }

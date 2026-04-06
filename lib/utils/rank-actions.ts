@@ -48,7 +48,7 @@ export function getRankActions(
     returnMissing &&
     !actions.some((a) => a.href === ROUTES.settings)
   ) {
-    actions.push({ label: 'Add return estimate for full ranking', href: ROUTES.settings })
+    actions.push({ label: 'Add return estimate for investment rank', href: ROUTES.settings })
   }
 
   return actions.slice(0, 2)

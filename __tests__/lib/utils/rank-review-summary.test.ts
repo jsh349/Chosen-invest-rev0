@@ -82,7 +82,7 @@ describe('wealth item', () => {
     const result = getRankReviewSummary([overall(40), ret(60)], fullProfile)!
     const wealth = result.find((i) => i.topic === 'wealth')!
     expect(wealth.status).toBe('review')
-    expect(wealth.note).toMatch(/below.*median/i)
+    expect(wealth.note).toMatch(/below.*midpoint/i)
   })
 
   it('overall = 49 → wealth status is review', () => {
@@ -119,7 +119,7 @@ describe('return item', () => {
     const result = getRankReviewSummary([overall(60), ret(30)], fullProfile)!
     const retItem = result.find((i) => i.topic === 'return')!
     expect(retItem.status).toBe('review')
-    expect(retItem.note).toMatch(/below.*median/i)
+    expect(retItem.note).toMatch(/below.*midpoint/i)
   })
 
   it('return = 50 → return status is ok', () => {
