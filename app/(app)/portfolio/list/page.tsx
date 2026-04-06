@@ -21,6 +21,7 @@ export default function PortfolioListPage() {
   const { fmt } = useFormatCurrency()
   const [editingId, setEditingId] = useState<string | null>(null)
   const [draft, setDraft] = useState<Draft | null>(null)
+  const [editError, setEditError] = useState('')
 
   if (!isLoaded) {
     return (
@@ -48,20 +49,24 @@ export default function PortfolioListPage() {
     if (!asset) return
     setEditingId(id)
     setDraft({ name: asset.name, category: asset.category, value: asset.value.toString() })
+    setEditError('')
   }
 
   function cancelEdit() {
     setEditingId(null)
     setDraft(null)
+    setEditError('')
   }
 
   function saveEdit(id: string) {
     if (!draft) return
     const value = parseFloat(draft.value)
-    if (!draft.name.trim() || isNaN(value) || value <= 0) return
+    if (!draft.name.trim()) { setEditError('Name cannot be empty.'); return }
+    if (isNaN(value) || value <= 0) { setEditError('Value must be a positive number.'); return }
     updateAsset(id, { name: draft.name.trim(), category: draft.category, value })
     setEditingId(null)
     setDraft(null)
+    setEditError('')
   }
 
   return (
@@ -115,6 +120,7 @@ export default function PortfolioListPage() {
                     placeholder="0"
                   />
                 </div>
+                {editError && <p className="text-xs text-red-400">{editError}</p>}
                 <div className="flex justify-end gap-2">
                   <Button size="sm" variant="ghost" onClick={cancelEdit}>
                     <X className="h-3.5 w-3.5" />

@@ -21,8 +21,8 @@ export function AISummaryCard({ analysis }: AISummaryCardProps) {
 
         {analysis.keyPoints.length > 0 && (
           <ul className="space-y-1.5">
-            {analysis.keyPoints.map((point, i) => (
-              <li key={i} className="flex items-start gap-2 text-xs text-gray-400">
+            {analysis.keyPoints.map((point) => (
+              <li key={point} className="flex items-start gap-2 text-xs text-gray-400">
                 <span className="mt-0.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-brand-500" />
                 {point}
               </li>

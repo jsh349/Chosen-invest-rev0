@@ -19,7 +19,7 @@ function nearestGoal(goals: Goal[]): Goal {
     const bestPct = best.targetAmount > 0 ? best.currentAmount / best.targetAmount : 0
     const gPct    = g.targetAmount    > 0 ? g.currentAmount    / g.targetAmount    : 0
     return gPct > bestPct ? g : best
-  })
+  }, goals[0])
 }
 
 export function GoalsSummaryCard() {

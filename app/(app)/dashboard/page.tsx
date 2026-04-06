@@ -173,7 +173,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <NetWorthTrendCard data={trendData} isMock />
+      {show('netWorthTrend') && <NetWorthTrendCard data={trendData} isMock />}
 
       <div>
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">

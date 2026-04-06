@@ -82,6 +82,7 @@ export default function HouseholdPage() {
       createdAt: new Date().toISOString(),
     })
     setForm(EMPTY_FORM)
+    setError('')
   }
 
   return (

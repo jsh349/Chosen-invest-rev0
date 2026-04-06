@@ -49,14 +49,17 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const setAssets = useCallback((newAssets: Asset[]) => {
-    void assetsAdapter.saveAll(newAssets).catch(console.error)
-    setAssetsState(newAssets)
+    assetsAdapter.saveAll(newAssets)
+      .then(() => setAssetsState(newAssets))
+      .catch(console.error)
   }, [])
 
   const addAsset = useCallback((asset: Asset) => {
     setAssetsState((prev) => {
       const updated = [...prev, asset]
-      void assetsAdapter.saveAll(updated).catch(console.error)
+      assetsAdapter.saveAll(updated)
+        .then(() => { /* state already set */ })
+        .catch((err) => { console.error(err); setAssetsState(prev) })
       return updated
     })
     recordAudit('Asset added', asset.name)
@@ -69,7 +72,9 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
         const updated = prev.map((a) =>
           a.id === id ? { ...a, ...patch, updatedAt: new Date().toISOString() } : a
         )
-        void assetsAdapter.saveAll(updated).catch(console.error)
+        assetsAdapter.saveAll(updated)
+          .then(() => { /* state already set */ })
+          .catch((err) => { console.error(err); setAssetsState(prev) })
         if (target) recordAudit('Asset edited', patch.name ?? target.name)
         return updated
       })
@@ -82,7 +87,9 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
       const target = prev.find((a) => a.id === id)
       if (target) recordAudit('Asset deleted', target.name)
       const updated = prev.filter((a) => a.id !== id)
-      void assetsAdapter.saveAll(updated).catch(console.error)
+      assetsAdapter.saveAll(updated)
+        .then(() => { /* state already set */ })
+        .catch((err) => { console.error(err); setAssetsState(prev) })
       return updated
     })
   }, [])

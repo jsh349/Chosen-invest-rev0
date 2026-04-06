@@ -50,19 +50,25 @@ export function HouseholdNotesProvider({ children }: { children: ReactNode }) {
 
   const addNote = useCallback((note: HouseholdNote) => {
     const noteWithUser: HouseholdNote = { ...note, userId: note.userId ?? LOCAL_USER_ID }
-    const updated = [noteWithUser, ...notesRef.current]
+    const prev = notesRef.current
+    const updated = [noteWithUser, ...prev]
     notesRef.current = updated
     setNotes(updated)
-    void householdNotesAdapter.saveAll(updated).catch(console.error)
+    householdNotesAdapter.saveAll(updated)
+      .then(() => { /* state already set */ })
+      .catch((err) => { console.error(err); notesRef.current = prev; setNotes(prev) })
     recordAudit('Note added', noteWithUser.title)
   }, [])
 
   const removeNote = useCallback((id: string) => {
     const target = notesRef.current.find((n) => n.id === id)
-    const updated = notesRef.current.filter((n) => n.id !== id)
+    const prev = notesRef.current
+    const updated = prev.filter((n) => n.id !== id)
     notesRef.current = updated
     setNotes(updated)
-    void householdNotesAdapter.saveAll(updated).catch(console.error)
+    householdNotesAdapter.saveAll(updated)
+      .then(() => { /* state already set */ })
+      .catch((err) => { console.error(err); notesRef.current = prev; setNotes(prev) })
     if (target) recordAudit('Note deleted', target.title)
   }, [])
 

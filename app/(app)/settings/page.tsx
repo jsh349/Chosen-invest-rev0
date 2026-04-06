@@ -19,6 +19,8 @@ import { getBenchmarkHealthStatus } from '@/lib/utils/benchmark-health'
 import { BENCHMARK_META } from '@/lib/mock/rank-benchmarks'
 import { readBenchmarkRefreshState } from '@/lib/utils/benchmark-refresh'
 import { getBenchmarkSourceHistory } from '@/lib/utils/benchmark-source-history'
+import { readJSON } from '@/lib/utils/local-storage'
+import { normalizeAssetCategory } from '@/lib/utils/normalize-category'
 
 /** Keys whose stored value must be an array. Non-array values are skipped on import. */
 const ARRAY_KEYS: ReadonlySet<string> = new Set([
@@ -29,6 +31,7 @@ const ARRAY_KEYS: ReadonlySet<string> = new Set([
   STORAGE_KEYS.householdNotes,
   STORAGE_KEYS.audit,
   STORAGE_KEYS.rankSnapshots,
+  STORAGE_KEYS.benchmarkSourceHistory,
 ])
 
 /** Keys whose stored value must be a plain string. */
@@ -51,6 +54,39 @@ function isSafeToRestore(key: string, value: unknown): boolean {
   if (OBJECT_KEYS.has(key) && (typeof value !== 'object' || value === null || Array.isArray(value))) return false
   if (STRING_KEYS.has(key) && typeof value !== 'string') return false
   return true
+}
+
+function sanitizeImportedArray(key: string, items: unknown[]): unknown[] {
+  if (key === STORAGE_KEYS.assets) {
+    return items.filter((item) => {
+      if (typeof item !== 'object' || item === null) return false
+      const o = item as Record<string, unknown>
+      return typeof o.id === 'string' && typeof o.name === 'string' &&
+        typeof o.value === 'number' && Number.isFinite(o.value)
+    }).map((item) => {
+      const o = item as Record<string, unknown>
+      return { ...o, category: normalizeAssetCategory(String(o.category ?? 'other')) }
+    })
+  }
+  if (key === STORAGE_KEYS.goals) {
+    return items.filter((item) => {
+      if (typeof item !== 'object' || item === null) return false
+      const o = item as Record<string, unknown>
+      if (typeof o.id !== 'string' || typeof o.name !== 'string') return false
+      if (o.targetAmount !== undefined && (typeof o.targetAmount !== 'number' || !Number.isFinite(o.targetAmount))) return false
+      return true
+    })
+  }
+  if (key === STORAGE_KEYS.transactions) {
+    return items.filter((item) => {
+      if (typeof item !== 'object' || item === null) return false
+      const o = item as Record<string, unknown>
+      if (typeof o.id !== 'string' || typeof o.description !== 'string') return false
+      if (o.amount !== undefined && (typeof o.amount !== 'number' || !Number.isFinite(o.amount))) return false
+      return true
+    })
+  }
+  return items
 }
 
 const SELECT_CLASS = 'w-full rounded-lg border border-surface-border bg-surface-muted px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none'
@@ -167,6 +203,8 @@ export default function SettingsPage() {
   useEffect(() => { setBirthYearRaw(settings.birthYear?.toString() ?? ''); setBirthYearError('') }, [settings.birthYear])
   useEffect(() => { setReturnRaw(settings.annualReturnPct?.toString() ?? ''); setReturnError('') }, [settings.annualReturnPct])
 
+  const currentYear = new Date().getFullYear()
+
   if (!isLoaded) {
     return (
       <LoadingSpinner />
@@ -194,9 +232,13 @@ export default function SettingsPage() {
             // FileReader.onload only runs in the browser, so no SSR guard needed.
             // Settings fields are validated individually to prevent type-mismatched
             // values from silently degrading rank calculations or display.
-            const toWrite = key === STORAGE_KEYS.settings
-              ? sanitizeSettingsForRestore(value)
-              : value
+            let toWrite: unknown = value
+            if (key === STORAGE_KEYS.settings) {
+              const existing = readJSON<Record<string, unknown>>(STORAGE_KEYS.settings, {})
+              toWrite = { ...existing, ...sanitizeSettingsForRestore(value as Record<string, unknown>) }
+            } else if (ARRAY_KEYS.has(key) && Array.isArray(value)) {
+              toWrite = sanitizeImportedArray(key, value)
+            }
             window.localStorage.setItem(key, STRING_KEYS.has(key) ? (toWrite as string) : JSON.stringify(toWrite))
             restored++
           }
@@ -262,7 +304,7 @@ export default function SettingsPage() {
           <input
             type="number"
             min={1920}
-            max={new Date().getFullYear() - 10}
+            max={currentYear - 10}
             placeholder="e.g. 1990"
             value={birthYearRaw}
             onChange={(e) => {
@@ -270,11 +312,11 @@ export default function SettingsPage() {
               setBirthYearRaw(raw)
               if (raw === '') { update({ birthYear: undefined }); setBirthYearError(''); return }
               const yr = parseInt(raw, 10)
-              if (yr >= 1920 && yr <= new Date().getFullYear() - 10) {
+              if (yr >= 1920 && yr <= currentYear - 10) {
                 update({ birthYear: yr })
                 setBirthYearError('')
               } else {
-                setBirthYearError(`Enter a year between 1920 and ${new Date().getFullYear() - 10}.`)
+                setBirthYearError(`Enter a year between 1920 and ${currentYear - 10}.`)
               }
             }}
             className={SELECT_CLASS}

@@ -43,7 +43,9 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
   const addTransaction = useCallback((t: Transaction) => {
     setTransactions((prev) => {
       const updated = [t, ...prev]
-      void transactionsAdapter.saveAll(updated).catch(console.error)
+      transactionsAdapter.saveAll(updated)
+        .then(() => { /* state already set */ })
+        .catch((err) => { console.error(err); setTransactions(prev) })
       return updated
     })
     recordAudit('Transaction added', t.description)
@@ -54,7 +56,9 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
       const target = prev.find((t) => t.id === id)
       if (target) recordAudit('Transaction deleted', target.description)
       const updated = prev.filter((t) => t.id !== id)
-      void transactionsAdapter.saveAll(updated).catch(console.error)
+      transactionsAdapter.saveAll(updated)
+        .then(() => { /* state already set */ })
+        .catch((err) => { console.error(err); setTransactions(prev) })
       return updated
     })
   }, [])

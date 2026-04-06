@@ -86,8 +86,8 @@ export function PortfolioStatusCard({ summary }: PortfolioStatusCardProps) {
         </div>
 
         <ul className="space-y-1">
-          {status.notes.map((note, i) => (
-            <li key={i} className="text-sm text-gray-400">
+          {status.notes.map((note) => (
+            <li key={note} className="text-sm text-gray-400">
               {note}
             </li>
           ))}

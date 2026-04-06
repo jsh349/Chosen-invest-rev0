@@ -56,7 +56,7 @@ export function AssetRow({ index, entry, onChange, onRemove, showRemove }: Asset
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor={`value-${index}`}>Value (USD)</Label>
+          <Label htmlFor={`value-${index}`}>Value</Label>
           <Input
             id={`value-${index}`}
             type="number"

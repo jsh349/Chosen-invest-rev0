@@ -51,19 +51,25 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
 
   const addMember = useCallback((member: HouseholdMember) => {
     const memberWithUser: HouseholdMember = { ...member, userId: member.userId ?? LOCAL_USER_ID }
-    const updated = [...membersRef.current, memberWithUser]
+    const prev = membersRef.current
+    const updated = [...prev, memberWithUser]
     membersRef.current = updated
     setMembers(updated)
-    void householdAdapter.saveAll(updated).catch(console.error)
+    householdAdapter.saveAll(updated)
+      .then(() => { /* state already set */ })
+      .catch((err) => { console.error(err); membersRef.current = prev; setMembers(prev) })
     recordAudit('Household member added', memberWithUser.name)
   }, [])
 
   const removeMember = useCallback((id: string) => {
     const target = membersRef.current.find((m) => m.id === id)
-    const updated = membersRef.current.filter((m) => m.id !== id)
+    const prev = membersRef.current
+    const updated = prev.filter((m) => m.id !== id)
     membersRef.current = updated
     setMembers(updated)
-    void householdAdapter.saveAll(updated).catch(console.error)
+    householdAdapter.saveAll(updated)
+      .then(() => { /* state already set */ })
+      .catch((err) => { console.error(err); membersRef.current = prev; setMembers(prev) })
     if (target) recordAudit('Household member removed', target.name)
   }, [])
 
