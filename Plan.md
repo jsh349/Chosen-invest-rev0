@@ -35,8 +35,31 @@ All other audit items were verified as false positives (code already handles the
 - **Problem:** Identical formatting logic in two components. Divergence risk when edge cases (zero amounts) need handling.
 - **Fix:** Extract to `lib/utils/format-amount.ts`. Update both call sites.
 
-## Affected Files
-- `lib/utils/goal-status.ts`
+## P411 — getRankInterpretation compact-fit pass
+
+### Problem
+Three interpretation tiers echo their headline band label in different words:
+- "Above median" + "Above the benchmark midpoint." — same meaning
+- "Around median" + "Near the benchmark midpoint." — same meaning
+- "Below median" + "Below the benchmark midpoint." — same meaning
+
+### Fix
+Replace the three echo lines with population-framing alternatives that add a
+different angle (relative standing) rather than restating the percentile threshold.
+
+| Tier | Before | After |
+|------|--------|-------|
+| ≥50 | "Above the benchmark midpoint." | "Ahead of the majority in the reference group." |
+| ≥40 | "Near the benchmark midpoint." | "Comparable to the center of the reference range." |
+| ≥25 | "Below the benchmark midpoint." | "Behind the majority in the reference group." |
+
+≥75 ("Compares favorably…") and <25 ("In the lower range…") are kept — they
+already add a different angle than their headlines.
+
+### Affected Files
+- `lib/utils/rank-interpretation.ts`
+- `__tests__/lib/utils/rank-interpretation.test.ts`
+
 - `lib/utils/normalize-category.ts` (new)
 - `features/dashboard/helpers.ts`
 - `lib/utils/format-amount.ts` (new)

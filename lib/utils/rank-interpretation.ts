@@ -9,8 +9,8 @@
  */
 export function getRankInterpretation(percentile: number): string {
   if (percentile >= 75) return 'Compares favorably against the reference group.'
-  if (percentile >= 50) return 'Above the benchmark midpoint.'
-  if (percentile >= 40) return 'Near the benchmark midpoint.'
-  if (percentile >= 25) return 'Below the benchmark midpoint.'
+  if (percentile >= 50) return 'Ahead of the majority in the reference group.'
+  if (percentile >= 40) return 'Comparable to the center of the reference range.'
+  if (percentile >= 25) return 'Behind the majority in the reference group.'
   return 'In the lower range of the reference group.'
 }

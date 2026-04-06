@@ -9,28 +9,28 @@ describe('getRankInterpretation', () => {
     expect(getRankInterpretation(90)).toContain('favorably')
   })
 
-  it('returns above-midpoint copy at 50th percentile', () => {
-    expect(getRankInterpretation(50)).toContain('Above')
+  it('returns majority-ahead copy at 50th percentile', () => {
+    expect(getRankInterpretation(50)).toContain('Ahead')
   })
 
-  it('returns above-midpoint copy at 74th percentile', () => {
-    expect(getRankInterpretation(74)).toContain('Above')
+  it('returns majority-ahead copy at 74th percentile', () => {
+    expect(getRankInterpretation(74)).toContain('Ahead')
   })
 
-  it('returns near-midpoint copy at 40th percentile', () => {
-    expect(getRankInterpretation(40)).toContain('Near')
+  it('returns center-range copy at 40th percentile', () => {
+    expect(getRankInterpretation(40)).toContain('center')
   })
 
-  it('returns near-midpoint copy at 49th percentile', () => {
-    expect(getRankInterpretation(49)).toContain('Near')
+  it('returns center-range copy at 49th percentile', () => {
+    expect(getRankInterpretation(49)).toContain('center')
   })
 
-  it('returns below-midpoint copy at 25th percentile', () => {
-    expect(getRankInterpretation(25)).toContain('Below')
+  it('returns majority-behind copy at 25th percentile', () => {
+    expect(getRankInterpretation(25)).toContain('Behind')
   })
 
-  it('returns below-midpoint copy at 39th percentile', () => {
-    expect(getRankInterpretation(39)).toContain('Below')
+  it('returns majority-behind copy at 39th percentile', () => {
+    expect(getRankInterpretation(39)).toContain('Behind')
   })
 
   it('returns lower-range copy at 24th percentile', () => {
