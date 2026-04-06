@@ -6,8 +6,6 @@ import type { RankResult } from '@/lib/types/rank'
 import { buildPortfolioSummary } from '@/features/dashboard/helpers'
 import { computeCashFlow, type CashFlowSummary } from '@/lib/utils/transaction-summary'
 import { currentYearMonth } from '@/lib/utils/current-month'
-import { LOCAL_USER_ID } from '@/lib/constants/auth'
-
 export type RankSummary = {
   overallPercentile: number | null
   agePercentile: number | null
@@ -29,11 +27,12 @@ export function buildAdvisorContext(
   assets: Asset[],
   goals: Goal[],
   transactions: Transaction[],
+  userId: string,
 ): AdvisorContext {
   const ym = currentYearMonth() // "YYYY-MM" in local time
   const monthlyTx = transactions.filter((t) => t.date.startsWith(ym))
   return {
-    portfolio: buildPortfolioSummary(LOCAL_USER_ID, assets),
+    portfolio: buildPortfolioSummary(userId, assets),
     hasGoals: goals.length > 0,
     goalCount: goals.length,
     cashFlow: monthlyTx.length > 0 ? computeCashFlow(monthlyTx) : null,

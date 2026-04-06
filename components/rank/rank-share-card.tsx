@@ -1,28 +1,36 @@
 'use client'
 
-import { forwardRef } from 'react'
+import { forwardRef, useMemo } from 'react'
+import Link from 'next/link'
 import type { RankResult } from '@/lib/types/rank'
+import { topPctLabel, percentileColor } from '@/lib/utils/rank-format'
+import { getRankInterpretation } from '@/lib/utils/rank-interpretation'
 import { cn } from '@/lib/utils/cn'
+import { getPrimaryRank } from '@/lib/utils/rank-priority'
+import { ROUTES } from '@/lib/constants/routes'
 
-// Overall shown as hero; age + return shown as secondary rows
-const HERO_TYPE      = 'overall_wealth'
-const SECONDARY_TYPES = ['age_based', 'investment_return'] as const
+// All four types are candidates for secondary; the primary is excluded at runtime.
+const SECONDARY_TYPES = ['overall_wealth', 'age_based', 'age_gender', 'investment_return'] as const
 
 type Props = {
   ranks: RankResult[]
+  mode?: 'individual' | 'household'
+  /**
+   * Optional compact source/fallback note shown in the card footer.
+   * Pass the text from getRankConfidenceNote() when the benchmark source
+   * is degraded (fallback, partial, or invalid). Null → footer is clean.
+   */
+  sourceNote?: string | null
+  /**
+   * When true (fallback / invalid benchmark source), the two extreme
+   * interpretation bands are softened ("Likely above/below" instead of
+   * "Well above/below") — matching getRankInterpretation and
+   * getRankNarrativeSummary so all rank surfaces stay in sync.
+   * The primary confidence caveat is still communicated via sourceNote.
+   */
+  isLowConfidence?: boolean
 }
 
-function topPctLabel(percentile: number): string {
-  const top = 100 - percentile
-  return top === 0 ? '<1%' : `${top}%`
-}
-
-function percentileColor(percentile: number): string {
-  if (percentile >= 75) return 'text-emerald-400'
-  if (percentile >= 50) return 'text-brand-400'
-  if (percentile >= 30) return 'text-amber-400'
-  return 'text-gray-400'
-}
 
 /**
  * Self-contained rank summary card.
@@ -30,9 +38,10 @@ function percentileColor(percentile: number): string {
  * image capture without importing an export library here.
  */
 export const RankShareCard = forwardRef<HTMLDivElement, Props>(
-  function RankShareCard({ ranks }, ref) {
-    const hero      = ranks.find((r) => r.type === HERO_TYPE) ?? null
+  function RankShareCard({ ranks, mode = 'individual', sourceNote = null, isLowConfidence = false }, ref) {
+    const hero      = getPrimaryRank(ranks)
     const secondary = SECONDARY_TYPES
+      .filter((type) => type !== hero?.type)
       .map((type) => ranks.find((r) => r.type === type))
       .filter((r): r is RankResult => r != null)
 
@@ -42,9 +51,10 @@ export const RankShareCard = forwardRef<HTMLDivElement, Props>(
     const totalCount = 1 + secondary.length
     const isPartial  = availableCount > 0 && availableCount < totalCount
 
-    const dateStr = new Date().toLocaleDateString('en-US', {
+    // Memoized so the date doesn't change on re-renders (e.g. around midnight).
+    const dateStr = useMemo(() => new Date().toLocaleDateString('en-US', {
       month: 'short', day: 'numeric', year: 'numeric',
-    })
+    }), [])
 
     const hasAnyData = hero != null || secondary.length > 0
 
@@ -57,7 +67,12 @@ export const RankShareCard = forwardRef<HTMLDivElement, Props>(
       >
         {/* Header */}
         <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Rank Summary</p>
+          {/* Title and mode on one baseline row — mode qualifies the title rather
+              than claiming a standalone line between the section label and the data. */}
+          <div className="flex items-baseline gap-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Rank Summary</p>
+            <span className="text-[10px] capitalize text-gray-600">{mode}</span>
+          </div>
           <span className="text-[10px] text-gray-600">{dateStr}</span>
         </div>
 
@@ -70,14 +85,16 @@ export const RankShareCard = forwardRef<HTMLDivElement, Props>(
               <div className="rounded-lg bg-surface-muted/50 px-4 py-3">
                 <p className="text-[10px] text-gray-600 uppercase tracking-wide mb-1">{hero.label}</p>
                 {hero.percentile != null ? (
-                  <div className="flex items-baseline gap-2">
-                    <span className={cn('text-2xl font-bold tabular-nums leading-none', percentileColor(hero.percentile))}>
-                      Top {topPctLabel(hero.percentile)}
-                    </span>
-                    <span className="text-xs text-gray-600 tabular-nums">
-                      {hero.percentile}th pct.
-                    </span>
-                  </div>
+                  <>
+                    <div className="flex items-baseline gap-2">
+                      <span className={cn('text-2xl font-bold tabular-nums leading-none', percentileColor(hero.percentile))}>
+                        Top {topPctLabel(hero.percentile)}
+                      </span>
+                    </div>
+                    <p className="mt-1.5 text-[11px] text-gray-400 leading-relaxed">
+                      {getRankInterpretation(hero.percentile!, isLowConfidence)}
+                    </p>
+                  </>
                 ) : (
                   <span className="text-xs text-gray-600">—</span>
                 )}
@@ -88,33 +105,56 @@ export const RankShareCard = forwardRef<HTMLDivElement, Props>(
             {secondary.length > 0 && (
               <div className="divide-y divide-surface-border border-t border-surface-border">
                 {secondary.map((r) => (
-                  <div key={r.type} className="flex items-center justify-between py-2">
-                    <span className="text-xs text-gray-500">{r.label}</span>
+                  <div key={r.type} className="flex items-start justify-between gap-3 py-2">
+                    <span className="text-xs text-gray-600">{r.label}</span>
                     {r.percentile != null ? (
-                      <span className={cn('text-xs font-semibold tabular-nums', percentileColor(r.percentile))}>
+                      <span className={cn('shrink-0 text-xs font-semibold tabular-nums', percentileColor(r.percentile))}>
                         Top {topPctLabel(r.percentile)}
                       </span>
                     ) : (
-                      <span className="text-xs text-gray-600">—</span>
+                      <span className="shrink-0 text-xs text-gray-600">—</span>
                     )}
                   </div>
                 ))}
               </div>
             )}
 
-            {/* Partial data note */}
-            {isPartial && (
-              <p className="text-[10px] text-gray-600">
-                {availableCount} of {totalCount} ranks available — complete your profile for full results.
+            {/* Combined source + coverage note — merged into one compact line when
+                both are present to avoid two competing messages.
+                When both coexist, the coverage count follows the source note as a
+                single sentence; "some inputs are missing" is dropped because the
+                source caveat already frames the reliability context.
+                border-t separates trust context from the rank data above. */}
+            {(isPartial || sourceNote) && (
+              <p className="border-t border-surface-border pt-2 text-[10px] text-gray-600">
+                {sourceNote && isPartial
+                  ? `${availableCount}/${totalCount} ranks available — ${sourceNote.replace(/\.$/, '').toLowerCase()}.`
+                  : sourceNote
+                    ? sourceNote
+                    : `${availableCount}/${totalCount} ranks — some inputs missing.`
+                }
               </p>
             )}
           </>
         )}
 
-        {/* Disclaimer */}
-        <p className="pt-1 text-[10px] text-gray-600 leading-relaxed border-t border-surface-border">
-          Benchmark-based estimate · not financial advice · Chosen Invest
-        </p>
+        {/* Disclaimer + optional review hint */}
+        <div className="pt-1 border-t border-surface-border flex items-center justify-between gap-3">
+          <p className="text-[10px] text-gray-600 leading-relaxed">
+            Estimate · not financial advice · Chosen Invest
+          </p>
+          {/* Show a detail link when review adds value: incomplete profile or
+              primary rank below the median. Not shown when everything is strong
+              and complete — no additional review context to offer. */}
+          {(isPartial || (hero?.percentile != null && hero.percentile < 50)) && (
+            <Link
+              href={ROUTES.rank}
+              className="shrink-0 text-[10px] text-brand-400 hover:text-brand-300 transition-colors"
+            >
+              {isPartial ? 'Full ranking →' : 'Ranking detail →'}
+            </Link>
+          )}
+        </div>
       </div>
     )
   }

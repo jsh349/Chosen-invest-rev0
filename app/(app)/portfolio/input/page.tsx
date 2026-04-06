@@ -12,7 +12,7 @@ import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { useAssets } from '@/lib/store/assets-store'
 import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
 import { ROUTES } from '@/lib/constants/routes'
-import { LOCAL_USER_ID } from '@/lib/constants/auth'
+import { useCurrentUserId } from '@/lib/hooks/use-current-user-id'
 
 // Extends AssetFormEntry locally to carry identity fields for existing assets.
 // _id and _createdAt are preserved through edits and used at submit time so
@@ -41,14 +41,16 @@ export default function PortfolioInputPage() {
   const { assets, hasCustomAssets, isLoaded, setAssets } = useAssets()
   const { fmt } = useFormatCurrency()
   const [entries, setEntries] = useState<FormEntry[] | null>(null)
-  const [validationError, setValidationError] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
+  const currentUserId = useCurrentUserId()
 
   // isLoaded is the intentional one-shot trigger. Adding assets/hasCustomAssets
   // would reset the form and lose in-progress edits whenever the store updates.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!isLoaded) return
     setEntries(hasCustomAssets ? assets.map(assetToFormEntry) : [blankEntry()])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded])
 
   if (!isLoaded || entries === null) {
@@ -77,21 +79,33 @@ export default function PortfolioInputPage() {
     setEntries((prev) => (prev ? prev.filter((_, i) => i !== index) : prev))
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!entries) return
+    if (!entries || saving) return
+    setSaving(true)
     const validEntries = entries.filter(
       (en) => en.name.trim() && parseFloat(en.value) > 0
     )
-    if (entries.length > 0 && validEntries.length === 0) {
-      setValidationError('Please enter at least one asset with a name and a value greater than 0.')
+    if (validEntries.length === 0) {
+      setSaving(false)
+      setSaveError('Add at least one asset with a name and value above zero.')
       return
     }
-    const newAssets = validEntries.map((en) =>
-      formEntryToAsset(en, LOCAL_USER_ID, en._id ?? crypto.randomUUID(), en._createdAt)
-    )
-    setAssets(newAssets)
-    router.push(ROUTES.dashboard)
+    const now = new Date().toISOString()
+    const newAssets = validEntries.map((en) => ({
+      ...formEntryToAsset(en, currentUserId, en._id ?? crypto.randomUUID()),
+      createdAt: en._createdAt ?? now,
+    }))
+    setSaveError('')
+    try {
+      // Await persistence so the dashboard never reads stale data on load.
+      await setAssets(newAssets)
+      router.push(ROUTES.dashboard)
+    } catch {
+      // API save failed — stay on page so the user can retry.
+      setSaving(false)
+      setSaveError('Failed to save. Please try again.')
+    }
   }
 
   return (
@@ -101,7 +115,7 @@ export default function PortfolioInputPage() {
           {hasCustomAssets ? 'Edit Your Assets' : 'Add Your Assets'}
         </h1>
         <p className="mt-0.5 text-sm text-gray-500">
-          Enter each asset manually. Your data stays in your browser.
+          Enter each asset manually. Your data is saved securely to your account.
         </p>
       </div>
 
@@ -146,11 +160,14 @@ export default function PortfolioInputPage() {
           >
             Cancel
           </Button>
-          <Button type="submit">
-            Save &amp; View Dashboard
-            <ChevronRight className="h-4 w-4" />
+          <Button type="submit" disabled={saving}>
+            {saving ? 'Saving…' : 'Save & View Dashboard'}
+            {!saving && <ChevronRight className="h-4 w-4" />}
           </Button>
         </div>
+        {saveError && (
+          <p className="text-right text-xs text-red-400">{saveError}</p>
+        )}
       </form>
     </div>
   )

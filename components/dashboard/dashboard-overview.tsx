@@ -9,7 +9,7 @@ interface DashboardOverviewProps {
 }
 
 export function DashboardOverview({ summary }: DashboardOverviewProps) {
-  const { totalAssetValue, assetCount, categoryBreakdown, largestAsset } = summary
+  const { totalAssetValue, assetCount, categoryBreakdown, largestAsset, hasMixedCurrencies } = summary
   const topCategory = categoryBreakdown[0]
   const { fmt } = useFormatCurrency()
 
@@ -20,7 +20,10 @@ export function DashboardOverview({ summary }: DashboardOverviewProps) {
         <p className="text-2xl font-bold text-white">
           {fmt(totalAssetValue)}
         </p>
-        <p className="text-xs text-gray-500">Across {assetCount} positions</p>
+        {hasMixedCurrencies
+          ? <p className="text-xs text-yellow-500/80">Multi-currency — total not normalized</p>
+          : <p className="text-xs text-gray-500">Across {assetCount} positions</p>
+        }
       </Card>
 
       <Card className="flex flex-col gap-1">
@@ -32,12 +35,12 @@ export function DashboardOverview({ summary }: DashboardOverviewProps) {
       </Card>
 
       <Card className="flex flex-col gap-1">
-        <p className="text-xs uppercase tracking-wide text-gray-500">Top Category</p>
+        <p className="text-xs uppercase tracking-wide text-gray-500">Largest Category</p>
         <p className="text-2xl font-bold text-white">
           {topCategory?.label ?? '—'}
         </p>
         <p className="text-xs text-gray-500">
-          {topCategory ? `${topCategory.percentage.toFixed(0)}% of portfolio` : 'No data yet'}
+          {topCategory ? `by value · ${topCategory.percentage.toFixed(0)}% of portfolio` : 'No data yet'}
         </p>
       </Card>
 

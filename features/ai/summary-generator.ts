@@ -3,6 +3,9 @@ import type { AdvisorContext } from '@/features/ai/advisor-context'
 import { formatCompact } from '@/lib/utils/currency'
 import { ROUTES } from '@/lib/constants/routes'
 import { RANK_GAP_THRESHOLD } from '@/lib/utils/rank-insight'
+// Shared thresholds from the health-card source of truth — prevents drift between
+// health card signals and AI summary commentary.
+import { CONCENTRATION_THRESHOLDS, LIQUIDITY_THRESHOLDS } from '@/features/dashboard/diagnosis'
 
 export function generateAISummary(ctx: AdvisorContext): AIAnalysisResult {
   const { categoryBreakdown, totalAssetValue, assetCount, userId } = ctx.portfolio
@@ -47,18 +50,20 @@ export function generateAISummary(ctx: AdvisorContext): AIAnalysisResult {
     `Your portfolio holds ${assetCount} asset${assetCount > 1 ? 's' : ''} with a total value of ${formatCompact(totalAssetValue, currencySymbol, showCents)}.`
   )
 
-  // Top category commentary
+  // Top category commentary.
+  // Thresholds match the Concentration Risk health card (diagnosis.ts):
+  //   >60% → attention, >40% → warning, ≤40% → good.
   if (topCategory) {
-    if (topPct > 60) {
+    if (topPct > CONCENTRATION_THRESHOLDS.attention) {
       lines.push(
         `${topCategory.label} is your dominant position at ${topPct.toFixed(0)}%, which introduces concentration risk.`
       )
       keyPoints.push(`High ${topCategory.label} concentration — review exposure`)
-    } else if (topPct > 35) {
+    } else if (topPct > CONCENTRATION_THRESHOLDS.warning) {
       lines.push(
-        `${topCategory.label} is your largest holding at ${topPct.toFixed(0)}%, providing a meaningful anchor to your portfolio.`
+        `${topCategory.label} is your largest holding at ${topPct.toFixed(0)}%. Single-category dominance is worth monitoring.`
       )
-      keyPoints.push(`${topCategory.label} anchors your portfolio`)
+      keyPoints.push(`${topCategory.label} concentration — worth monitoring`)
     } else {
       lines.push('No single asset class dominates — your allocation is well spread.')
       keyPoints.push('Well-spread allocation')
@@ -66,21 +71,26 @@ export function generateAISummary(ctx: AdvisorContext): AIAnalysisResult {
   }
 
   // Retirement signal
-  const hasRetirement = categoryBreakdown.some((s) => s.category === 'retirement')
-  if (hasRetirement) {
-    const ret = categoryBreakdown.find((s) => s.category === 'retirement')!
-    lines.push(`Retirement savings are present at ${ret.percentage.toFixed(0)}% — a strong long-term foundation.`)
-    keyPoints.push(`Retirement at ${ret.percentage.toFixed(0)}% — solid base`)
+  // Single .find() replaces the .some() + .find()! pattern — eliminates the
+  // non-null assertion and the redundant linear scan.
+  const retirementSlice = categoryBreakdown.find((s) => s.category === 'retirement')
+  if (retirementSlice) {
+    lines.push(`Retirement savings are present at ${(retirementSlice.percentage ?? 0).toFixed(0)}% — a strong long-term foundation.`)
+    keyPoints.push(`Retirement at ${(retirementSlice.percentage ?? 0).toFixed(0)}% — solid base`)
   } else {
     lines.push('No retirement assets detected. Adding retirement savings can significantly improve long-term security.')
     keyPoints.push('No retirement savings — consider adding')
   }
 
-  // Cash signal
+  // Cash signal.
+  // Thresholds match the Liquidity health card (diagnosis.ts):
+  //   ≥10% → good, ≥5% → warning, <5% → attention.
   const cashSlice = categoryBreakdown.find((s) => s.category === 'cash')
-  if (cashSlice && cashSlice.percentage >= 10) {
+  if (cashSlice && cashSlice.percentage >= LIQUIDITY_THRESHOLDS.good) {
     keyPoints.push('Good cash liquidity buffer')
-  } else if (!cashSlice || cashSlice.percentage < 5) {
+  } else if (cashSlice && cashSlice.percentage >= LIQUIDITY_THRESHOLDS.warning) {
+    keyPoints.push(`Cash buffer is modest — consider building toward ${LIQUIDITY_THRESHOLDS.good}% for a stronger emergency reserve`)
+  } else {
     lines.push('Cash reserves are low. A larger liquidity buffer would improve your ability to handle unexpected expenses.')
     keyPoints.push('Low cash — consider building emergency fund')
   }
@@ -149,9 +159,10 @@ export function generateAISummary(ctx: AdvisorContext): AIAnalysisResult {
       actions.push({ label: 'Review savings allocation', href: ROUTES.portfolioList })
     }
   }
-  if (actions.length < 2 && topPct > 60) {
+  if (actions.length < 2 && topPct > CONCENTRATION_THRESHOLDS.attention) {
     actions.push({ label: 'Review portfolio allocation', href: ROUTES.portfolioList })
-  } else if (actions.length < 2) {
+  }
+  if (actions.length < 2) {
     actions.push({ label: 'View portfolio details', href: ROUTES.portfolioList })
   }
 

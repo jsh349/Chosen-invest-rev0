@@ -6,7 +6,6 @@ import {
   Cell,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from 'recharts'
 import type { AllocationSlice } from '@/lib/types/dashboard'
 import { useFormatCurrency } from '@/lib/hooks/use-format-currency'

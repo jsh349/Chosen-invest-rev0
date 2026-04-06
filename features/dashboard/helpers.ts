@@ -24,6 +24,17 @@ export function buildPortfolioSummary(
   }
   const totalAssetValue = assets.reduce((sum, a) => sum + a.value, 0)
 
+  // Multi-currency guard: summing values across different currencies is not valid.
+  // FX conversion is not implemented — flag the condition so the UI can warn users.
+  const currencies = new Set(assets.map((a) => a.currency).filter(Boolean))
+  const hasMixedCurrencies = currencies.size > 1
+  if (hasMixedCurrencies) {
+    console.warn(
+      `[buildPortfolioSummary] Assets span ${currencies.size} currencies (${[...currencies].join(', ')}). ` +
+      'totalAssetValue is not FX-normalized. Display total as approximate only.'
+    )
+  }
+
   const grouped = assets.reduce<Record<string, number>>((acc, asset) => {
     const cat = normalizeAssetCategory(asset.category)
     acc[cat] = (acc[cat] ?? 0) + asset.value
@@ -33,6 +44,9 @@ export function buildPortfolioSummary(
   const categoryBreakdown: AllocationSlice[] = Object.entries(grouped)
     .map(([category, value]) => {
       const meta = CATEGORY_MAP[category]
+      if (!meta) {
+        console.warn(`[buildPortfolioSummary] Unknown asset category: "${category}" — falling back to defaults.`)
+      }
       return {
         category: category as AllocationSlice['category'],
         label: meta?.label ?? category,
@@ -55,5 +69,6 @@ export function buildPortfolioSummary(
     categoryBreakdown,
     largestAsset: largest ? { name: largest.name, value: largest.value } : null,
     generatedAt: new Date().toISOString(),
+    ...(hasMixedCurrencies ? { hasMixedCurrencies: true } : {}),
   }
 }

@@ -1,5 +1,9 @@
 import type { MarketTicker } from '@/lib/types/market'
 
+/** Approximate date the hardcoded mock prices represent. Shown in the UI so
+ *  users know the data is a static snapshot, not a live feed. */
+export const MOCK_DATA_AS_OF = 'May 2025'
+
 export const MOCK_INDICES: MarketTicker[] = [
   { symbol: 'SPX',    name: 'S&P 500',            exchange: 'INDEX',  price: 5218.19, change:  32.14, changePercent:  0.62, volume: '—',     category: 'indices', flag: '🇺🇸' },
   { symbol: 'NDX',    name: 'NASDAQ 100',          exchange: 'INDEX',  price: 18294.52,change:  97.43, changePercent:  0.54, volume: '—',     category: 'indices', flag: '🇺🇸' },

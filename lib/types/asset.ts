@@ -9,7 +9,7 @@ export type AssetCategory =
 
 export type Asset = {
   id: string
-  userId: string
+  userId?: string
   name: string
   category: AssetCategory
   value: number

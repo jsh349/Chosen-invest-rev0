@@ -1,4 +1,5 @@
 import type { RankSnapshot } from '@/lib/hooks/use-rank-snapshots'
+import { getRankChangeReason } from '@/lib/utils/rank-change-reason'
 
 export type MonthlySummary = {
   /** Latest overall percentile, or null if unavailable */
@@ -11,6 +12,8 @@ export type MonthlySummary = {
   returnDelta: number | null
   /** One-line status note */
   note: string
+  /** Brief hint about the likely cause of the rank change. Null when delta is zero/null or no clear reason. */
+  reasonHint: string | null
 }
 
 /**
@@ -44,7 +47,8 @@ export function buildMonthlySummary(snapshots: RankSnapshot[]): MonthlySummary |
       currentReturn,
       delta: null,
       returnDelta: null,
-      note: 'First recorded visit — comparison will appear on the next visit.',
+      note: 'First recorded visit — check back after your next session for a change indicator.',
+      reasonHint: null,
     }
   }
 
@@ -69,5 +73,10 @@ export function buildMonthlySummary(snapshots: RankSnapshot[]): MonthlySummary |
     note = 'Overall rank unchanged from last comparison.'
   }
 
-  return { currentOverall, currentReturn, delta, returnDelta, note }
+  // Only surface a reason hint when rank actually changed
+  const reasonHint = (delta !== null && delta !== 0)
+    ? getRankChangeReason(current, previous)
+    : null
+
+  return { currentOverall, currentReturn, delta, returnDelta, note, reasonHint }
 }

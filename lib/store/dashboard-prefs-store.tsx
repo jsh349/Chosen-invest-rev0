@@ -6,6 +6,7 @@ import {
   useState,
   useEffect,
   useCallback,
+  useRef,
   type ReactNode,
 } from 'react'
 
@@ -64,21 +65,39 @@ const DashboardPrefsContext = createContext<DashboardPrefsContextType>({
 export function DashboardPrefsProvider({ children }: { children: ReactNode }) {
   const [prefs, setPrefs] = useState<Record<DashboardCardKey, boolean>>(DEFAULT_PREFS)
   const [isLoaded, setIsLoaded] = useState(false)
+  // Ref mirrors state so toggle can read and write current value without
+  // closing over stale state inside the setState updater. This prevents
+  // React Strict Mode from double-firing the localStorage write (updater
+  // functions run twice in dev) and keeps the pattern compatible with
+  // future async saves.
+  const prefsRef = useRef<Record<DashboardCardKey, boolean>>(DEFAULT_PREFS)
 
   useEffect(() => {
-    const stored = readJSON<Record<string, boolean>>(LS_KEY, {})
+    const stored = readJSON<Record<string, unknown>>(LS_KEY, {})
     if (stored && Object.keys(stored).length > 0) {
-      setPrefs({ ...DEFAULT_PREFS, ...stored })
+      // Only accept known card keys with boolean values — guards against
+      // type drift (e.g. stored string where boolean expected).
+      const VALID_KEYS = new Set<string>(Object.keys(DEFAULT_PREFS))
+      const sanitized: Partial<Record<DashboardCardKey, boolean>> = {}
+      for (const [key, value] of Object.entries(stored)) {
+        if (VALID_KEYS.has(key) && typeof value === 'boolean') {
+          sanitized[key as DashboardCardKey] = value
+        }
+      }
+      const loaded = { ...DEFAULT_PREFS, ...sanitized }
+      prefsRef.current = loaded
+      setPrefs(loaded)
     }
     setIsLoaded(true)
   }, [])
 
   const toggle = useCallback((key: DashboardCardKey) => {
-    setPrefs((prev) => {
-      const updated = { ...prev, [key]: !prev[key] }
-      writeJSON(LS_KEY, updated)
-      return updated
-    })
+    const updated = { ...prefsRef.current, [key]: !prefsRef.current[key] }
+    prefsRef.current = updated
+    setPrefs(updated)
+    if (!writeJSON(LS_KEY, updated)) {
+      if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('persist-error'))
+    }
   }, [])
 
   return (

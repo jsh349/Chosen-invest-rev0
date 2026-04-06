@@ -8,23 +8,29 @@ import { RANK_GAP_THRESHOLD } from '@/lib/utils/rank-insight'
  *
  * Rules (first matching condition wins for the opening sentence):
  *   - No data at all        → neutral prompt to complete profile
- *   - Overall ≥ 75          → "compares favorably"
- *   - Overall 50–74         → "above the benchmark midpoint"
- *   - Overall 40–49         → "near the benchmark midpoint"
- *   - Overall < 40          → "below the benchmark midpoint"
+ *   - Overall ≥ 75          → "well above the benchmark median"
+ *   - Overall 50–74         → "above the benchmark median"
+ *   - Overall 40–49         → "just below the benchmark median"
+ *   - Overall 25–39         → "below the benchmark median"
+ *   - Overall < 25          → "well below the benchmark median"
  *
- * A second sentence is appended (at most one, evaluated in priority order):
- *   1. Return ≥ 20 pts below overall    → return rank lower than wealth rank
- *   2. Return ≥ 20 pts above overall    → return rank stronger than wealth rank
- *   3. Both overall ≥ 75 and return ≥ 75 → both compare favorably
- *   4. Only return estimate missing     → specific prompt to add return estimate
- *   5. Only age missing (return present) → specific prompt to add birth year
- *   6. Only gender missing              → specific prompt to add gender
- *   7. Multiple inputs missing          → generic prompt to complete profile
+ * Tiers mirror getRankInterpretation so summary and detail surfaces use
+ * recognisably related language for the same rank state.
+ *
+ * When isLowConfidence is true (fallback / invalid benchmark source), the two
+ * extreme bands drop "well" — matching the same restraint applied in
+ * getRankInterpretation so both surfaces stay in sync.
+ *
+ * A second sentence is appended (at most one) when:
+ *   - Return rank is ≥ 20 pts below overall  → note about return standing
+ *   - Return rank is ≥ 20 pts above overall  → note about return strength
  *
  * Always returns a non-empty string.
  */
-export function getRankNarrativeSummary(ranks: RankResult[]): string {
+export function getRankNarrativeSummary(
+  ranks: RankResult[],
+  { isLowConfidence = false }: { isLowConfidence?: boolean } = {},
+): string {
   const { overall, ageBased, ageGender, ret } = indexRanks(ranks)
 
   const overallPct = overall?.percentile ?? null
@@ -40,45 +46,41 @@ export function getRankNarrativeSummary(ranks: RankResult[]): string {
   // No overall data — nothing meaningful to say yet
   if (overallPct === null) {
     return profileIncomplete
-      ? 'Benchmark comparisons are not yet available — complete your profile to unlock them.'
+      ? 'Rank comparisons are not yet available — add profile details to get started.'
       : 'Overall wealth rank is unavailable with current portfolio data.'
   }
 
-  // Opening sentence based on overall percentile tier
+  // Opening sentence based on overall percentile.
+  // Wording anchors to getRankInterpretation tiers so summary and detail surfaces
+  // use recognisably related language for the same rank state.
   let opening: string
   if (overallPct >= 75) {
-    opening = 'Your overall asset position compares favorably against the reference group.'
+    opening = isLowConfidence
+      ? 'Your overall assets rank above the benchmark median.'
+      : 'Your overall assets rank well above the benchmark median.'
   } else if (overallPct >= 50) {
-    opening = 'Your overall asset position is at or above the benchmark midpoint.'
+    opening = 'Your overall assets rank above the benchmark median.'
   } else if (overallPct >= 40) {
-    opening = 'Your overall asset position is near the benchmark midpoint.'
+    opening = 'Your overall assets rank just below the benchmark median.'
+  } else if (overallPct >= 25) {
+    opening = 'Your overall assets rank below the benchmark median.'
   } else {
-    opening = 'Your overall asset position is below the benchmark midpoint.'
+    opening = isLowConfidence
+      ? 'Your overall assets rank below the benchmark median.'
+      : 'Your overall assets rank well below the benchmark median.'
   }
 
-  // Optional second sentence — evaluated in priority order, first match wins.
+  // Optional second sentence — return gap takes priority; profile note is fallback.
+  // Priority order: wealth > return gap → return > wealth gap → profile incomplete.
   let second = ''
   if (retPct !== null && overallPct - retPct >= RANK_GAP_THRESHOLD) {
-    // Wealth significantly ahead of return
-    second = ' Your investment return rank is notably lower than your wealth rank.'
+    second = ' Your return rank is weaker than your wealth rank.'
   } else if (retPct !== null && retPct - overallPct >= RANK_GAP_THRESHOLD) {
-    // Return significantly ahead of wealth
-    second = ' Your investment return rank is notably stronger than your wealth rank.'
-  } else if (overallPct >= 75 && retPct !== null && retPct >= 75) {
-    // Both wealth and return rank strongly — worth noting explicitly
-    second = ' Both wealth and return ranks compare favorably against the reference group.'
-  } else if (missingReturn && !missingAge) {
-    // Return estimate is the only missing input
-    second = ' Adding a return estimate will unlock investment rank comparison.'
-  } else if (missingAge && !missingReturn) {
-    // Birth year is missing but return is available
-    second = ' Adding birth year will enable age-based rank comparison.'
-  } else if (missingGender) {
-    // Age is set; only gender is missing
-    second = ' Adding gender will enable a more specific age and gender comparison.'
+    second = ' Your return rank is stronger than your wealth rank.'
   } else if (profileIncomplete) {
-    // Multiple inputs missing — generic fallback
-    second = ' More detailed comparisons will be available when profile inputs are completed.'
+    // Aligns narrative with the profile-completion hint shown in the explanation block:
+    // both acknowledge that the current view is based on partial profile inputs.
+    second = ' Some comparisons are unavailable based on current profile inputs.'
   }
 
   return opening + second

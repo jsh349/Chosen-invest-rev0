@@ -1,26 +1,44 @@
 'use client'
 
+import { useEffect } from 'react'
+import { buttonVariants } from '@/components/ui/button'
+
+/**
+ * Route-level error boundary for the (app) layout.
+ * Catches unhandled throws in any page under this layout group
+ * and shows a recovery UI instead of a blank white screen.
+ */
 export default function AppError({
   error,
   reset,
 }: {
-  error: Error
+  error: Error & { digest?: string }
   reset: () => void
 }) {
+  useEffect(() => {
+    console.error('[app] unhandled error:', error)
+  }, [error])
+
   return (
-    <div className="flex min-h-[50vh] items-center justify-center">
-      <div className="w-full max-w-md rounded-lg bg-surface-card p-8 text-center">
-        <h2 className="text-lg font-semibold text-white">Something went wrong</h2>
-        <p className="mt-2 text-sm text-gray-400">
-          An unexpected error occurred. Your data has not been changed.
-        </p>
-        <button
-          onClick={reset}
-          className="mt-6 rounded-md bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600 transition-colors"
-        >
+    <div className="flex min-h-[60vh] flex-col items-center justify-center text-center px-4 gap-4">
+      <p className="text-sm font-semibold text-white">Something went wrong</p>
+      <p className="max-w-xs text-xs text-gray-500 leading-relaxed">
+        An unexpected error occurred. Your data is not affected — try refreshing the page.
+      </p>
+      <div className="flex gap-3">
+        <button onClick={reset} className={buttonVariants({ size: 'sm' })}>
           Try again
         </button>
+        <button
+          onClick={() => window.location.assign('/')}
+          className={buttonVariants({ variant: 'outline', size: 'sm' })}
+        >
+          Go home
+        </button>
       </div>
+      {error.digest && (
+        <p className="text-[10px] text-gray-700">Error ID: {error.digest}</p>
+      )}
     </div>
   )
 }

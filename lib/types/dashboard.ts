@@ -15,6 +15,12 @@ export type PortfolioSummary = {
   categoryBreakdown: AllocationSlice[]
   largestAsset: { name: string; value: number } | null
   generatedAt: string
+  /**
+   * True when assets span more than one currency code.
+   * totalAssetValue is NOT normalized in this case — FX conversion is not implemented.
+   * Consumers should warn users rather than presenting the total as meaningful.
+   */
+  hasMixedCurrencies?: boolean
 }
 
 export type SuggestedAction = {

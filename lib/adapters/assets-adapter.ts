@@ -1,27 +1,58 @@
-import type { Asset } from '@/lib/types/asset'
-import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
-import { readJSON, writeJSON } from '@/lib/utils/local-storage'
+import type { Asset, AssetCategory } from '@/lib/types/asset'
+import { ASSET_CATEGORIES } from '@/lib/constants/asset-categories'
 
-const LS_KEY = STORAGE_KEYS.assets
+const VALID_ASSET_CATEGORIES = new Set<string>(ASSET_CATEGORIES.map((c) => c.key))
 
-/** Async adapter interface — matches the shape of a future API client. */
+function isValidAssetCategory(cat: string): cat is AssetCategory {
+  return VALID_ASSET_CATEGORIES.has(cat)
+}
+
+/** Async adapter interface — decouples stores from the underlying data source. */
 export type AssetsAdapter = {
   getAll(): Promise<Asset[]>
   saveAll(assets: Asset[]): Promise<void>
   clear(): Promise<void>
 }
 
-/** Local implementation backed by localStorage. */
+/** API-backed implementation — persists assets in Turso via /api/assets. */
 export const assetsAdapter: AssetsAdapter = {
   async getAll() {
-    return readJSON<Asset[]>(LS_KEY, [])
+    const res = await fetch('/api/assets', { credentials: 'include' })
+    if (!res.ok) throw new Error(`[assetsAdapter] getAll failed: ${res.status}`)
+    const data = await res.json() as Asset[]
+    return data
+      .filter((a) => {
+        if (!a.id || !Number.isFinite(a.value) || !a.name || !a.createdAt || !a.currency) {
+          console.warn('[assetsAdapter] Skipping malformed asset — missing id, value, name, createdAt, or currency.', a)
+          return false
+        }
+        return true
+      })
+      .map((a): Asset => {
+        if (!isValidAssetCategory(a.category)) {
+          console.warn(`[assetsAdapter] Unknown category "${a.category}" on asset "${a.id}" — coerced to 'other'.`)
+          return { ...a, category: 'other' }
+        }
+        return a
+      })
   },
 
   async saveAll(assets) {
-    writeJSON(LS_KEY, assets)
+    const res = await fetch('/api/assets', {
+      method:      'POST',
+      credentials: 'include',
+      headers:     { 'Content-Type': 'application/json' },
+      body:        JSON.stringify(assets),
+    })
+    if (!res.ok) {
+      let detail = ''
+      try { detail = JSON.stringify(await res.json()) } catch { /* ignore */ }
+      throw new Error(`[assetsAdapter] saveAll failed: HTTP ${res.status} — ${detail}`)
+    }
   },
 
   async clear() {
-    writeJSON(LS_KEY, [])
+    const res = await fetch('/api/assets', { method: 'DELETE', credentials: 'include' })
+    if (!res.ok) throw new Error(`[assetsAdapter] clear failed: ${res.status}`)
   },
 }

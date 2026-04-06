@@ -211,42 +211,63 @@ test.describe('localStorage utilities — window guard', () => {
 // ---------------------------------------------------------------------------
 test.describe('Regression — AI Summary Card: no duplicate React key for /portfolio/list', () => {
   /**
-   * Assets: stocks dominate at 80 % → topPct > 60 triggers both
-   *   "Review portfolio allocation"  (href: /portfolio/list)
-   *   "View portfolio details"        (href: /portfolio/list)
+   * Assets: stock dominates at 80 % → topPct > 60 triggers both
+   *   "Adjust portfolio allocation"  (href: /portfolio/list)
+   *   "View portfolio details"       (href: /portfolio/list)
    * Goals present  → no 'Set your first goal' action (slot freed up for both portfolioList actions)
    * No rank snapshot, positive cash flow → only the two portfolioList actions are generated.
+   *
+   * Assets and goals are seeded via the API (DB-backed). Settings are still
+   * localStorage-backed and seeded directly.
    */
-  const CONCENTRATED_ASSETS = JSON.stringify([
+  const SEED_ASSETS = [
     {
-      id: 'r1', userId: 'pw_test_user', category: 'stocks',
-      label: 'Tech ETF', value: 80_000, currency: 'USD',
+      id: 'reg-asset-1', name: 'Tech ETF', category: 'stock',
+      value: 80_000, currency: 'USD',
       createdAt: '2025-01-01T00:00:00.000Z', updatedAt: '2025-01-01T00:00:00.000Z',
     },
     {
-      id: 'r2', userId: 'pw_test_user', category: 'cash',
-      label: 'Savings', value: 20_000, currency: 'USD',
+      id: 'reg-asset-2', name: 'Savings', category: 'cash',
+      value: 20_000, currency: 'USD',
       createdAt: '2025-01-01T00:00:00.000Z', updatedAt: '2025-01-01T00:00:00.000Z',
     },
-  ])
+  ]
 
-  const GOALS_PRESENT = JSON.stringify([
+  const SEED_GOALS = [
     {
-      id: 'g1', userId: 'pw_test_user', name: 'Retirement fund',
+      id: 'reg-goal-1', name: 'Retirement fund', type: 'retirement',
       targetAmount: 500_000, currentAmount: 80_000, targetDate: '2045-01-01',
-      category: 'retirement', createdAt: '2025-01-01T00:00:00.000Z',
+      shared: false,
+      createdAt: '2025-01-01T00:00:00.000Z', updatedAt: '2025-01-01T00:00:00.000Z',
     },
-  ])
+  ]
 
-  const SETTINGS = JSON.stringify({
+  const SETTINGS_OBJ = {
     currency: 'USD', showCents: false,
     birthYear: 1990, gender: 'male', annualReturnPct: 8,
-  })
+  }
+
+  async function seedDashboardData(page: import('@playwright/test').Page) {
+    await page.context().addCookies([SESSION_COOKIE])
+    // Seed assets and goals via API (DB-backed)
+    const [ar, gr] = await Promise.all([
+      page.request.post('http://localhost:3001/api/assets', { data: SEED_ASSETS }),
+      page.request.post('http://localhost:3001/api/goals',  { data: SEED_GOALS }),
+    ])
+    if (!ar.ok()) throw new Error(`Asset seed failed: ${ar.status()}`)
+    if (!gr.ok()) throw new Error(`Goal seed failed: ${gr.status()}`)
+    // Seed settings via localStorage (still localStorage-backed)
+    await page.goto('/login')
+    await page.evaluate((s) => {
+      localStorage.setItem('chosen_settings_v1', JSON.stringify(s))
+      localStorage.removeItem('chosen_rank_snapshots_v1')
+    }, SETTINGS_OBJ)
+  }
 
   test('dashboard renders without duplicate-key console warning', async ({ page }) => {
-    const duplicateKeyWarnings: string[] = []
+    test.skip(!SESSION_TOKEN, 'Session token generation failed — is AUTH_SECRET set in .env.local?')
 
-    // Capture both pageerror (thrown errors) and console warnings
+    const duplicateKeyWarnings: string[] = []
     page.on('pageerror', (err) => {
       if (err.message.includes('same key')) duplicateKeyWarnings.push(err.message)
     })
@@ -259,27 +280,13 @@ test.describe('Regression — AI Summary Card: no duplicate React key for /portf
       }
     })
 
-    // Inject session + seed data that reproduces the bug
-    await page.context().addCookies([SESSION_COOKIE])
-    await page.goto('/login')
-    await page.evaluate(
-      ({ assets, goals, settings }) => {
-        localStorage.setItem('chosen_assets_v1', assets)
-        localStorage.setItem('chosen_goals_v1', goals)
-        localStorage.setItem('chosen_settings_v1', settings)
-        // No rank snapshots → ctx.rankSummary is null → rank-aware actions skipped
-        localStorage.removeItem('chosen_rank_snapshots_v1')
-      },
-      { assets: CONCENTRATED_ASSETS, goals: GOALS_PRESENT, settings: SETTINGS }
-    )
-
+    await seedDashboardData(page)
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
 
     // Dashboard must be visible (not a blank/error screen)
     await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible()
 
-    // The AI summary card's suggested-action links must appear without dup-key warnings
     expect(
       duplicateKeyWarnings,
       `Unexpected duplicate-key React warning(s):\n${duplicateKeyWarnings.join('\n')}`
@@ -287,26 +294,15 @@ test.describe('Regression — AI Summary Card: no duplicate React key for /portf
   })
 
   test('both suggested-action links are visible and distinct', async ({ page }) => {
-    await page.context().addCookies([SESSION_COOKIE])
-    await page.goto('/login')
-    await page.evaluate(
-      ({ assets, goals, settings }) => {
-        localStorage.setItem('chosen_assets_v1', assets)
-        localStorage.setItem('chosen_goals_v1', goals)
-        localStorage.setItem('chosen_settings_v1', settings)
-        localStorage.removeItem('chosen_rank_snapshots_v1')
-      },
-      { assets: CONCENTRATED_ASSETS, goals: GOALS_PRESENT, settings: SETTINGS }
-    )
+    test.skip(!SESSION_TOKEN, 'Session token generation failed — is AUTH_SECRET set in .env.local?')
 
+    await seedDashboardData(page)
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
 
     // Both portfolioList actions have the same href but distinct labels.
     // Before the fix, only one link would render (React drops duplicates silently).
     // After the fix, both are present and have different visible text.
-    // Scope to the AI Summary card to avoid the sidebar nav link to /portfolio/list.
-    // The card is a div containing an h3 "AI Summary".
     const aiCard = page.locator('div.bg-surface-card', {
       has: page.locator('h3', { hasText: 'AI Summary' }),
     }).first()

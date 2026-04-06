@@ -90,10 +90,14 @@ describe('getRankChecklist — cap at 4', () => {
     expect(result.length).toBeLessThanOrEqual(4)
   })
 
-  it('allocation review is excluded when cap is already reached by profile items', () => {
-    // All 4 profile flags false fills the cap; allocation item should be absent
+  it('allocation is NOT added without age context; goals fills position 4', () => {
+    // Allocation review requires hasAge — the rank signal is unreliable without
+    // age context (overall percentile may shift substantially once age is added).
+    // With emptyProfile (hasAge: false) + low rank: [birth year, gender, return, goals]
+    // Allocation is excluded; goals remains at position 4 within the cap.
     const result = getRankChecklist(emptyProfile, [overall(20)])
     expect(result.some((i) => i.text.toLowerCase().includes('allocation'))).toBe(false)
+    expect(result.some((i) => i.text.toLowerCase().includes('goal'))).toBe(true)
   })
 
   it('allocation review IS included when fewer than 4 profile items fill the cap', () => {

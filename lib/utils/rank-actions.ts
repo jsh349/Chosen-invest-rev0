@@ -11,13 +11,17 @@ export type RankAction = {
  * Returns up to two contextual action links derived from rank outputs.
  * Rules are evaluated in priority order; result is capped at 2.
  *
- * @param hasGoals  Pass true when the user already has at least one goal set.
- *                  Prevents the "Set a financial goal" action from showing
- *                  when it is no longer relevant.
+ * @param hasGoals         Pass true when the user already has at least one goal set.
+ *                         Prevents the "Set a financial goal" action from showing
+ *                         when it is no longer relevant.
+ * @param isLowConfidence  Pass true when the benchmark source is fallback or invalid.
+ *                         Suppresses Rule 2 (portfolio review) — acting on a rank
+ *                         position that may shift once the source is restored implies
+ *                         more confidence than the data warrants.
  */
 export function getRankActions(
   ranks: RankResult[],
-  { hasGoals = false }: { hasGoals?: boolean } = {},
+  { hasGoals = false, isLowConfidence = false }: { hasGoals?: boolean; isLowConfidence?: boolean } = {},
 ): RankAction[] {
   const actions: RankAction[] = []
 
@@ -29,26 +33,38 @@ export function getRankActions(
 
   // Rule 1: profile incomplete (age / gender) → complete in Settings
   if (overallPct !== null && profileIncomplete) {
-    actions.push({ label: 'Complete your profile for more comparisons', href: ROUTES.settings })
+    actions.push({
+      label: isLowConfidence ? 'Complete profile' : 'Complete profile for full ranking',
+      href: ROUTES.settings,
+    })
   }
 
-  // Rule 2: wealth rank below the 75th percentile → review portfolio
-  if (actions.length < 2 && overallPct !== null && overallPct < 75) {
-    actions.push({ label: 'Check portfolio composition', href: ROUTES.portfolioList })
+  // Rule 2: wealth rank below the 75th percentile → review portfolio.
+  // Gated on !profileIncomplete: portfolio review is only a meaningful signal
+  // when the rank is based on a complete profile (age + gender adjusted). An
+  // unadjusted rank may shift significantly once demographics are added — acting
+  // on it before the profile is complete implies more confidence than is warranted.
+  // Also gated on !isLowConfidence: when the benchmark source is fallback/invalid,
+  // the rank position itself may shift once the source is restored — suggesting
+  // portfolio action on that signal overstates the current confidence level.
+  if (actions.length < 2 && overallPct !== null && overallPct < 75 && !profileIncomplete && !isLowConfidence) {
+    actions.push({ label: 'Adjust portfolio allocation', href: ROUTES.portfolioList })
   }
 
-  // Rule 3: overall rank available but no goals set
-  if (actions.length < 2 && overallPct !== null && !hasGoals) {
-    actions.push({ label: 'Set a financial goal', href: ROUTES.goals })
-  }
-
-  // Rule 4: return estimate missing and not already linking to Settings
+  // Rule 3: return estimate missing and not already linking to Settings.
+  // Evaluated before goals (Rule 4) to match checklist priority order:
+  // data completeness (age → gender → return) before contextual actions (goals).
   if (
     actions.length < 2 &&
     returnMissing &&
     !actions.some((a) => a.href === ROUTES.settings)
   ) {
-    actions.push({ label: 'Add return estimate for investment rank', href: ROUTES.settings })
+    actions.push({ label: 'Add return estimate for return rank', href: ROUTES.settings })
+  }
+
+  // Rule 4: overall rank available but no goals set
+  if (actions.length < 2 && overallPct !== null && !hasGoals) {
+    actions.push({ label: 'Set a financial goal', href: ROUTES.goals })
   }
 
   return actions.slice(0, 2)

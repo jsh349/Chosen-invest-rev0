@@ -3,8 +3,11 @@ import { rankBenchmarksAdapter, getActiveBenchmarkSourceId } from '@/lib/adapter
 import { getBenchmarkCapabilities } from '@/lib/utils/benchmark-capabilities'
 import { capabilityGuardedResult } from '@/lib/utils/benchmark-capability-guard'
 
-// Resolved on each call so capabilities stay fresh if the active benchmark
-// source changes without a full page reload.
+/**
+ * Reads capabilities fresh on each call, always reflecting the current localStorage
+ * source preference. SSR-safe: getActiveBenchmarkSourceId() returns 'default' when
+ * window is undefined.
+ */
 function getCaps() {
   return getBenchmarkCapabilities(getActiveBenchmarkSourceId())
 }
@@ -13,12 +16,13 @@ function getCaps() {
  * Returns the percentile for the bucket whose range contains `value`.
  * Bucket matching is inclusive-lower / exclusive-upper: `minValue <= value < maxValue`.
  * Values exceeding all bucket upper bounds fall into the last bucket (open-ended top tier).
- * Returns 1 (bottom 1%) if buckets is empty — this indicates corrupted benchmark data.
+ * Callers must guard against empty buckets before calling — all compute* functions check
+ * buckets.length === 0 and return percentile: null early, so this branch should never fire.
  */
 function findPercentile(buckets: BenchmarkBucket[], value: number): number {
   if (buckets.length === 0) {
     if (process.env.NODE_ENV !== 'production') {
-      console.warn('[findPercentile] Called with empty bucket array — benchmark data may be corrupted.')
+      console.warn('[findPercentile] Called with empty bucket array — caller should have returned percentile: null.')
     }
     return 1
   }
@@ -69,15 +73,18 @@ export function computeOverallWealthRank(totalAssetValue: number): RankResult {
   const guard = capabilityGuardedResult(getCaps().supportsWealth, 'overall_wealth', 'Overall Wealth Rank')
   if (guard) return guard
   const buckets = rankBenchmarksAdapter.getOverallWealthBenchmarks()
+  if (buckets.length === 0) {
+    return { type: 'overall_wealth', label: 'Overall Wealth Rank', percentile: null, message: 'Benchmark data unavailable.' }
+  }
   const percentile = findPercentile(buckets, totalAssetValue)
   const bucket = findBucket(buckets, totalAssetValue)
-  const topPct = 100 - percentile
+  const topPct = Math.max(0, Math.min(100, 100 - percentile))
 
   let message: string
-  if (percentile >= 90) message = `Top ${topPct}% nationally — in the highest benchmark range.`
-  else if (percentile >= 70) message = `Top ${topPct}% nationally — above average across all households.`
-  else if (percentile >= 50) message = `Top ${topPct}% nationally — at or above the benchmark midpoint.`
-  else message = `Top ${topPct}% nationally — below the benchmark midpoint.`
+  if (percentile >= 90) message = `Top ${topPct}% — in the upper benchmark range.`
+  else if (percentile >= 70) message = `Top ${topPct}% — above the benchmark median.`
+  else if (percentile >= 50) message = `Top ${topPct}% — above the benchmark median.`
+  else message = `Top ${topPct}% — below the benchmark median.`
 
   const detail: RankDetail = {
     comparisonBasis: 'All households (national estimate)',
@@ -96,7 +103,7 @@ export function computeAgeBasedRank(totalAssetValue: number, age?: number): Rank
       type: 'age_based',
       label: 'Age-Based Rank',
       percentile: null,
-      message: 'Add your birth year in Settings to enable age-based rank comparison.',
+      message: 'Add your birth year in Settings to unlock age-based ranking.',
       missingField: 'birth year',
     }
   }
@@ -113,13 +120,13 @@ export function computeAgeBasedRank(totalAssetValue: number, age?: number): Rank
 
   const percentile = findPercentile(ageBuckets, totalAssetValue)
   const bucket = findBucket(ageBuckets, totalAssetValue)
-  const topPct = 100 - percentile
+  const topPct = Math.max(0, Math.min(100, 100 - percentile))
   const ageRange = ageBuckets[0].ageRange!
 
   let message: string
-  if (percentile >= 75) message = `Top ${topPct}% among adults aged ${ageRange[0]}–${ageRange[1]} — above average for this age group.`
-  else if (percentile >= 50) message = `Top ${topPct}% among adults aged ${ageRange[0]}–${ageRange[1]} — above the benchmark midpoint for this age group.`
-  else message = `Top ${topPct}% among adults aged ${ageRange[0]}–${ageRange[1]} — below the benchmark midpoint for this age group.`
+  if (percentile >= 75) message = `Top ${topPct}% among adults aged ${ageRange[0]}–${ageRange[1]} — above the median for this age group.`
+  else if (percentile >= 50) message = `Top ${topPct}% among adults aged ${ageRange[0]}–${ageRange[1]} — around the median for this age group.`
+  else message = `Top ${topPct}% among adults aged ${ageRange[0]}–${ageRange[1]} — below the median for this age group.`
 
   const detail: RankDetail = {
     comparisonBasis: `Adults aged ${ageRange[0]}–${ageRange[1]} (national estimate)`,
@@ -143,7 +150,7 @@ export function computeAgeGenderRank(
       type: 'age_gender',
       label: 'Age + Gender Rank',
       percentile: null,
-      message: 'Add your birth year and gender in Settings to enable this ranking.',
+      message: 'Add your birth year and gender in Settings to unlock this ranking.',
       missingField: 'birth year and gender',
     }
   }
@@ -152,7 +159,7 @@ export function computeAgeGenderRank(
       type: 'age_gender',
       label: 'Age + Gender Rank',
       percentile: null,
-      message: 'Add your birth year in Settings to enable this ranking.',
+      message: 'Add your birth year in Settings to unlock this ranking.',
       missingField: 'birth year',
     }
   }
@@ -161,7 +168,7 @@ export function computeAgeGenderRank(
       type: 'age_gender',
       label: 'Age + Gender Rank',
       percentile: null,
-      message: 'Add your gender in Settings to enable this ranking.',
+      message: 'Add your gender in Settings to unlock this ranking.',
       missingField: 'gender',
     }
   }
@@ -194,15 +201,15 @@ export function computeAgeGenderRank(
 
   const percentile = findPercentile(buckets, totalAssetValue)
   const bucket = findBucket(buckets, totalAssetValue)
-  const topPct = 100 - percentile
+  const topPct = Math.max(0, Math.min(100, 100 - percentile))
   const ageRange = buckets[0].ageRange!
   const genderLabel = gender === 'male' ? 'men' : 'women'
   const genderCapital = gender === 'male' ? 'Men' : 'Women'
 
   let message: string
-  if (percentile >= 75) message = `Top ${topPct}% among ${genderLabel} aged ${ageRange[0]}–${ageRange[1]} — above average for this group.`
-  else if (percentile >= 50) message = `Top ${topPct}% among ${genderLabel} aged ${ageRange[0]}–${ageRange[1]} — above the benchmark midpoint for this group.`
-  else message = `Top ${topPct}% among ${genderLabel} aged ${ageRange[0]}–${ageRange[1]} — below the benchmark midpoint for this group.`
+  if (percentile >= 75) message = `Top ${topPct}% among ${genderLabel} aged ${ageRange[0]}–${ageRange[1]} — above the median for this group.`
+  else if (percentile >= 50) message = `Top ${topPct}% among ${genderLabel} aged ${ageRange[0]}–${ageRange[1]} — around the median for this group.`
+  else message = `Top ${topPct}% among ${genderLabel} aged ${ageRange[0]}–${ageRange[1]} — below the median for this group.`
 
   const detail: RankDetail = {
     comparisonBasis: `${genderCapital} aged ${ageRange[0]}–${ageRange[1]} (national estimate)`,
@@ -221,21 +228,24 @@ export function computeReturnRank(annualReturnPct?: number): RankResult {
       type: 'investment_return',
       label: 'Investment Return Rank',
       percentile: null,
-      message: 'Add your estimated annual return in Settings to enable this ranking.',
+      message: 'Add your estimated annual return in Settings to unlock this ranking.',
       missingField: 'annual return',
     }
   }
 
   const retBuckets = rankBenchmarksAdapter.getReturnBenchmarks()
+  if (retBuckets.length === 0) {
+    return { type: 'investment_return', label: 'Investment Return Rank', percentile: null, message: 'Benchmark data unavailable.' }
+  }
   const percentile = findPercentile(retBuckets, annualReturnPct)
   const bucket = findBucket(retBuckets, annualReturnPct)
-  const topPct = 100 - percentile
+  const topPct = Math.max(0, Math.min(100, 100 - percentile))
   const sign = annualReturnPct >= 0 ? '+' : ''
 
   let message: string
-  if (percentile >= 80) message = `${sign}${annualReturnPct.toFixed(1)}% annual return — top ${topPct}% of investors, above the benchmark average.`
-  else if (percentile >= 50) message = `${sign}${annualReturnPct.toFixed(1)}% annual return — top ${topPct}% of investors, at or above the benchmark midpoint.`
-  else message = `${sign}${annualReturnPct.toFixed(1)}% annual return — top ${topPct}% of investors, below the benchmark midpoint.`
+  if (percentile >= 80) message = `${sign}${annualReturnPct.toFixed(1)}% annual return — top ${topPct}% of investors, above the benchmark median.`
+  else if (percentile >= 50) message = `${sign}${annualReturnPct.toFixed(1)}% annual return — top ${topPct}% of investors, near the benchmark median.`
+  else message = `${sign}${annualReturnPct.toFixed(1)}% annual return — top ${topPct}% of investors, below the benchmark median.`
 
   const detail: RankDetail = {
     comparisonBasis: 'All investors (by estimated annual return)',

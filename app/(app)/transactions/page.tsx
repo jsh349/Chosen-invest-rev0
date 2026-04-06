@@ -11,13 +11,9 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
 import type { TransactionCategory } from '@/lib/types/transaction'
+import { TRANSACTION_CATEGORIES } from '@/lib/types/transaction'
 import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
 import { formatSignedAmount } from '@/lib/utils/format-amount'
-
-const CATEGORIES: TransactionCategory[] = [
-  'Income', 'Housing', 'Groceries', 'Utilities', 'Subscriptions',
-  'Transport', 'Travel', 'Family', 'Taxes', 'Investments', 'Other',
-]
 
 type SortKey = 'date-desc' | 'date-asc' | 'amount-desc' | 'amount-asc'
 
@@ -39,7 +35,7 @@ const EMPTY_FORM = {
 const SELECT_CLASS = 'rounded-lg border border-surface-border bg-surface-muted px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none'
 
 export default function TransactionsPage() {
-  const { transactions, isLoaded, addTransaction, removeTransaction } = useTransactions()
+  const { transactions, isLoaded, isLoadError, addTransaction, removeTransaction } = useTransactions()
   const { fmt } = useFormatCurrency()
   const formatAmount = (amount: number) => formatSignedAmount(amount, fmt)
   const [form, setForm] = useState(EMPTY_FORM)
@@ -50,6 +46,12 @@ export default function TransactionsPage() {
   if (!isLoaded) {
     return (
       <LoadingSpinner />
+    )
+  }
+
+  if (isLoadError) {
+    return (
+      <p className="py-10 text-center text-sm text-gray-500">Failed to load transactions — refresh to try again.</p>
     )
   }
 
@@ -76,6 +78,7 @@ export default function TransactionsPage() {
       createdAt:   new Date().toISOString(),
     })
     setForm(EMPTY_FORM)
+    setError('')
   }
 
   // Summary always uses all transactions
@@ -86,15 +89,22 @@ export default function TransactionsPage() {
     ? transactions
     : transactions.filter((t) => t.category === filterCategory)
 
-  const sorted = [...filtered].sort((a, b) => {
+  // Precompute date timestamps once so the sort comparator doesn't create
+  // Date objects on every pairwise comparison (O(N log N) allocations avoided).
+  const withTs = filtered.map((t) => ({ t, ts: new Date(t.date).getTime() }))
+  const sorted = withTs.sort((a, b) => {
+    // Primary sort — then fall back to id comparison for a stable order when
+    // primary keys are equal (e.g. two transactions on the same date).
+    let primary: number
     switch (sortKey) {
-      case 'date-desc':   return b.date.localeCompare(a.date)
-      case 'date-asc':    return a.date.localeCompare(b.date)
-      case 'amount-desc': return Math.abs(b.amount) - Math.abs(a.amount)
-      case 'amount-asc':  return Math.abs(a.amount) - Math.abs(b.amount)
-      default:            return 0
+      case 'date-desc':   primary = b.ts - a.ts; break
+      case 'date-asc':    primary = a.ts - b.ts; break
+      case 'amount-desc': primary = Math.abs(b.t.amount) - Math.abs(a.t.amount); break
+      case 'amount-asc':  primary = Math.abs(a.t.amount) - Math.abs(b.t.amount); break
+      default:            primary = 0
     }
-  })
+    return primary !== 0 ? primary : a.t.id.localeCompare(b.t.id)
+  }).map(({ t }) => t)
 
   return (
     <div className="space-y-6">
@@ -126,7 +136,7 @@ export default function TransactionsPage() {
               <div className="space-y-1">
                 <label className="text-xs text-gray-400">Category *</label>
                 <select name="category" value={form.category} onChange={handleChange} className={cn(SELECT_CLASS, 'w-full')}>
-                  {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                  {TRANSACTION_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
               <div className="space-y-1 sm:col-span-2">
@@ -173,16 +183,16 @@ export default function TransactionsPage() {
         <div className="grid grid-cols-3 gap-3">
           <div className="rounded-xl border border-surface-border bg-surface-card px-4 py-3">
             <p className="text-xs text-gray-500">Income (all time)</p>
-            <p className="mt-0.5 text-sm font-semibold text-green-400">{formatAmount(totalIncome)}</p>
+            <p className="mt-0.5 text-sm font-semibold text-green-400">{fmt(totalIncome)}</p>
           </div>
           <div className="rounded-xl border border-surface-border bg-surface-card px-4 py-3">
             <p className="text-xs text-gray-500">Expenses (all time)</p>
-            <p className="mt-0.5 text-sm font-semibold text-red-400">{formatAmount(totalExpense)}</p>
+            <p className="mt-0.5 text-sm font-semibold text-red-400">{fmt(Math.abs(totalExpense))}</p>
           </div>
           <div className="rounded-xl border border-surface-border bg-surface-card px-4 py-3">
             <p className="text-xs text-gray-500">Net (all time)</p>
             <p className={cn('mt-0.5 text-sm font-semibold', net >= 0 ? 'text-green-400' : 'text-red-400')}>
-              {formatAmount(net)}
+              {net >= 0 ? fmt(net) : `-${fmt(Math.abs(net))}`}
             </p>
           </div>
         </div>
@@ -207,7 +217,7 @@ export default function TransactionsPage() {
                 className={cn(SELECT_CLASS, 'text-xs py-1 px-2')}
               >
                 <option value="All">All categories</option>
-                {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                {TRANSACTION_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
               <select
                 value={sortKey}
@@ -240,7 +250,7 @@ export default function TransactionsPage() {
                       {formatAmount(t.amount)}
                     </span>
                     <button
-                      onClick={() => removeTransaction(t.id)}
+                      onClick={() => { if (!window.confirm('Delete this transaction?')) return; removeTransaction(t.id) }}
                       className="shrink-0 rounded-lg p-1.5 text-gray-600 hover:bg-red-950 hover:text-red-400 transition-colors"
                       aria-label="Delete transaction"
                     >

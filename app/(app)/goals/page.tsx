@@ -14,6 +14,7 @@ import { FormError } from '@/components/ui/form-error'
 import type { Goal, GoalType } from '@/lib/types/goal'
 import { getGoalStatus, goalProgressPct, GOAL_STATUS_LABELS, GOAL_STATUS_STYLES } from '@/lib/utils/goal-status'
 import { ROUTES } from '@/lib/constants/routes'
+import { useCurrentUserId } from '@/lib/hooks/use-current-user-id'
 
 const GOAL_TYPES: { value: GoalType; label: string }[] = [
   { value: 'savings',    label: 'Savings'    },
@@ -142,8 +143,9 @@ function parseForm(form: FormState): { targetAmount: number; currentAmount: numb
 }
 
 export default function GoalsPage() {
-  const { goals, isLoaded, addGoal, updateGoal, removeGoal } = useGoals()
+  const { goals, isLoaded, isLoadError, addGoal, updateGoal, removeGoal } = useGoals()
   const { fmt } = useFormatCurrency()
+  const currentUserId = useCurrentUserId()
   const [addForm, setAddForm] = useState<FormState>(EMPTY_FORM)
   const [addError, setAddError] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -156,30 +158,43 @@ export default function GoalsPage() {
     )
   }
 
+  if (isLoadError) {
+    return (
+      <p className="py-10 text-center text-sm text-gray-500">Failed to load goals — refresh to try again.</p>
+    )
+  }
+
   function handleAddChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     setAddForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
     setAddError('')
   }
 
-  function handleAddSubmit(e: React.FormEvent) {
+  async function handleAddSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!isRequired(addForm.name)) { setAddError('Goal name is required.'); return }
     if (addForm.targetDate && !isDateFormat(addForm.targetDate)) { setAddError('Use YYYY-MM-DD date format.'); return }
     const amounts = parseForm(addForm)
     if (!amounts) { setAddError('Target amount must be a positive number and saved amount must be 0 or more.'); return }
+    if (amounts.currentAmount > amounts.targetAmount) { setAddError('Saved amount cannot exceed the target amount.'); return }
     const now = new Date().toISOString()
-    addGoal({
-      id:            crypto.randomUUID(),
-      name:          addForm.name.trim(),
-      type:          addForm.type,
-      targetAmount:  amounts.targetAmount,
-      currentAmount: amounts.currentAmount,
-      targetDate:    addForm.targetDate || undefined,
-      shared:        addForm.shared,
-      createdAt:     now,
-      updatedAt:     now,
-    })
-    setAddForm(EMPTY_FORM)
+    try {
+      await addGoal({
+        id:            crypto.randomUUID(),
+        userId:        currentUserId,
+        name:          addForm.name.trim(),
+        type:          addForm.type,
+        targetAmount:  amounts.targetAmount,
+        currentAmount: amounts.currentAmount,
+        targetDate:    addForm.targetDate || undefined,
+        shared:        addForm.shared,
+        createdAt:     now,
+        updatedAt:     now,
+      })
+      setAddForm(EMPTY_FORM)
+      setAddError('')
+    } catch {
+      setAddError('Failed to save goal. Please try again.')
+    }
   }
 
   function startEdit(goal: Goal) {
@@ -203,6 +218,7 @@ export default function GoalsPage() {
     if (editForm.targetDate && !isDateFormat(editForm.targetDate)) { setEditError('Use YYYY-MM-DD date format.'); return }
     const amounts = parseForm(editForm)
     if (!amounts) { setEditError('Target amount must be a positive number and saved amount must be 0 or more.'); return }
+    if (amounts.currentAmount > amounts.targetAmount) { setEditError('Saved amount cannot exceed the target amount.'); return }
     updateGoal(id, {
       name:          editForm.name.trim(),
       type:          editForm.type,
@@ -212,6 +228,8 @@ export default function GoalsPage() {
       shared:        editForm.shared,
     })
     setEditingId(null)
+    setEditForm(EMPTY_FORM)
+    setEditError('')
   }
 
   return (
@@ -292,7 +310,7 @@ export default function GoalsPage() {
                         <div className="space-y-1">
                           <div className="flex justify-between text-xs text-gray-500">
                             <span>{fmt(goal.currentAmount)} saved</span>
-                            <span>{pct.toFixed(0)}% of {fmt(goal.targetAmount)}</span>
+                            <span>{Math.floor(pct)}% of {fmt(goal.targetAmount)}</span>
                           </div>
                           <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-muted">
                             <div
@@ -321,7 +339,7 @@ export default function GoalsPage() {
                           <Pencil className="h-4 w-4" />
                         </button>
                         <button
-                          onClick={() => removeGoal(goal.id)}
+                          onClick={() => { if (!window.confirm('Delete this goal?')) return; removeGoal(goal.id) }}
                           className="rounded-lg p-1.5 text-gray-600 hover:bg-red-950 hover:text-red-400 transition-colors"
                           aria-label="Delete goal"
                         >

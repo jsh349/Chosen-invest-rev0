@@ -47,9 +47,11 @@ export function GoalsProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const setGoals = useCallback((newGoals: Goal[]) => {
-    goalsAdapter.saveAll(newGoals)
-      .then(() => setGoalsState(newGoals))
-      .catch(console.error)
+    setGoalsState(prev => {
+      goalsAdapter.saveAll(newGoals)
+        .catch(err => { console.error(err); setGoalsState(prev) })
+      return newGoals
+    })
   }, [])
 
   const addGoal = useCallback((goal: Goal) => {

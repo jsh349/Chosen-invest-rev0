@@ -30,10 +30,15 @@ yarn-error.log*
 # vercel
 .vercel
 
+# AI agent operating instructions — internal workflow only, not for public repo
+.claude/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
 test-results/
 
-# local SQLite database (Turso local dev)
+# local SQLite DB (used for local dev/testing when Turso is unreachable)
 local.db
+local.db-shm
+local.db-wal

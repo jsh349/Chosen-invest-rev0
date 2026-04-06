@@ -13,8 +13,11 @@ import { formatSignedAmount } from '@/lib/utils/format-amount'
 
 export function TransactionSummaryCard() {
   const { transactions, isLoaded } = useTransactions()
-  const { fmt, symbol } = useFormatCurrency()
-  const formatAmount = (amount: number) => formatSignedAmount(amount, fmt)
+  const { fmt } = useFormatCurrency()
+  const formatAmount = (amount: number) => {
+    const prefix = amount >= 0 ? '+' : '-'
+    return `${prefix}${fmt(Math.abs(amount))}`
+  }
 
   if (!isLoaded) return null
 

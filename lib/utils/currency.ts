@@ -24,16 +24,18 @@ export function formatCompact(
   currencySymbol = '$',
   showCents = false
 ): string {
+  const sign = value < 0 ? '-' : ''
+  const abs = Math.abs(value)
   for (const [threshold, suffix] of COMPACT_SUFFIXES) {
-    if (Math.abs(value) >= threshold) {
-      const divided = value / threshold
+    if (abs >= threshold) {
+      const divided = abs / threshold
       const formatted = showCents ? divided.toFixed(1) : divided.toFixed(0)
-      return `${currencySymbol}${formatted}${suffix}`
+      return `${sign}${currencySymbol}${formatted}${suffix}`
     }
   }
   return showCents
-    ? `${currencySymbol}${value.toFixed(2)}`
-    : `${currencySymbol}${value.toFixed(0)}`
+    ? `${sign}${currencySymbol}${abs.toFixed(2)}`
+    : `${sign}${currencySymbol}${abs.toFixed(0)}`
 }
 
 /** Returns the primary symbol for a currency code (best-effort). */

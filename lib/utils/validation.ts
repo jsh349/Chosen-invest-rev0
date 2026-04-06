@@ -29,5 +29,5 @@ export function isDateFormat(value: string): boolean {
 
 /** Returns true if the string looks like a basic email (has user@domain.tld). */
 export function isBasicEmail(value: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+  return /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(value)
 }

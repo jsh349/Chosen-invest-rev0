@@ -3,8 +3,11 @@
 import Link from 'next/link'
 import { cn } from '@/lib/utils/cn'
 import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
+import { percentileColor } from '@/lib/utils/rank-format'
+import { getRankInterpretation } from '@/lib/utils/rank-interpretation'
 import { ROUTES } from '@/lib/constants/routes'
 import type { RankResult } from '@/lib/types/rank'
+import { getPrimaryRank } from '@/lib/utils/rank-priority'
 
 interface RankOverviewCardProps {
   rank: RankResult
@@ -35,13 +38,6 @@ function PercentileBar({ percentile, tall }: { percentile: number; tall?: boolea
   )
 }
 
-function topPctColor(topPct: number): string {
-  if (topPct <= 25) return 'text-emerald-400'
-  if (topPct <= 50) return 'text-brand-400'
-  if (topPct <= 70) return 'text-amber-400'
-  return 'text-gray-400'
-}
-
 function RankTile({ result }: { result: RankResult }) {
   const hasPct = result.percentile != null
   const topPct = hasPct ? 100 - result.percentile! : null
@@ -52,7 +48,7 @@ function RankTile({ result }: { result: RankResult }) {
         {result.label}
       </p>
       {topPct != null ? (
-        <p className={cn('text-2xl font-bold tracking-tight', topPctColor(topPct))}>
+        <p className={cn('text-2xl font-bold tracking-tight', percentileColor(result.percentile!))}>
           Top {topPct}%
         </p>
       ) : (
@@ -63,44 +59,53 @@ function RankTile({ result }: { result: RankResult }) {
       ) : (
         <div className="h-1.5 w-full rounded-full bg-surface-muted" />
       )}
-      <p className="text-[11px] leading-relaxed text-gray-400">{result.message}</p>
+      {hasPct && (
+        <p className="text-[11px] leading-relaxed text-gray-400">
+          {getRankInterpretation(result.percentile!)}
+        </p>
+      )}
     </div>
   )
 }
 
 export function RankOverviewCard({ rank, ageRank, ageGenderRank, returnRank, totalValue }: RankOverviewCardProps) {
-  const overallTop = rank.percentile != null ? 100 - rank.percentile : null
+  const allRanks = [rank, ageRank, ageGenderRank, returnRank]
+  const primary = getPrimaryRank(allRanks)
+  const heroTop = primary?.percentile != null ? 100 - primary.percentile : null
+  const isPartial = allRanks.some((r) => r.percentile == null)
   const { compact } = useFormatCurrency()
 
   return (
     <div className="rounded-xl border border-surface-border bg-surface-card p-6 space-y-6">
-      {/* Hero: Overall Wealth Rank */}
+      {/* Hero: highest-priority rank with a real percentile */}
       <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center sm:gap-8">
         <div className="flex-1 text-center sm:text-left space-y-1">
           <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">
-            Overall Wealth Rank
+            {primary?.label ?? 'Overall Wealth Rank'}
           </p>
-          {overallTop != null ? (
-            <p className={cn('text-5xl font-extrabold tracking-tight', topPctColor(overallTop))}>
-              Top {overallTop}%
+          {heroTop != null ? (
+            <p className={cn('text-5xl font-extrabold tracking-tight', percentileColor(100 - heroTop))}>
+              Top {heroTop}%
             </p>
           ) : (
             <p className="text-4xl font-bold text-gray-600">—</p>
           )}
-          <p className="text-sm text-gray-500">
+          <p className="text-xs text-gray-500">
             {compact(totalValue)} total assets
           </p>
         </div>
         <div className="w-full sm:w-64 space-y-2">
-          {rank.percentile != null && (
-            <PercentileBar percentile={rank.percentile} tall />
+          {primary?.percentile != null && (
+            <PercentileBar percentile={primary.percentile} tall />
           )}
           <div className="flex justify-between text-[10px] text-gray-600">
-            <span>0%</span>
-            <span>50%</span>
-            <span>100%</span>
+            <span>0th</span>
+            <span>50th</span>
+            <span>100th</span>
           </div>
-          <p className="text-xs text-gray-400">{rank.message}</p>
+          {primary?.percentile != null && (
+            <p className="text-xs text-gray-400">{getRankInterpretation(primary.percentile)}</p>
+          )}
         </div>
       </div>
 
@@ -117,13 +122,13 @@ export function RankOverviewCard({ rank, ageRank, ageGenderRank, returnRank, tot
       {/* Footer */}
       <div className="flex items-center justify-between gap-4">
         <p className="text-[10px] text-gray-600">
-          Based on reference benchmarks. These are estimates only and not financial advice.
+          Estimate · not financial advice · Chosen Invest
         </p>
         <Link
           href={ROUTES.rank}
           className="shrink-0 text-xs text-brand-400 hover:text-brand-300 transition-colors"
         >
-          Rank details →
+          {isPartial ? 'Full ranking →' : 'Ranking detail →'}
         </Link>
       </div>
     </div>

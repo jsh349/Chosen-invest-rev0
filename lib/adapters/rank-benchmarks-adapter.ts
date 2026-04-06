@@ -1,6 +1,8 @@
 import type { BenchmarkBucket } from '@/lib/types/rank'
 import type { BenchmarkFile } from '@/lib/types/benchmark-import'
 import { validateBenchmarkFile, parseBenchmarkFile } from '@/lib/utils/benchmark-import'
+import { checkBenchmarkCompatibility } from '@/lib/utils/benchmark-schema-guard'
+import { isKnownSourceId, type KnownBenchmarkSourceId } from '@/lib/utils/benchmark-source-precedence'
 import { runBenchmarkQA } from '@/lib/utils/benchmark-qa'
 import {
   OVERALL_WEALTH_BUCKETS,
@@ -30,7 +32,7 @@ import { recordBenchmarkSourceSwitch } from '@/lib/utils/benchmark-source-histor
 const BENCHMARK_SOURCE_LS_KEY = STORAGE_KEYS.benchmarkSource
 
 export type BenchmarkSource = {
-  id: 'default' | 'curated'
+  id: KnownBenchmarkSourceId
   label: string
 }
 
@@ -55,12 +57,16 @@ export function getAvailableBenchmarkSources(): BenchmarkSource[] {
   return sources
 }
 
-/** Reads the stored source preference. Falls back to 'default' safely. */
-export function getActiveBenchmarkSourceId(): BenchmarkSource['id'] {
+/**
+ * Reads the stored source preference.
+ * Returns the stored id when it is a recognised KnownBenchmarkSourceId;
+ * falls back to 'default' for unknown, empty, or missing values.
+ */
+export function getActiveBenchmarkSourceId(): KnownBenchmarkSourceId {
   if (typeof window === 'undefined') return 'default'
   try {
     const stored = window.localStorage.getItem(BENCHMARK_SOURCE_LS_KEY)
-    return stored === 'curated' ? 'curated' : 'default'
+    return stored !== null && isKnownSourceId(stored) ? stored : 'default'
   } catch {
     return 'default'
   }
@@ -84,20 +90,39 @@ export function setActiveBenchmarkSourceId(id: BenchmarkSource['id']): void {
 // Adapter resolution
 // ---------------------------------------------------------------------------
 
-function buildDefaultAdapter(): RankBenchmarksAdapter {
+function buildAdapterFromBuckets(buckets: {
+  overallWealth:    BenchmarkBucket[]
+  ageBased:         BenchmarkBucket[]
+  ageGender:        BenchmarkBucket[]
+  investmentReturn: BenchmarkBucket[]
+}): RankBenchmarksAdapter {
   return {
-    getOverallWealthBenchmarks: () => OVERALL_WEALTH_BUCKETS,
-    getAgeBenchmarks:           () => AGE_BASED_BUCKETS,
-    getAgeGenderBenchmarks:     () => AGE_GENDER_BUCKETS,
-    getReturnBenchmarks:        () => RETURN_BUCKETS,
+    getOverallWealthBenchmarks: () => buckets.overallWealth,
+    getAgeBenchmarks:           () => buckets.ageBased,
+    getAgeGenderBenchmarks:     () => buckets.ageGender,
+    getReturnBenchmarks:        () => buckets.investmentReturn,
   }
+}
+
+function buildDefaultAdapter(): RankBenchmarksAdapter {
+  return buildAdapterFromBuckets({
+    overallWealth:    OVERALL_WEALTH_BUCKETS,
+    ageBased:         AGE_BASED_BUCKETS,
+    ageGender:        AGE_GENDER_BUCKETS,
+    investmentReturn: RETURN_BUCKETS,
+  })
 }
 
 /**
  * Resolve the active adapter once at module load.
  * Respects the stored source preference; falls back to built-in defaults
- * when the curated file is absent, invalid, fails QA, or throws during parsing.
+ * when the preferred source is absent, invalid, fails QA, or throws during parsing.
  * Logs a console.warn for each fallback path so issues are visible in devtools.
+ *
+ * Source precedence (see BENCHMARK_SOURCE_PRECEDENCE):
+ *   1. curated  — validated local file
+ *   2. external — live source (not_connected stub; skipped until connected)
+ *   3. default  — built-in local data; always available
  */
 function resolveAdapter(): RankBenchmarksAdapter {
   const pref = getActiveBenchmarkSourceId()
@@ -110,18 +135,19 @@ function resolveAdapter(): RankBenchmarksAdapter {
       if (validationError) {
         console.warn(`[BenchmarkAdapter] Curated file failed validation (${validationError}). Using built-in defaults.`)
       } else {
+        const compatResult = checkBenchmarkCompatibility(CURATED_BENCHMARK_FILE)
+        if (!compatResult.compatible) {
+          console.warn(`[BenchmarkAdapter] Curated file failed schema compatibility check (${compatResult.reasons.join('; ')}). Using built-in defaults.`)
+          _isUsingFallback = true
+          return buildDefaultAdapter()
+        }
         try {
           const buckets = parseBenchmarkFile(CURATED_BENCHMARK_FILE)
           const qaIssues = runBenchmarkQA(buckets, { silent: process.env.NODE_ENV === 'test' })
           if (qaIssues > 0) {
             console.warn(`[BenchmarkAdapter] Curated file failed QA (${qaIssues} issue(s)). Using built-in defaults.`)
           } else {
-            return {
-              getOverallWealthBenchmarks: () => buckets.overallWealth,
-              getAgeBenchmarks:           () => buckets.ageBased,
-              getAgeGenderBenchmarks:     () => buckets.ageGender,
-              getReturnBenchmarks:        () => buckets.investmentReturn,
-            }
+            return buildAdapterFromBuckets(buckets)
           }
         } catch (err) {
           console.warn('[BenchmarkAdapter] Failed to parse curated file. Using built-in defaults.', err)
@@ -130,6 +156,15 @@ function resolveAdapter(): RankBenchmarksAdapter {
     }
     // Curated was requested but could not be loaded — flag the fallback
     _isUsingFallback = true
+  }
+
+  // External source selected but not yet connected to a live data feed.
+  // Treat as an explicit fallback so confidence notes and health status
+  // fire correctly (same as curated when unavailable).
+  if (pref === 'external') {
+    console.warn('[BenchmarkAdapter] External source selected but not yet connected. Using built-in defaults.')
+    _isUsingFallback = true
+    return buildDefaultAdapter()
   }
 
   return buildDefaultAdapter()
@@ -167,19 +202,20 @@ export function isUsingFallbackBenchmark(): boolean {
  *
  * Always returns a valid object — never throws.
  */
-export function getActiveBenchmarkMeta(): { version: string; updatedAt: string } {
+export function getActiveBenchmarkMeta(): { version: string; updatedAt: string; sourceLabel: string } {
   const sourceId = getActiveBenchmarkSourceId()
   if (sourceId === 'default') {
-    return { version: BENCHMARK_META.version, updatedAt: BENCHMARK_META.updatedAt }
+    return { version: BENCHMARK_META.version, updatedAt: BENCHMARK_META.updatedAt, sourceLabel: BENCHMARK_META.sourceLabel }
   }
   const lastApplied = getLastAppliedBenchmark()
   if (lastApplied) {
     return {
-      version:   `${lastApplied.source} (${lastApplied.vintageYear})`,
-      updatedAt: lastApplied.appliedAt.slice(0, 10),
+      version:     `${lastApplied.source} (${lastApplied.vintageYear})`,
+      updatedAt:   lastApplied.appliedAt.slice(0, 10),
+      sourceLabel: lastApplied.source,
     }
   }
-  return { version: BENCHMARK_META.version, updatedAt: BENCHMARK_META.updatedAt }
+  return { version: BENCHMARK_META.version, updatedAt: BENCHMARK_META.updatedAt, sourceLabel: BENCHMARK_META.sourceLabel }
 }
 
 /** Active adapter — resolved from stored preference at module load. */
@@ -203,15 +239,15 @@ runBenchmarkQA({
  * Falls back to built-in defaults if parsing throws unexpectedly.
  */
 export function rankBenchmarksAdapterFromFile(file: BenchmarkFile): RankBenchmarksAdapter {
+  const compatResult = checkBenchmarkCompatibility(file)
+  if (!compatResult.compatible) {
+    console.warn(`[BenchmarkAdapter] rankBenchmarksAdapterFromFile: schema compatibility check failed (${compatResult.reasons.join('; ')}). Falling back to defaults.`)
+    return buildDefaultAdapter()
+  }
   try {
     const buckets = parseBenchmarkFile(file)
     runBenchmarkQA(buckets, { silent: process.env.NODE_ENV === 'test' })
-    return {
-      getOverallWealthBenchmarks: () => buckets.overallWealth,
-      getAgeBenchmarks:           () => buckets.ageBased,
-      getAgeGenderBenchmarks:     () => buckets.ageGender,
-      getReturnBenchmarks:        () => buckets.investmentReturn,
-    }
+    return buildAdapterFromBuckets(buckets)
   } catch (err) {
     console.warn('[BenchmarkAdapter] rankBenchmarksAdapterFromFile: failed to parse file. Falling back to defaults.', err)
     return buildDefaultAdapter()

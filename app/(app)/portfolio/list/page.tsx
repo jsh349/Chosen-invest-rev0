@@ -17,15 +17,21 @@ import type { AssetCategory } from '@/lib/types/asset'
 type Draft = { name: string; category: AssetCategory; value: string }
 
 export default function PortfolioListPage() {
-  const { assets, hasCustomAssets, updateAsset, removeAsset, isLoaded } = useAssets()
+  const { assets, hasCustomAssets, updateAsset, removeAsset, isLoaded, isLoadError } = useAssets()
   const { fmt } = useFormatCurrency()
   const [editingId, setEditingId] = useState<string | null>(null)
   const [draft, setDraft] = useState<Draft | null>(null)
-  const [editError, setEditError] = useState('')
+  const [editError, setEditError] = useState<string | null>(null)
 
   if (!isLoaded) {
     return (
       <LoadingSpinner />
+    )
+  }
+
+  if (isLoadError) {
+    return (
+      <p className="py-10 text-center text-sm text-gray-500">Failed to load portfolio — refresh to try again.</p>
     )
   }
 
@@ -55,14 +61,17 @@ export default function PortfolioListPage() {
   function cancelEdit() {
     setEditingId(null)
     setDraft(null)
-    setEditError('')
+    setEditError(null)
   }
 
   function saveEdit(id: string) {
     if (!draft) return
     const value = parseFloat(draft.value)
-    if (!draft.name.trim()) { setEditError('Name cannot be empty.'); return }
-    if (isNaN(value) || value <= 0) { setEditError('Value must be a positive number.'); return }
+    if (!draft.name.trim() || isNaN(value) || value <= 0) {
+      setEditError('Enter a name and a positive value.')
+      return
+    }
+    setEditError(null)
     updateAsset(id, { name: draft.name.trim(), category: draft.category, value })
     setEditingId(null)
     setDraft(null)
@@ -120,7 +129,9 @@ export default function PortfolioListPage() {
                     placeholder="0"
                   />
                 </div>
-                {editError && <p className="text-xs text-red-400">{editError}</p>}
+                {editError && (
+                  <p className="text-xs text-red-400">{editError}</p>
+                )}
                 <div className="flex justify-end gap-2">
                   <Button size="sm" variant="ghost" onClick={cancelEdit}>
                     <X className="h-3.5 w-3.5" />

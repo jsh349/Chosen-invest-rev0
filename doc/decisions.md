@@ -56,6 +56,31 @@
 
 ---
 
+### [2026-03-30] Turso vs Supabase — 역할 경계 명시
+
+**결정:** 두 DB의 역할을 Phase 기준으로 분리. 겹치지 않는다.
+
+**역할 분담:**
+
+| 계층 | 담당 | 활성화 시점 |
+|---|---|---|
+| **Turso (libSQL + Drizzle)** | 앱 구조 데이터 — assets, transactions, goals, settings, users | Phase 2+ |
+| **Supabase** | RLS 기반 멀티유저 격리, Storage, Realtime | Phase 5+ |
+
+**규칙:**
+- Phase 2–4 신규 데이터는 Turso에 먼저 쓴다. Supabase 쿼리는 작성하지 않는다.
+- Phase 5에서 멀티유저 전환 시 Supabase RLS를 도입하되, Turso에 이미 있는 테이블과 중복 설계하지 않는다.
+- Turso와 Supabase 양쪽에 같은 테이블을 만들지 않는다 (단일 소스 원칙).
+- Supabase는 현재 auth 연동과 클라이언트 설정만 존재. 새 Supabase 쿼리 추가 전에 이 문서를 먼저 확인한다.
+
+**언제 번복하나:**
+- Realtime 또는 Storage 기능이 Phase 5 이전에 필요해지면 이 결정을 업데이트한다.
+- Turso 한계(동시 쓰기, 스케일)가 먼저 나타나면 마이그레이션 전략을 별도 문서로 작성한다.
+
+**관련 파일:** `lib/db/turso.ts`, `lib/db/schema.ts`, `lib/supabase/server.ts`, `lib/supabase/client.ts`
+
+---
+
 ### [2026-03-28] Google Gemini 1.5 (primary AI) + Anthropic Claude (secondary)
 
 **결정:** AI Summary는 Gemini Flash 우선, 복잡한 분석은 Claude 사용
@@ -76,7 +101,7 @@
 **결정:** 주식/ETF 실시간 시세 및 심볼 검색에 Finnhub 사용
 
 **이유:**
-- `NEXT_PUBLIC_FINNHUB_API_KEY` 이미 설정됨
+- `FINNHUB_API_KEY` 이미 설정됨 (server-only — NEXT_PUBLIC_ prefix 절대 사용 금지)
 - 무료 플랜으로 기본 시세 조회 가능
 - Phase 2 자산 입력 시 실시간 가격 제안 기능에 활용 예정
 
@@ -105,6 +130,33 @@
 - plan.md 원칙: "Mock data before API integration"
 
 **해제 시점:** Phase 5 (Real Data Integration) 단계에서 실제 데이터로 교체
+
+---
+
+### [2026-03-30] Asset value precision — REAL (float) for Phase 1, INTEGER minor units before Phase 3
+
+**현재 상태 (Phase 1–2):**
+- `assets.value` is stored as SQLite `REAL` (IEEE 754 double = JS `number`)
+- Sufficient for user-entered portfolio values in normal ranges (e.g. $100 – $10M USD)
+
+**위험 (Risk):**
+- IEEE 754 doubles lose precision for very large integers (>2^53 ≈ $9 quadrillion) — not a real-world risk for MVP
+- High-precision crypto amounts (e.g. 0.000000012 BTC) can round silently
+- `value1 === value2` float equality is unreliable — never compare asset values with `===`
+
+**Phase 3 이전 마이그레이션 필요 (Migration required before Phase 3):**
+- **Option A (recommended):** Migrate to `integer('value_cents')` in minor units (e.g. USD cents, KRW 원).
+  - Store: `Math.round(userInput * 100)` → retrieve: `db_value / 100`
+  - Exact for all normal financial values, no float artifacts
+- **Option B:** Store as `text('value')` decimal string, parse with a decimal library on read.
+  - More flexible for crypto, but adds a parsing dependency
+
+**현재 규칙 (Until migrated):**
+- Always `Math.round()` or `toFixed()` before display — never show raw float
+- Treat `value` as approximate; do not compare with `===`
+- Do not introduce crypto sub-cent precision features before migration
+
+**관련 파일:** `lib/db/schema.ts` (value: real), `lib/types/asset.ts` (value: number)
 
 ---
 

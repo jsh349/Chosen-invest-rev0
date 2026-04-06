@@ -52,3 +52,86 @@ export function dismissBenchmarkAlert(): void {
   if (typeof window === 'undefined') return
   writeScalar(LS_KEY, getBenchmarkFingerprint())
 }
+
+/**
+ * Maps a source id to its human-readable display label.
+ * Centralised so all source-change surfaces use consistent terminology —
+ * previously the label derivation was inlined and duplicated, and neither
+ * copy handled the 'external' source introduced in BENCHMARK_SOURCE_PRECEDENCE.
+ */
+function sourceLabelFor(sourceId: string): string {
+  if (sourceId === 'curated')  return 'Curated dataset'
+  if (sourceId === 'external') return 'External source'
+  return 'Built-in reference'
+}
+
+/**
+ * Returns a compact note when the benchmark *source* specifically changed
+ * since the user last visited. Returns null when the source is unchanged,
+ * on first visit (no stored fingerprint), or on the server.
+ *
+ * Must be called before dismissBenchmarkAlert() to access the previous fingerprint.
+ */
+export function getBenchmarkTransitionNote(): string | null {
+  if (typeof window === 'undefined') return null
+  const stored = readScalar(LS_KEY)
+  if (stored === null) return null
+  const prevSource = stored.split('::')[1] ?? null
+  if (prevSource === null) return null
+  const currentSource = getActiveBenchmarkSourceId()
+  if (prevSource === currentSource) return null
+  const from = sourceLabelFor(prevSource).toLowerCase()
+  const to   = sourceLabelFor(currentSource).toLowerCase()
+  return `Benchmark source changed from ${from} to ${to} — reference ranges may differ.`
+}
+
+// ---------------------------------------------------------------------------
+// Source change summary (structured)
+// ---------------------------------------------------------------------------
+
+export type BenchmarkSourceSummary = {
+  /** Human-readable label for the currently active source */
+  currentLabel: string
+  /** Human-readable label for the previously active source, or null if unchanged */
+  previousLabel: string | null
+  /** True when the curated source failed to load and built-in is used instead */
+  fallbackActive: boolean
+}
+
+/**
+ * Returns a structured summary of the current benchmark source state.
+ * Call this before checkBenchmarkChanged() / dismissBenchmarkAlert() so the
+ * previous fingerprint is still available.
+ *
+ * Returns null on the server (SSR-safe).
+ */
+/**
+ * Returns a short interpretive note explaining the potential impact of a
+ * benchmark source change on stored rank data.
+ *
+ * Only meaningful when prior snapshots exist — without them there is no
+ * historical comparison affected. Returns null otherwise.
+ *
+ * Wording is intentionally cautious: no numerical causality implied.
+ */
+export function getBenchmarkSourceImpactNote(hasPriorSnapshots: boolean): string | null {
+  if (!hasPriorSnapshots) return null
+  return 'Prior snapshots used different reference ranges — direct comparisons may not be exact.'
+}
+
+export function getBenchmarkSourceSummary(fallbackActive: boolean): BenchmarkSourceSummary | null {
+  if (typeof window === 'undefined') return null
+  const currentSource = getActiveBenchmarkSourceId()
+  const currentLabel = sourceLabelFor(currentSource)
+
+  let previousLabel: string | null = null
+  const stored = readScalar(LS_KEY)
+  if (stored !== null) {
+    const prevSource = stored.split('::')[1] ?? null
+    if (prevSource !== null && prevSource !== currentSource) {
+      previousLabel = sourceLabelFor(prevSource)
+    }
+  }
+
+  return { currentLabel, previousLabel, fallbackActive }
+}

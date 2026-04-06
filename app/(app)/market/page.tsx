@@ -5,11 +5,13 @@ import { RefreshCw } from 'lucide-react'
 import { MarketTickerRow } from '@/components/market/market-ticker-row'
 import { MarketSearchBar } from '@/components/market/market-search-bar'
 import { MarketSummaryStrip } from '@/components/market/market-summary-strip'
+import '@/lib/mock/guard'
 import {
   MOCK_INDICES,
   MOCK_STOCKS,
   MOCK_COMMODITIES,
   MOCK_CRYPTO,
+  MOCK_DATA_AS_OF,
 } from '@/lib/mock/market'
 import type { MarketCategory, MarketFilter } from '@/lib/types/market'
 import { cn } from '@/lib/utils/cn'
@@ -41,7 +43,6 @@ export default function MarketPage() {
   const [activeTab,    setActiveTab]    = useState<MarketCategory>('stocks')
   const [activeFilter, setActiveFilter] = useState<MarketFilter>('most_active')
   const [search,       setSearch]       = useState('')
-  const [lastUpdated]                   = useState(() => new Date().toLocaleTimeString())
 
   const filtered = useMemo(() => {
     let list = [...DATA_MAP[activeTab]]
@@ -80,7 +81,7 @@ export default function MarketPage() {
             <h1 className="text-xl font-bold text-white">Market</h1>
             <p className="mt-0.5 text-xs text-gray-500 flex items-center gap-1.5">
               <RefreshCw className="h-3 w-3" />
-              Demo data · Updated {lastUpdated}
+              Demo prices · as of {MOCK_DATA_AS_OF} · not real-time
             </p>
           </div>
           {/* 간단 통계 */}

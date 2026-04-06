@@ -56,7 +56,10 @@ describe('getBenchmarkHealthStatus', () => {
     expect(result.status).toBe('partial')
   })
 
-  it('every result includes a non-empty note', () => {
+  it('every result has a note field of type string', () => {
+    // Note is intentionally empty ('') for healthy, fallback, and partial —
+    // those statuses have other UI surfaces that explain the state.
+    // Only 'invalid' carries a clarifying note since the status alone is opaque.
     const cases: [BenchmarkSourceCapabilities, boolean][] = [
       [ALL_CAPS, false],
       [ALL_CAPS, true],
@@ -66,7 +69,14 @@ describe('getBenchmarkHealthStatus', () => {
     for (const [caps, fallback] of cases) {
       const result = getBenchmarkHealthStatus(caps, fallback)
       expect(typeof result.note).toBe('string')
-      expect(result.note.length).toBeGreaterThan(0)
     }
+  })
+
+  it('invalid status includes a non-empty note stating what is active', () => {
+    // Note says what data source is active ('using built-in'), not just what is absent.
+    const stubCaps: BenchmarkSourceCapabilities = { ...ALL_CAPS, isFallbackOnly: true }
+    const result = getBenchmarkHealthStatus(stubCaps, false)
+    expect(result.note.length).toBeGreaterThan(0)
+    expect(result.note).toContain('built-in')
   })
 })

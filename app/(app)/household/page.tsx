@@ -74,6 +74,10 @@ export default function HouseholdPage() {
     e.preventDefault()
     if (!isRequired(form.name)) { setError('Name is required.'); return }
     if (!isBasicEmail(form.email)) { setError('A valid email is required.'); return }
+    if (members.some(m => m.email.toLowerCase() === form.email.trim().toLowerCase())) {
+      setError('A member with this email is already added.')
+      return
+    }
     addMember({
       id:        crypto.randomUUID(),
       name:      form.name.trim(),
@@ -174,7 +178,7 @@ export default function HouseholdPage() {
                     {m.role}
                   </span>
                   <button
-                    onClick={() => removeMember(m.id)}
+                    onClick={() => { if (!window.confirm('Remove this household member?')) return; removeMember(m.id) }}
                     className="shrink-0 rounded-lg p-1.5 text-gray-600 hover:bg-red-950 hover:text-red-400 transition-colors"
                     aria-label="Remove member"
                   >
@@ -240,7 +244,7 @@ export default function HouseholdPage() {
                     <p className="text-xs text-gray-600">{new Date(note.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
                   </div>
                   <button
-                    onClick={() => removeNote(note.id)}
+                    onClick={() => { if (!window.confirm('Delete this note?')) return; removeNote(note.id) }}
                     className="shrink-0 rounded-lg p-1.5 text-gray-600 hover:bg-red-950 hover:text-red-400 transition-colors"
                     aria-label="Delete note"
                   >

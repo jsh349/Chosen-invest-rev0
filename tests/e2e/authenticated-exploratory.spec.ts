@@ -41,23 +41,20 @@ const SESSION_COOKIE = {
 }
 
 /** Pre-seeded asset data so the dashboard renders with real content */
-const SEED_ASSETS = JSON.stringify([
+const SEED_ASSETS = [
   {
-    id: 'a1', userId: 'pw_test_user', category: 'stocks',
-    label: 'Apple Inc.', value: 15000, currency: 'USD',
+    id: 'a1', name: 'Apple Inc.', category: 'stock', value: 15000, currency: 'USD',
     createdAt: '2025-01-01T00:00:00.000Z', updatedAt: '2025-01-01T00:00:00.000Z',
   },
   {
-    id: 'a2', userId: 'pw_test_user', category: 'cash',
-    label: 'Savings Account', value: 8000, currency: 'USD',
+    id: 'a2', name: 'Savings Account', category: 'cash', value: 8000, currency: 'USD',
     createdAt: '2025-01-01T00:00:00.000Z', updatedAt: '2025-01-01T00:00:00.000Z',
   },
   {
-    id: 'a3', userId: 'pw_test_user', category: 'retirement',
-    label: '401k', value: 22000, currency: 'USD',
+    id: 'a3', name: '401k', category: 'retirement', value: 22000, currency: 'USD',
     createdAt: '2025-01-01T00:00:00.000Z', updatedAt: '2025-01-01T00:00:00.000Z',
   },
-])
+]
 
 const SEED_SETTINGS = JSON.stringify({
   currency: 'USD',
@@ -75,16 +72,19 @@ async function gotoAuthenticated(page: Page, route: string) {
 
 async function seedAndGoto(page: Page, route: string) {
   await page.context().addCookies([SESSION_COOKIE])
-  await page.goto('/login') // any public page to set localStorage
+  // Seed assets via API (DB-backed)
+  await page.request.post('http://localhost:3001/api/assets', { data: SEED_ASSETS })
+  // Seed settings via localStorage (still localStorage-backed)
+  await page.goto('/login')
   await page.evaluate(
-    ({ assets, settings }) => {
-      localStorage.setItem('chosen_assets_v1', assets)
-      localStorage.setItem('chosen_settings_v1', settings)
-    },
-    { assets: SEED_ASSETS, settings: SEED_SETTINGS }
+    (settings) => { localStorage.setItem('chosen_settings_v1', settings) },
+    SEED_SETTINGS
   )
   await page.goto(route)
   await page.waitForLoadState('networkidle')
+  // Dashboard and rank pages render a LoadingSpinner until React state settles
+  // after the asset fetch resolves. Wait for h1 to ensure full render.
+  await page.locator('h1').first().waitFor({ state: 'visible', timeout: 12000 }).catch(() => {})
 }
 
 // ---------------------------------------------------------------------------
@@ -123,6 +123,8 @@ test.describe('Step 3 — Dashboard page', () => {
     const errors: string[] = []
     page.on('pageerror', (e) => errors.push(e.message))
     await seedAndGoto(page, '/dashboard')
+    // Explicitly wait for h1 in case seedAndGoto's silent catch masked a timeout
+    await page.locator('h1').first().waitFor({ state: 'visible', timeout: 15000 })
     const bodyText = await page.locator('body').innerText()
     expect(bodyText.length).toBeGreaterThan(100)
     expect(errors.filter(e => !e.includes('ResizeObserver'))).toHaveLength(0)
@@ -273,6 +275,8 @@ test.describe('Step 5 — Rank page', () => {
 
   test('methodology disclaimer uses correct wording', async ({ page }) => {
     await seedAndGoto(page, '/rank')
+    // Wait for the rank page to finish loading (heading appears after isFullyLoaded)
+    await expect(page.getByRole('heading', { name: /wealth rank/i }).first()).toBeVisible({ timeout: 10000 })
     const bodyText = await page.locator('body').innerText()
     expect(bodyText).toContain('estimates only')
     expect(bodyText).not.toContain('Not financial advice.')
@@ -433,14 +437,26 @@ test.describe('Step 12 — Empty state (no assets)', () => {
   test.skip(!SESSION_TOKEN, 'SESSION_TOKEN generation failed')
 
   test('dashboard shows empty state with Wealth Rank discovery hint', async ({ page }) => {
-    await gotoAuthenticated(page, '/dashboard')
+    // Clear assets so the dashboard renders the empty state
+    await page.context().addCookies([SESSION_COOKIE])
+    await page.request.delete('http://localhost:3001/api/assets')
+    await page.goto('/dashboard')
+    await page.waitForLoadState('networkidle')
+    // Wait for the dashboard to finish loading (React renders after asset fetch)
+    await page.locator('h1, [data-empty-state]').first().waitFor({ state: 'visible', timeout: 12000 }).catch(() => {})
     // Phase 65: empty state should mention Wealth Rank
     const bodyText = await page.locator('body').innerText()
     expect(bodyText.toLowerCase()).toMatch(/wealth rank|add your first asset|no assets/i)
   })
 
   test('rank page with no assets shows add-assets prompt', async ({ page }) => {
-    await gotoAuthenticated(page, '/rank')
+    // Clear assets so the rank page renders the empty state
+    await page.context().addCookies([SESSION_COOKIE])
+    await page.request.delete('http://localhost:3001/api/assets')
+    await page.goto('/rank')
+    await page.waitForLoadState('networkidle')
+    // Wait for the rank page to finish loading (heading appears after isFullyLoaded)
+    await expect(page.getByRole('heading', { name: /wealth rank/i }).first()).toBeVisible({ timeout: 10000 })
     const bodyText = await page.locator('body').innerText()
     expect(bodyText.toLowerCase()).toMatch(/no assets|add your portfolio|add assets/i)
   })
@@ -454,9 +470,11 @@ test.describe('Step 13 — Rank overview card regressions', () => {
 
   test('rank overview card footer uses updated copy', async ({ page }) => {
     await seedAndGoto(page, '/dashboard')
+    // Wait for dashboard content to fully render (rank card requires assets)
+    await expect(page.locator('text=Overall Wealth Rank').first()).toBeVisible({ timeout: 10000 })
     const bodyText = await page.locator('body').innerText()
-    // Phase 70: updated from "Not financial advice." standalone
-    expect(bodyText).toContain('estimates only')
+    // Phase 70: rank-overview-card footer uses "Estimate · not financial advice · Chosen Invest"
+    expect(bodyText).toContain('not financial advice')
     expect(bodyText).not.toMatch(/^Not financial advice\.$/m)
   })
 
@@ -498,13 +516,14 @@ test.describe('Step 14 — Rank snapshot behavior', () => {
         overallPercentile: 58, agePercentile: 63, returnPercentile: 72,
       },
     ])
+    // Seed assets via API (DB-backed); snapshots and settings via localStorage
+    await page.request.post('http://localhost:3001/api/assets', { data: SEED_ASSETS })
     await page.evaluate(
-      ({ snaps, assets, settings }) => {
+      ({ snaps, settings }) => {
         localStorage.setItem('chosen_rank_snapshots_v1', snaps)
-        localStorage.setItem('chosen_assets_v1', assets)
         localStorage.setItem('chosen_settings_v1', settings)
       },
-      { snaps: snapshots, assets: SEED_ASSETS, settings: SEED_SETTINGS }
+      { snaps: snapshots, settings: SEED_SETTINGS }
     )
 
     await page.goto('/rank')

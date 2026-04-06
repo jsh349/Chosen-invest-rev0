@@ -156,7 +156,7 @@ describe('SCENARIO_RETURN_GAP', () => {
 
   it('triggers rank insight Rule 1 (wealth rank higher than return rank)', () => {
     const insight = getRankInsight(SCENARIO_RETURN_GAP)
-    expect(insight).toContain('wealth rank is ahead')
+    expect(insight).toContain('Overall wealth rank is stronger')
   })
 })
 

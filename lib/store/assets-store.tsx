@@ -49,9 +49,11 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const setAssets = useCallback((newAssets: Asset[]) => {
-    assetsAdapter.saveAll(newAssets)
-      .then(() => setAssetsState(newAssets))
-      .catch(console.error)
+    setAssetsState(prev => {
+      assetsAdapter.saveAll(newAssets)
+        .catch(err => { console.error(err); setAssetsState(prev) })
+      return newAssets
+    })
   }, [])
 
   const addAsset = useCallback((asset: Asset) => {

@@ -96,6 +96,11 @@ describe('getActiveBenchmarkSourceId', () => {
     expect(getActiveBenchmarkSourceId()).toBe('curated')
   })
 
+  it('returns "external" when "external" is stored (recognised source)', () => {
+    localStorageMock.setItem('chosen_benchmark_source_v1', 'external')
+    expect(getActiveBenchmarkSourceId()).toBe('external')
+  })
+
   it('returns "default" for an unrecognised stored value', () => {
     localStorageMock.setItem('chosen_benchmark_source_v1', 'unknown_value')
     expect(getActiveBenchmarkSourceId()).toBe('default')

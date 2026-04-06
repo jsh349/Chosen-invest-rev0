@@ -18,22 +18,12 @@ export function getRankInsight(ranks: RankResult[]): string | null {
 
   // Rule 1: wealth rank significantly stronger than return rank
   if (overallPct !== null && retPct !== null && overallPct - retPct >= RANK_GAP_THRESHOLD) {
-    return 'Your wealth rank is ahead of your return rank — the gap may reflect a conservative return estimate.'
+    return 'Overall wealth rank is stronger than return rank.'
   }
 
   // Rule 2: return rank significantly stronger than wealth rank
   if (overallPct !== null && retPct !== null && retPct - overallPct >= RANK_GAP_THRESHOLD) {
-    return 'Your return rank is ahead of your wealth rank — sustained performance could lift your overall position.'
-  }
-
-  // Rule 3: wealth rank available but age comparison missing (birth year not set)
-  if (overallPct !== null && ageBased?.missingField === 'birth year') {
-    return 'Age-based comparison is unavailable — add birth year to enable peer group rank comparison.'
-  }
-
-  // Rule 4: age rank available but gender comparison missing
-  if (overallPct !== null && ageBased?.percentile != null && ageGender?.missingField) {
-    return 'Age + gender comparison is unavailable — add gender for a more specific peer group comparison.'
+    return 'Return rank is stronger than overall wealth rank.'
   }
 
   return null

@@ -39,28 +39,28 @@ export function getRankReviewSummary(
       return {
         topic: 'profile', label: 'Profile',
         status: 'missing',
-        note: 'Birth year not set — age-based comparisons unavailable.',
+        note: 'Birth year needed for age-based comparison.',
       }
     }
     if (!profile.hasGender && !profile.hasReturn) {
       return {
         topic: 'profile', label: 'Profile',
         status: 'review',
-        note: 'Gender and return estimate missing — two comparisons unavailable.',
+        note: 'Gender and return estimate both needed.',
       }
     }
     if (!profile.hasGender) {
       return {
         topic: 'profile', label: 'Profile',
         status: 'review',
-        note: 'Gender not set — age + gender comparison unavailable.',
+        note: 'Gender needed for age and gender comparison.',
       }
     }
     if (!profile.hasReturn) {
       return {
         topic: 'profile', label: 'Profile',
         status: 'review',
-        note: 'Return estimate not set — investment return rank unavailable.',
+        note: 'Return estimate needed for return rank.',
       }
     }
     return {
@@ -83,13 +83,19 @@ export function getRankReviewSummary(
       return {
         topic: 'wealth', label: 'Wealth rank',
         status: 'review',
-        note: 'Currently below the benchmark midpoint.',
+        note: overallPct >= 40
+          ? 'Around the benchmark midpoint.'
+          : overallPct >= 25
+            ? 'Tracking below the benchmark midpoint.'
+            : 'Well below the benchmark midpoint.',
       }
     }
     return {
       topic: 'wealth', label: 'Wealth rank',
       status: 'ok',
-      note: 'At or above the benchmark midpoint.',
+      // Mirror getRankInterpretation tiers so report and review surfaces
+      // describe the same rank outcome with the same phrase.
+      note: overallPct >= 75 ? 'Well above the benchmark median.' : 'Above the benchmark median.',
     }
   })()
 
@@ -99,20 +105,24 @@ export function getRankReviewSummary(
       return {
         topic: 'return', label: 'Return rank',
         status: 'missing',
-        note: 'No return estimate set — investment return rank unavailable.',
+        note: 'Return estimate needed for return rank.',
       }
     }
     if (returnPct < 50) {
       return {
         topic: 'return', label: 'Return rank',
         status: 'review',
-        note: 'Currently below the benchmark midpoint.',
+        note: returnPct >= 40
+          ? 'Around the benchmark midpoint.'
+          : returnPct >= 25
+            ? 'Tracking below the benchmark midpoint.'
+            : 'Well below the benchmark midpoint.',
       }
     }
     return {
       topic: 'return', label: 'Return rank',
       status: 'ok',
-      note: 'At or above the benchmark midpoint.',
+      note: returnPct >= 75 ? 'Well above the benchmark median.' : 'Above the benchmark median.',
     }
   })()
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import { Settings, Users } from 'lucide-react'
+import { Users } from 'lucide-react'
 import { useAssets } from '@/lib/store/assets-store'
 import { useHousehold } from '@/lib/store/household-store'
 import { useSettings } from '@/lib/store/settings-store'
@@ -13,46 +13,90 @@ import { buildPortfolioSummary } from '@/features/dashboard/helpers'
 import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { RankShareCard } from '@/components/rank/rank-share-card'
-import { PeriodicRankSummaryCard } from '@/components/rank/periodic-rank-summary-card'
-import { LOCAL_USER_ID } from '@/lib/constants/auth'
+import { useCurrentUserId } from '@/lib/hooks/use-current-user-id'
 import { ROUTES } from '@/lib/constants/routes'
 import { cn } from '@/lib/utils/cn'
+import '@/lib/mock/guard'
 import { BENCHMARK_META } from '@/lib/mock/rank-benchmarks'
 import { getActiveBenchmarkSourceId, isUsingFallbackBenchmark, getActiveBenchmarkMeta } from '@/lib/adapters/rank-benchmarks-adapter'
 import { percentileBandLabel } from '@/lib/utils/percentile-label'
 import { getRankInsight } from '@/lib/utils/rank-insight'
-import { getRankBadges } from '@/lib/utils/rank-badges'
 import { getRankActions } from '@/lib/utils/rank-actions'
 import { getRankGoalInsight } from '@/lib/utils/rank-goal-insight'
 import { buildMonthlySummary } from '@/lib/utils/rank-monthly-summary'
 import { buildMilestoneHistory } from '@/lib/utils/rank-milestone-history'
-import { checkBenchmarkChanged, dismissBenchmarkAlert, benchmarkVersionNote, getBenchmarkFingerprint } from '@/lib/utils/benchmark-change-alert'
-import { getNextRankHint } from '@/lib/utils/rank-next-hint'
+import { checkBenchmarkChanged, dismissBenchmarkAlert, benchmarkVersionNote, getBenchmarkFingerprint, getBenchmarkTransitionNote, getBenchmarkSourceSummary, getBenchmarkSourceImpactNote, type BenchmarkSourceSummary } from '@/lib/utils/benchmark-change-alert'
+import { getPrimaryRankNextAction } from '@/lib/utils/rank-next-hint'
 import { getRankInterpretation } from '@/lib/utils/rank-interpretation'
 import { getRankInputExplanation } from '@/lib/utils/rank-input-explanation'
 import { getRankAllocationInsight } from '@/lib/utils/rank-allocation-insight'
 import { getRankChecklist } from '@/lib/utils/rank-checklist'
+import { RankDetailExplanationBlock } from '@/components/rank/rank-detail-explanation'
+import { getBenchmarkCapabilities, getPartialCoverageNote } from '@/lib/utils/benchmark-capabilities'
+import { getBenchmarkHealthStatus } from '@/lib/utils/benchmark-health'
+import { getRankConfidenceNote } from '@/lib/utils/rank-confidence-note'
+import { readScalar, writeScalar } from '@/lib/utils/local-storage'
+import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
 import { getRankNarrativeSummary } from '@/lib/utils/rank-narrative-summary'
-import { getRankExplanationSet } from '@/lib/utils/rank-explanation-priority'
+import { getBenchmarkSourceNote } from '@/lib/utils/benchmark-source-note'
+import { getRankSourceExplanation } from '@/lib/utils/rank-source-explanation'
+import { percentileColor } from '@/lib/utils/rank-format'
 import { getPrimaryRank } from '@/lib/utils/rank-priority'
 import { getRankReviewSummary } from '@/lib/utils/rank-review-summary'
-import { getRankReviewFingerprint, checkRankReviewDue, markRankReviewSeen } from '@/lib/utils/rank-review'
-import type { RankResult } from '@/lib/types/rank'
+import { getRankReviewFingerprint, checkRankReviewDue, dismissRankReview } from '@/lib/utils/rank-review'
+import type { RankResult, RankType } from '@/lib/types/rank'
+import type { BenchmarkSourceCapabilities } from '@/lib/utils/benchmark-capabilities'
 
 type RankMode = 'individual' | 'household'
 
-function rankCompleteness(availableCount: number): { label: string; color: string } {
-  if (availableCount <= 1) return { label: 'Basic',         color: 'text-gray-400' }
-  if (availableCount <= 2) return { label: 'Partial',       color: 'text-amber-400' }
-  return                          { label: 'More complete', color: 'text-emerald-400' }
+const RANK_MODES: RankMode[] = ['individual', 'household']
+
+function readPersistedMode(): RankMode {
+  const stored = readScalar(STORAGE_KEYS.rankComparisonMode)
+  return (stored && (RANK_MODES as string[]).includes(stored))
+    ? (stored as RankMode)
+    : 'individual'
 }
 
-function percentileColor(percentile: number): string {
-  if (percentile >= 75) return 'text-emerald-400'
-  if (percentile >= 50) return 'text-brand-400'
-  if (percentile >= 30) return 'text-amber-400'
-  return 'text-gray-400'
+/**
+ * Returns a short coverage note when the active source does not fully support
+ * this rank type, or null when support is complete (healthy path — no note shown).
+ */
+function getRankCoverageNote(type: RankType, caps: BenchmarkSourceCapabilities): string | null {
+  // isFallbackOnly: the confidence note in the summary strip already tells the user
+  // "using built-in reference ranges" — a per-row coverage note would repeat it.
+  if (caps.isFallbackOnly) return null
+  const supported: Record<RankType, boolean> = {
+    overall_wealth:    caps.supportsWealth,
+    age_based:         caps.supportsAge,
+    age_gender:        caps.supportsAgeGender,
+    investment_return: caps.supportsReturn,
+  }
+  return supported[type] ? null : 'Not supported by active source'
 }
+
+function rankCompleteness(availableCount: number, total: number): { label: string; color: string } {
+  if (availableCount <= 1)       return { label: 'Basic',    color: 'text-gray-400' }
+  if (availableCount < total)    return { label: 'Partial',  color: 'text-amber-400' }
+  return                                { label: 'Complete', color: 'text-emerald-400' }
+}
+
+/**
+ * Escalation rule for source-related notes in the summary strip.
+ *
+ * Three levels, in descending prominence:
+ *   invalid   ('low')      → amber   — source not yet connected; user should be aware
+ *   fallback  ('moderate') → gray-500 — preferred source failed; built-in is active
+ *   partial   ('moderate') → gray-500 — caution; partial category coverage
+ *   informational only (no note) → gray-600 — supplementary context; no concern
+ *
+ * Healthy local source with no informational note → no line rendered (caller guards on null).
+ */
+function sourceNoteColor(note: { level: string } | null): string {
+  if (!note) return 'text-gray-600'
+  return note.level === 'low' ? 'text-amber-500/70' : 'text-gray-600'
+}
+
 
 function PercentileBar({ percentile }: { percentile: number }) {
   const color =
@@ -70,7 +114,7 @@ function PercentileBar({ percentile }: { percentile: number }) {
   )
 }
 
-function RankRow({ result }: { result: RankResult }) {
+function RankRow({ result, coverageNote, isLowConfidence = false }: { result: RankResult; coverageNote?: string; isLowConfidence?: boolean }) {
   const hasPct = result.percentile != null
 
   return (
@@ -87,10 +131,9 @@ function RankRow({ result }: { result: RankResult }) {
           ) : (
             <p className="text-2xl font-bold text-gray-600">—</p>
           )}
-          <p className="text-sm text-gray-400 leading-relaxed">{result.message}</p>
-          {hasPct && (
-            <p className="text-[11px] text-gray-500">{getRankInterpretation(result.percentile!)}</p>
-          )}
+          <p className="text-xs text-gray-400 leading-relaxed">
+            {hasPct ? getRankInterpretation(result.percentile!, isLowConfidence) : result.message}
+          </p>
           {hasPct && (
             <div className="pt-1">
               <PercentileBar percentile={result.percentile!} />
@@ -102,31 +145,36 @@ function RankRow({ result }: { result: RankResult }) {
             </div>
           )}
           {result.detail && (
-            <div className="mt-2 rounded-md bg-surface-muted/40 px-3 py-2 space-y-0.5">
-              <p className="text-[11px] text-gray-600">
-                <span className="text-gray-600">Band matched: </span>{result.detail.bandLabel}
-              </p>
+            <div className="mt-3 rounded-md bg-surface-muted/40 px-3 py-2 space-y-0.5">
               <p className="text-[11px] text-gray-600">
                 <span className="text-gray-600">Basis: </span>{result.detail.comparisonBasis}
               </p>
+              <p className="text-[11px] text-gray-600">
+                <span className="text-gray-600">Band matched: </span>{result.detail.bandLabel}
+              </p>
+              {coverageNote && (
+                <p className="text-[11px] text-amber-500/70">
+                  <span className="text-gray-600">Coverage: </span>{coverageNote}
+                </p>
+              )}
             </div>
           )}
         </div>
         {hasPct && (
           <div className="shrink-0 text-right">
-            <span className={cn('text-sm font-semibold tabular-nums', percentileColor(result.percentile!))}>
+            <span className="text-xs font-medium tabular-nums text-gray-600">
               {result.percentile}th pct.
             </span>
           </div>
         )}
       </div>
+      {/* message above already names the field; this link is navigation only */}
       {result.missingField && (
         <Link
           href={ROUTES.settings}
-          className="mt-3 inline-flex items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition-colors"
+          className="mt-3 inline-block text-xs text-brand-400 hover:text-brand-300 transition-colors"
         >
-          <Settings className="h-3 w-3" />
-          Set {result.missingField} in Settings
+          Settings →
         </Link>
       )}
     </div>
@@ -138,23 +186,20 @@ function RankRow({ result }: { result: RankResult }) {
  * Shows the band label prominently + one supporting interpretation line.
  * Returns null when no rank is available.
  */
-function PrimaryRankHighlight({ ranks }: { ranks: RankResult[] }) {
+function PrimaryRankHighlight({ ranks, mode, benchmarkLabel, isLowConfidence = false }: { ranks: RankResult[]; mode: RankMode; benchmarkLabel: string; isLowConfidence?: boolean }) {
   const primary = getPrimaryRank(ranks)
   if (!primary) return null
   return (
-    <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-1.5">
+    <div className="rounded-xl border border-brand-500/25 bg-surface-card px-5 py-4 space-y-2">
       <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
         {primary.label}
       </p>
       <p className={cn('text-4xl font-bold tracking-tight', percentileColor(primary.percentile!))}>
         {percentileBandLabel(primary.percentile!)}
       </p>
-      <p className="text-xs text-gray-400 leading-relaxed">
-        {getRankInterpretation(primary.percentile!)}
+      <p className="text-[10px] capitalize text-gray-600">
+        {isLowConfidence ? mode : `${mode} · ${benchmarkLabel}`}
       </p>
-      {primary.detail && (
-        <p className="text-[11px] text-gray-600">{primary.detail.comparisonBasis}</p>
-      )}
     </div>
   )
 }
@@ -187,9 +232,22 @@ export default function RankPage() {
   const { compact } = useFormatCurrency()
   const { snapshots, isLoaded: snapshotsLoaded, saveSnapshot } = useRankSnapshots()
   const { goals, isLoaded: goalsLoaded } = useGoals()
+  const currentUserId = useCurrentUserId()
+  // Initialise with the SSR-safe default. readPersistedMode() reads localStorage,
+  // which returns null on the server — so using it as a lazy initialiser produces
+  // 'individual' server-side but potentially 'household' client-side, causing a
+  // React hydration mismatch. Instead, read localStorage in useEffect after mount.
   const [mode, setMode] = useState<RankMode>('individual')
   const [benchmarkAlertVisible, setBenchmarkAlertVisible] = useState(false)
+  const [benchmarkTransitionNote, setBenchmarkTransitionNote] = useState<string | null>(null)
+  const [sourceSummary, setSourceSummary] = useState<BenchmarkSourceSummary | null>(null)
   const [reviewVisible, setReviewVisible] = useState(false)
+  // Tracks an in-session dismiss — suppresses the review summary card immediately
+  // after the banner is dismissed, preventing two review surfaces in quick succession.
+  const [reviewDismissed, setReviewDismissed] = useState(false)
+  // Frozen at mount so rank calculations are stable for the session and don't
+  // silently produce a wrong age if the page is kept open across midnight Jan 1.
+  const [currentYear] = useState(() => new Date().getFullYear())
 
   const isFullyLoaded = assetsLoaded && householdLoaded && settingsLoaded && snapshotsLoaded && goalsLoaded
   // Read once at mount — source preference requires page reload to change.
@@ -198,14 +256,20 @@ export default function RankPage() {
   // Resolved once at mount for the same reason.
   const activeBenchmarkMeta = useMemo(() => getActiveBenchmarkMeta(), [])
 
+  const benchmarkCaps = useMemo(() => getBenchmarkCapabilities(activeBenchmarkSource), [activeBenchmarkSource])
+  const benchmarkHealth = useMemo(
+    () => getBenchmarkHealthStatus(benchmarkCaps, usingFallbackBenchmark),
+    [benchmarkCaps, usingFallbackBenchmark],
+  )
+
   // Memoized so mode/alert/review state changes don't re-run the full calculation.
   const summary = useMemo(
-    () => buildPortfolioSummary(LOCAL_USER_ID, assets),
-    [assets]
+    () => buildPortfolioSummary(currentUserId, assets),
+    [currentUserId, assets]
   )
   const userAge = useMemo(
-    () => settings.birthYear ? new Date().getFullYear() - settings.birthYear : undefined,
-    [settings.birthYear]
+    () => settings.birthYear ? currentYear - settings.birthYear : undefined,
+    [currentYear, settings.birthYear]
   )
 
   // Derived once — used by all rank utility calls that accept a profile flags object.
@@ -229,19 +293,41 @@ export default function RankPage() {
     ? getRankInsight(ranks)
     : null
 
-  const rankBadges = isFullyLoaded && summary.assetCount > 0
-    ? getRankBadges(ranks)
-    : []
-
   const milestoneHistory = isFullyLoaded && snapshotsLoaded
     ? buildMilestoneHistory(snapshots)
     : []
 
   const rankActions = isFullyLoaded && goalsLoaded && summary.assetCount > 0
-    ? getRankActions(ranks, { hasGoals: goals.length > 0 })
+    ? getRankActions(ranks, {
+        hasGoals: goals.length > 0,
+        isLowConfidence: benchmarkHealth.status === 'fallback' || benchmarkHealth.status === 'invalid',
+      })
     : []
 
+  // Derived profile booleans — computed once and shared across all rank utilities
+  // that need the same shape. Adding a new profile field only requires one change here.
+  const profileInputs = {
+    hasAge:    !!settings.birthYear,
+    hasGender: !!settings.gender,
+    hasReturn: settings.annualReturnPct !== undefined,
+    hasGoals:  goals.length > 0,
+  }
+
+  // nextHint must be computed before rankGoalInsight so we can suppress the
+  // goal insight when the next-step slot already covers the same topic.
+  const nextHint = isFullyLoaded && goalsLoaded && summary.assetCount > 0
+    ? getPrimaryRankNextAction(profileInputs, ranks, {
+        // Soften portfolio/goals wording when the benchmark source is degraded —
+        // the rank signal itself may not be reliable enough to imply strong outcomes.
+        isLowConfidence: benchmarkHealth.status === 'fallback' || benchmarkHealth.status === 'invalid',
+        mode,
+      })
+    : null
+
+  // Suppress goal insight when the next-step slot already points to Goals —
+  // showing both would surface the same message in two adjacent slots.
   const rankGoalInsight = isFullyLoaded && goalsLoaded && summary.assetCount > 0
+    && nextHint?.href !== ROUTES.goals
     ? getRankGoalInsight(ranks, goals)
     : null
 
@@ -252,32 +338,50 @@ export default function RankPage() {
   const versionNote = snapshotsLoaded ? benchmarkVersionNote(snapshots) : null
 
   const narrativeSummary = isFullyLoaded && summary.assetCount > 0
-    ? getRankNarrativeSummary(ranks)
+    ? getRankNarrativeSummary(ranks, { isLowConfidence: benchmarkHealth.status !== 'healthy' })
     : null
 
   const rankReviewSummary = isFullyLoaded && summary.assetCount > 0
-    ? getRankReviewSummary(ranks, { hasAge, hasGender, hasReturn })
-    : null
-
-  const nextHint = isFullyLoaded && summary.assetCount > 0
-    ? getNextRankHint({ hasAge, hasGender, hasReturn })
+    ? getRankReviewSummary(ranks, profileInputs)
     : null
 
   const inputExplanation = isFullyLoaded && summary.assetCount > 0
-    ? getRankInputExplanation({ hasAge, hasGender, hasReturn })
+    ? getRankInputExplanation(profileInputs)
     : null
 
+  // Suppressed when rankGoalInsight is active: both signals can open with the same
+  // rank tier (e.g. both fire when returnPct >= 75), producing near-duplicate adjacent
+  // slots. Goal insight has higher priority in the candidates list; allocation insight
+  // adds no new information when goal insight already covers the same rank dimension.
   const rankAllocationInsight = isFullyLoaded && summary.assetCount > 0
+    && rankGoalInsight === null
     ? getRankAllocationInsight(ranks, summary.categoryBreakdown)
     : null
 
-  const explanationSet = isFullyLoaded && summary.assetCount > 0
-    ? getRankExplanationSet({ narrativeSummary, rankInsight, nextHint, rankGoalInsight, rankAllocationInsight })
-    : { showNarrative: false, showInsight: false, showNextHint: false, showGoalInsight: false, showAllocationInsight: false }
+  // Suppress action links whose topic is already covered by a bridge insight shown above.
+  // Follows the same pattern as the existing rankGoalInsight/nextHint suppression.
+  const visibleRankActions = rankActions.filter((action) => {
+    if (action.href === ROUTES.goals && rankGoalInsight !== null) return false
+    if (action.href === ROUTES.portfolioList && rankAllocationInsight !== null) return false
+    return true
+  })
+
+  const confidenceNote = isFullyLoaded && summary.assetCount > 0
+    ? getRankConfidenceNote({ benchmarkHealthStatus: benchmarkHealth.status })
+    : null
+
+  const sourceExplanation = isFullyLoaded && summary.assetCount > 0
+    ? getRankSourceExplanation(activeBenchmarkSource, benchmarkCaps.isFallbackOnly)
+    : null
 
   const rankChecklist = isFullyLoaded && goalsLoaded && summary.assetCount > 0
-    ? getRankChecklist({ hasAge, hasGender, hasReturn, hasGoals: goals.length > 0 }, ranks)
+    ? getRankChecklist(profileInputs, ranks)
     : []
+
+  // Restore persisted comparison mode after mount. Must run in useEffect so the
+  // server and initial client renders both produce 'individual' (no hydration mismatch),
+  // then the stored preference takes effect on the client.
+  useEffect(() => { setMode(readPersistedMode()) }, [])
 
   // Rules of Hooks: useEffect must be before any conditional return.
   // Guard inside the effect so it only fires once all data is loaded.
@@ -287,6 +391,10 @@ export default function RankPage() {
   }, [isFullyLoaded, summary.totalAssetValue, userAge, settings.gender, settings.annualReturnPct])
 
   useEffect(() => {
+    // All three reads must happen before checkBenchmarkChanged() may write the
+    // current fingerprint — they rely on the previously stored value.
+    setBenchmarkTransitionNote(getBenchmarkTransitionNote())
+    setSourceSummary(getBenchmarkSourceSummary(usingFallbackBenchmark))
     setBenchmarkAlertVisible(checkBenchmarkChanged())
   }, [])
 
@@ -310,21 +418,41 @@ export default function RankPage() {
   if (!isFullyLoaded) return <LoadingSpinner />
 
   const availableCount = ranks.filter((r) => r.percentile != null).length
+  const completeness = rankCompleteness(availableCount, ranks.length)
+  // In low-data mode (≤1 ranked category), only show rows that have a real
+  // percentile. The unranked rows would repeat profile-completion prompts
+  // already visible in the explanation block above. Full row set is restored
+  // once more than one rank is available.
+  const rankRowsToShow = availableCount > 1
+    ? ranks
+    : ranks.filter((r) => r.percentile != null)
   const hasHouseholdMembers = members.length > 0
+  const sourceImpactNote =
+    sourceSummary !== null && sourceSummary.previousLabel !== null
+      ? getBenchmarkSourceImpactNote(snapshots.length > 0)
+      : null
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-white">Wealth Rank</h1>
-          <p className="mt-0.5 text-sm text-gray-500">
-            {mode === 'individual'
-              ? 'Your individual portfolio ranked against reference benchmarks'
-              : 'Combined household wealth ranked against reference benchmarks'}
-          </p>
+      <div>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-xl font-bold text-white">Wealth Rank</h1>
+            <p className="mt-0.5 text-sm text-gray-500">
+              {mode === 'individual'
+                ? 'Portfolio rank across wealth, age, and return'
+                : 'Combined household wealth rank'}
+            </p>
+          </div>
+          <ModeToggle mode={mode} onChange={(m) => { setMode(m); writeScalar(STORAGE_KEYS.rankComparisonMode, m) }} />
         </div>
-        <ModeToggle mode={mode} onChange={setMode} />
+        {/* Context chip — sits below the full title+toggle row as a page-state
+            indicator, so it contextualises the content below without competing
+            with the page title or the mode toggle. */}
+        <span className="mt-2 inline-block rounded-full border border-surface-border bg-surface-muted px-2.5 py-0.5 text-[10px] text-gray-500">
+          {mode === 'individual' ? 'Individual' : 'Household'} · {(activeBenchmarkSource === 'default' || usingFallbackBenchmark) ? 'Built-in reference' : 'Curated data'}
+        </span>
       </div>
 
       {/* Household mode — informational state */}
@@ -343,7 +471,7 @@ export default function RankPage() {
                 href={ROUTES.household}
                 className="inline-block text-xs text-brand-400 hover:text-brand-300 transition-colors"
               >
-                Set up household →
+                Add household members →
               </Link>
             </>
           ) : (
@@ -363,41 +491,6 @@ export default function RankPage() {
       {/* Individual mode content */}
       {mode === 'individual' && (
         <>
-          {/* Summary strip */}
-          {summary.assetCount > 0 && (
-            <div className="flex flex-wrap gap-4 rounded-xl border border-surface-border bg-surface-card px-5 py-4">
-              <div>
-                <p className="text-xs text-gray-500">Comparison</p>
-                <p className="mt-0.5 text-sm font-semibold text-white">Individual</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-500">Total Assets</p>
-                <p className="mt-0.5 text-sm font-semibold text-white">{compact(summary.totalAssetValue)}</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-500">Ranks Available</p>
-                <p className="mt-0.5 text-sm font-semibold text-white">{availableCount} / {ranks.length}</p>
-              </div>
-              {userAge && (
-                <div>
-                  <p className="text-xs text-gray-500">Age Used</p>
-                  <p className="mt-0.5 text-sm font-semibold text-white">{userAge}</p>
-                </div>
-              )}
-              <div>
-                <p className="text-xs text-gray-500">Profile</p>
-                <p className={cn('mt-0.5 text-sm font-semibold', rankCompleteness(availableCount).color)}>
-                  {rankCompleteness(availableCount).label}
-                </p>
-              </div>
-              {inputExplanation && (
-                <p className="w-full border-t border-surface-border pt-3 text-xs text-gray-500">
-                  {inputExplanation}
-                </p>
-              )}
-            </div>
-          )}
-
           {/* No assets */}
           {summary.assetCount === 0 && (
             <div className="rounded-xl border border-dashed border-surface-border py-16 text-center">
@@ -412,18 +505,105 @@ export default function RankPage() {
             </div>
           )}
 
-          {/* Primary rank highlight — most relevant available rank, prominently displayed */}
-          {summary.assetCount > 0 && <PrimaryRankHighlight ranks={ranks} />}
+          {/* 1. Primary rank highlight — most relevant rank, shown first */}
+          {summary.assetCount > 0 && <PrimaryRankHighlight ranks={ranks} mode={mode} benchmarkLabel={(activeBenchmarkSource === 'default' || usingFallbackBenchmark) ? 'Built-in reference' : 'Curated data'} isLowConfidence={benchmarkHealth.status !== 'healthy'} />}
 
-          {/* Periodic rank summary — compact trend card; fallback shown on first visit */}
-          {summary.assetCount > 0 && (
-            <PeriodicRankSummaryCard monthlySummary={monthlySummary} />
-          )}
+          {/* 2–3. Insight cluster — meaning before support context.
+               Explanation and narrative follow the highlight directly so the user
+               reads what the rank means before encountering the context chip strip.
+               The chip strip (input values, source label) is reference material;
+               placing it after the meaning cluster keeps first-read flow clean. */}
+          <div className="space-y-3">
 
-          {/* Narrative summary — one or two sentences synthesising available rank signals */}
-          {explanationSet.showNarrative && narrativeSummary && (
+          {/* 2. Explanation + next-step hint — immediately follows highlight.
+               nextHint is suppressed while the review banner is visible: the banner
+               already covers the same action-oriented message and showing a second
+               Settings hint below it creates redundant duplication. */}
+          <RankDetailExplanationBlock
+            nextHint={reviewVisible ? null : nextHint}
+            rankInsight={rankInsight}
+            rankGoalInsight={rankGoalInsight}
+            rankAllocationInsight={rankAllocationInsight}
+            isLowConfidence={benchmarkHealth.status !== 'healthy'}
+          />
+
+          {/* 3. Narrative summary — synthesis after the core numbers and hints.
+               Suppressed in low-data mode (availableCount <= 1): the primary rank
+               highlight already communicates the same signal, and the explanation
+               block covers next steps — adding narrative here implies more
+               confidence than the limited data warrants.
+               Also suppressed when the review summary card is active: the review
+               card already provides a structured breakdown of wealth and return
+               standing, making the narrative's synthesis sentence redundant.
+               Also suppressed when rankInsight is active: the explanation block
+               already shows the cross-rank gap as a direct signal, and the
+               narrative would duplicate both that and the interpretation line
+               in PrimaryRankHighlight. */}
+          {narrativeSummary && availableCount > 1 && !rankReviewSummary && !rankInsight && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3">
               <p className="text-sm text-gray-400 leading-relaxed">{narrativeSummary}</p>
+            </div>
+          )}
+
+          </div>{/* end insight cluster */}
+
+          {/* 4. Summary strip — comparison context and source reference.
+               Follows the insight cluster so the user reads the rank meaning first,
+               then the supporting inputs (total assets, age, benchmark, profile).
+               In low-data mode the Comparison and Benchmark chips are hidden —
+               the primary concern there is completing the profile, not the source. */}
+          {summary.assetCount > 0 && (
+            <div className="flex flex-wrap gap-4 rounded-xl border border-surface-border bg-surface-card px-5 py-4">
+              {availableCount > 1 && (
+                <div>
+                  <p className="text-xs text-gray-500">Comparison</p>
+                  <p className="mt-0.5 text-sm font-semibold capitalize text-white">{mode}</p>
+                </div>
+              )}
+              <div>
+                <p className="text-xs text-gray-500">Total Assets</p>
+                <p className="mt-0.5 text-sm font-semibold text-white">{compact(summary.totalAssetValue)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">Ranks Available</p>
+                <p className="mt-0.5 text-sm font-semibold text-white">{availableCount} / {ranks.length}</p>
+              </div>
+              {userAge && (
+                <div>
+                  <p className="text-xs text-gray-500">Age Used</p>
+                  <p className="mt-0.5 text-sm font-semibold text-white">{userAge}</p>
+                </div>
+              )}
+              {availableCount > 1 && (
+                <div>
+                  <p className="text-xs text-gray-500">Benchmark</p>
+                  <p className="mt-0.5 text-sm font-semibold text-white">
+                    {sourceSummary?.currentLabel ?? (activeBenchmarkSource === 'default' || usingFallbackBenchmark ? 'Built-in reference' : 'Curated data')}
+                  </p>
+                </div>
+              )}
+              <div>
+                <p className="text-xs text-gray-500">Profile</p>
+                <p className={cn('mt-0.5 text-sm font-semibold', completeness.color)}>
+                  {completeness.label}
+                </p>
+              </div>
+              {/* Trust/supplemental line — follows chips so the user reads the numbers
+                  first, then the caveat that qualifies them. border-t separates trust
+                  context from the data above. Confidence note takes precedence when
+                  active; input/source explanation fills the slot otherwise. */}
+              {confidenceNote ? (
+                <p className={cn(
+                  'w-full border-t border-surface-border pt-3 text-xs',
+                  sourceNoteColor(confidenceNote),
+                )}>
+                  {confidenceNote.text}
+                </p>
+              ) : (inputExplanation ?? sourceExplanation) ? (
+                <p className="w-full border-t border-surface-border pt-3 text-xs text-gray-600">
+                  {inputExplanation ?? sourceExplanation}
+                </p>
+              ) : null}
             </div>
           )}
 
@@ -431,55 +611,54 @@ export default function RankPage() {
           {reviewVisible && (
             <div className="flex items-center justify-between gap-3 rounded-xl border border-brand-500/20 bg-brand-500/5 px-5 py-3">
               <p className="text-xs text-brand-300 leading-relaxed">
-                Your rank inputs have changed — updated results are shown below.
+                Your rank inputs have changed — the figures below may have updated.
               </p>
-              <button
-                onClick={() => setReviewVisible(false)}
-                className="shrink-0 text-[10px] text-gray-500 hover:text-gray-300 transition-colors"
-              >
-                Dismiss
-              </button>
+              <div className="flex items-center gap-3 shrink-0">
+                <Link
+                  href={ROUTES.settings}
+                  className="text-xs text-brand-400 hover:text-brand-300 transition-colors"
+                >
+                  {benchmarkHealth.status !== 'healthy' ? 'Check inputs →' : 'Review inputs →'}
+                </Link>
+                <button
+                  onClick={() => {
+                    const fp = getRankReviewFingerprint({
+                      totalAssetValue:      summary.totalAssetValue,
+                      birthYear:            settings.birthYear,
+                      gender:               settings.gender,
+                      annualReturnPct:      settings.annualReturnPct,
+                      benchmarkFingerprint: getBenchmarkFingerprint(),
+                    })
+                    dismissRankReview(fp)
+                    setReviewVisible(false)
+                    setReviewDismissed(true)
+                  }}
+                  className="text-[10px] text-gray-500 hover:text-gray-300 transition-colors"
+                >
+                  Dismiss
+                </button>
+              </div>
             </div>
           )}
 
-          {/* Next-step hint — one actionable sentence toward full rank completeness */}
-          {explanationSet.showNextHint && nextHint && (
-            <div className="flex items-center justify-between gap-3 rounded-xl border border-surface-border bg-surface-card px-5 py-3">
-              <p className="text-xs text-gray-500 leading-relaxed">{nextHint.text}</p>
-              <Link
-                href={nextHint.href}
-                className="shrink-0 text-xs text-brand-400 hover:text-brand-300 transition-colors"
-              >
-                Settings →
-              </Link>
-            </div>
-          )}
+          {/* 6–8. Action cluster — rank actions, checklist, and advisor review share
+               the same "what to do" intent and are grouped with tighter spacing. */}
+          <div className="space-y-3">
 
-          {/* Rank insight — shown only when a meaningful gap or profile gap is detected */}
-          {explanationSet.showInsight && rankInsight && (
-            <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3">
-              <p className="text-xs text-gray-400 leading-relaxed">{rankInsight}</p>
-            </div>
-          )}
-
-          {/* Rank–goal bridge insight — suppressed when primary rank insight already shown */}
-          {explanationSet.showGoalInsight && rankGoalInsight && !rankInsight && (
-            <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3">
-              <p className="text-xs text-gray-400 leading-relaxed">{rankGoalInsight}</p>
-            </div>
-          )}
-
-          {/* Rank–allocation bridge insight — suppressed when primary rank insight already shown */}
-          {explanationSet.showAllocationInsight && rankAllocationInsight && !rankInsight && (
-            <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3">
-              <p className="text-xs text-gray-400 leading-relaxed">{rankAllocationInsight}</p>
-            </div>
-          )}
-
-          {/* Rank actions — contextual navigation links derived from rank state */}
-          {rankActions.length > 0 && (
+          {/* Rank actions — contextual navigation links derived from rank state.
+              Suppressed when checklist is active: both surfaces guide toward the
+              same destinations and showing both adds density without extra value.
+              visibleRankActions further filters out links already covered by
+              bridge insights shown in the explanation block above.
+              Also suppressed while the review banner is visible (banner is the
+              primary CTA in that state) and while the review summary card is
+              active and not dismissed (the summary already covers the same
+              destinations — showing both creates duplicate strong review CTAs). */}
+          {visibleRankActions.length > 0 && rankChecklist.length === 0
+            && !reviewVisible && (!rankReviewSummary || reviewDismissed)
+            && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3 flex flex-wrap gap-x-5 gap-y-2">
-              {rankActions.map((action) => (
+              {visibleRankActions.map((action) => (
                 <Link
                   key={action.label}
                   href={action.href}
@@ -491,10 +670,21 @@ export default function RankPage() {
             </div>
           )}
 
-          {/* Rank checklist — up to 4 prioritised actions to improve rank quality */}
-          {rankChecklist.length > 0 && (
+          {/* Rank checklist — up to 4 prioritised actions to improve rank quality.
+               Suppressed in low-data mode (availableCount <= 1): RankDetailExplanationBlock
+               already shows the single highest-priority next action via nextHint.
+               Suppressed when the review summary card is actively shown
+               (!rankReviewSummary || reviewVisible || reviewDismissed): the review
+               card already enumerates the same profile-gap and portfolio-standing
+               items (birth year, gender, return, low wealth). Showing both on screen
+               at the same time repeats the same destinations in two formats.
+               When the banner is showing or was dismissed this session, the checklist
+               is restored — it is the only remaining guidance surface in those states. */}
+          {rankChecklist.length > 0 && availableCount > 1
+            && (!rankReviewSummary || reviewDismissed) && !reviewVisible
+            && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Improve Your Rank</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Next steps</p>
               <ul className="space-y-2">
                 {rankChecklist.map((item) => (
                   <li key={item.href + item.text}>
@@ -511,11 +701,36 @@ export default function RankPage() {
             </div>
           )}
 
-          {/* Advisor review summary — structured 3-item status for profile / wealth / return */}
-          {rankReviewSummary && (
+          {/* Advisor review summary — secondary review surface.
+              Suppressed while reviewVisible is true: the banner above is the primary
+              prompt when inputs have just changed. Once the banner is dismissed,
+              this card becomes the ongoing review reference. */}
+          {rankReviewSummary && !reviewVisible && !reviewDismissed && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Rank Review</p>
-              <ul className="space-y-2.5">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Rank Review</p>
+                {/* Badge is suppressed when the explanation block already holds an active
+                    CTA (nextHint) — the hint is the primary urgency signal in that state,
+                    and the badge would compete with it. When nextHint is null (profile
+                    complete), the badge is the sole urgency indicator and should show. */}
+                {!nextHint && (
+                  <span className={cn(
+                    'text-[10px]',
+                    rankReviewSummary.some((i) => i.status === 'missing')
+                      ? 'text-amber-500/70'
+                      : rankReviewSummary.some((i) => i.status === 'review')
+                        ? 'text-gray-400'
+                        : 'text-gray-500',
+                  )}>
+                    {rankReviewSummary.some((i) => i.status === 'missing')
+                      ? 'Worth reviewing'
+                      : rankReviewSummary.some((i) => i.status === 'review')
+                        ? 'Worth a look'
+                        : 'For reference'}
+                  </span>
+                )}
+              </div>
+              <ul className="space-y-2">
                 {rankReviewSummary.map((item) => (
                   <li key={item.topic} className="flex items-start gap-2.5">
                     <span className={cn(
@@ -534,14 +749,20 @@ export default function RankPage() {
             </div>
           )}
 
-          {/* Rank rows */}
-          {summary.assetCount > 0 && (
-            <div className="rounded-xl border border-surface-border bg-surface-card px-5">
-              <p className="border-b border-surface-border py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                Rank Breakdown
-              </p>
-              {ranks.map((r) => (
-                <RankRow key={r.type} result={r} />
+          </div>{/* end action cluster */}
+
+          {/* Rank rows — detailed breakdown, visually separated from the advice cluster above.
+               In low-data mode only ranked rows are shown (see rankRowsToShow). */}
+          {summary.assetCount > 0 && rankRowsToShow.length > 0 && (
+            <div className="!mt-8 rounded-xl border border-surface-border bg-surface-card px-5">
+              <p className="pt-4 text-xs font-semibold uppercase tracking-wide text-gray-500">Rank Breakdown</p>
+              {rankRowsToShow.map((r) => (
+                <RankRow
+                  key={r.type}
+                  result={r}
+                  coverageNote={getRankCoverageNote(r.type, benchmarkCaps) ?? undefined}
+                  isLowConfidence={benchmarkHealth.status !== 'healthy'}
+                />
               ))}
             </div>
           )}
@@ -575,8 +796,12 @@ export default function RankPage() {
             </div>
           )}
 
-          {/* Share card — compact summary preview */}
-          {summary.assetCount > 0 && <RankShareCard ranks={ranks} />}
+          {/* Share card — compact summary preview.
+               sourceNote intentionally omitted: the summary strip directly above
+               already shows confidenceNote.text when the benchmark source is
+               degraded. Passing it here would duplicate the same line on the
+               same page. The prop is preserved on RankShareCard for standalone use. */}
+          {summary.assetCount > 0 && <RankShareCard ranks={ranks} mode={mode} sourceNote={null} isLowConfidence={benchmarkHealth.status !== 'healthy'} />}
         </>
       )}
 
@@ -632,8 +857,12 @@ export default function RankPage() {
               </p>
             </div>
           </div>
+          {/* note + reasonHint on one line: note is the "what" (larger), reason is the "why" (smaller inline). */}
           <p className="text-xs text-gray-600 leading-relaxed border-t border-surface-border pt-2">
             {monthlySummary.note}
+            {monthlySummary.reasonHint && (
+              <span className="text-[10px] text-gray-500"> {monthlySummary.reasonHint}</span>
+            )}
           </p>
           {versionNote && (
             <p className="text-[10px] text-amber-500/70 leading-relaxed">{versionNote}</p>
@@ -705,7 +934,7 @@ export default function RankPage() {
       {benchmarkAlertVisible && (
         <div className="flex items-start justify-between gap-3 rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3">
           <p className="text-xs text-amber-300 leading-relaxed">
-            Benchmark reference ranges were updated.
+            {benchmarkTransitionNote ?? 'Reference ranges updated.'}
           </p>
           <button
             onClick={() => {
@@ -719,19 +948,74 @@ export default function RankPage() {
         </div>
       )}
 
+      {/* Benchmark source change summary — shown only when the source actually changed.
+          The pure-fallback case (no prior source, just fallback active) is already
+          communicated by the confidence note in the summary strip; showing this card
+          too would repeat the same message in two places. */}
+      {sourceSummary !== null && sourceSummary.previousLabel !== null && (
+        <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Benchmark Source</p>
+          <div className="flex flex-wrap gap-x-6 gap-y-1">
+            <span className="text-xs text-gray-400">
+              <span className="text-gray-300">Current</span>
+              {' — '}{sourceSummary.currentLabel}
+            </span>
+            {sourceSummary.previousLabel !== null && (
+              <span className="text-xs text-gray-400">
+                <span className="text-gray-300">Previous</span>
+                {' — '}{sourceSummary.previousLabel}
+              </span>
+            )}
+          </div>
+          {sourceSummary.fallbackActive && (
+            <p className="text-xs text-amber-400/80">
+              New source is also using built-in reference ranges.
+            </p>
+          )}
+          <p className="text-[11px] text-gray-600 leading-relaxed">
+            Rank comparisons remain benchmark-based regardless of which source is active.
+          </p>
+          {sourceImpactNote && (
+            <p className="text-[11px] text-gray-500 leading-relaxed">{sourceImpactNote}</p>
+          )}
+        </div>
+      )}
+
       {/* Methodology note */}
-      <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-1.5">
+      <div className="!mt-8 rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-1.5">
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">How this works</p>
         <p className="text-xs text-gray-500 leading-relaxed">
           Rank estimates are based on local reference benchmark ranges, not real-time government or market data.
-          Results depend on your total asset value and any profile inputs you have set (birth year, gender, estimated return).
+          {mode === 'individual'
+            ? ' Results reflect your individual portfolio value and any profile inputs you have set (birth year, gender, estimated return).'
+            : ' Household rank comparison is not yet available — individual portfolio data is shown as a reference.'}
         </p>
         <p className="text-xs text-gray-600">
           Missing profile fields will show an unavailable state rather than an estimate. These are estimates only and not financial advice.
         </p>
         <div className="mt-2 border-t border-surface-border pt-2 flex flex-wrap gap-x-4 gap-y-1">
-          <span className="text-[10px] text-gray-600">
-            Benchmark: {BENCHMARK_META.sourceLabel}
+          {/* Compact internal state summary — source · fallback · health · readiness at a glance.
+              Sits above the individual detail chips so the overall state is readable first.
+              Caution tokens (fallback, non-healthy readiness) are muted amber so they
+              stand out on scan without making the internal view noisy. */}
+          {/* Compact status line: source · fallback flag · raw status (context, gray) · readiness meaning (amber when caution).
+              Raw status is intentionally uncolored — the readiness label is the alert signal;
+              the enum value is context that duplicates adjacent tokens if also amber. */}
+          <span className="w-full text-[10px] text-gray-400">
+            {activeBenchmarkSource}
+            {' · '}
+            <span className={usingFallbackBenchmark ? 'text-amber-500/60' : undefined}>
+              {usingFallbackBenchmark ? 'fallback active' : 'no fallback'}
+            </span>
+            {' · '}
+            {benchmarkHealth.status}
+            {' · '}
+            <span className={benchmarkHealth.status !== 'healthy' ? 'text-amber-500/60' : undefined}>
+              {benchmarkHealth.status === 'healthy'  ? 'ready' :
+               benchmarkHealth.status === 'fallback' ? 'degraded' :
+               benchmarkHealth.status === 'partial'  ? 'limited' :
+               'not ready'}
+            </span>
           </span>
           <span className="text-[10px] text-gray-600">
             Version: {activeBenchmarkMeta.version}
@@ -740,14 +1024,29 @@ export default function RankPage() {
             Updated: {activeBenchmarkMeta.updatedAt}
           </span>
           <span className="text-[10px] text-gray-600">
-            Active source: {activeBenchmarkSource === 'curated' && !usingFallbackBenchmark ? 'Curated dataset' : 'Built-in (default)'}
+            <span className="text-gray-500">Active source: </span>
+            {usingFallbackBenchmark
+              ? `${activeBenchmarkMeta.sourceLabel} — preferred source unavailable`
+              : activeBenchmarkMeta.sourceLabel}
+          </span>
+          <span className="text-[10px] text-gray-600">
+            <span className="text-gray-500">Status: </span>
+            {benchmarkHealth.status === 'healthy'  && 'OK'}
+            {benchmarkHealth.status === 'partial'  && <span className="text-amber-500/60">Partial — not all categories supported</span>}
+            {benchmarkHealth.status === 'fallback' && <span className="text-amber-500/60">Using fallback</span>}
+            {benchmarkHealth.status === 'invalid'  && <span className="text-amber-500/60">Not connected</span>}
           </span>
           {BENCHMARK_META.notes && (
             <span className="text-[10px] text-gray-600 w-full">{BENCHMARK_META.notes}</span>
           )}
-          {usingFallbackBenchmark && (
-            <span className="text-[10px] text-amber-500/70 w-full">
-              Curated source could not be loaded — built-in data is active.
+          {getBenchmarkSourceNote(activeBenchmarkSource, benchmarkCaps.isFallbackOnly) && (
+            <span className="text-[10px] text-gray-500 w-full">
+              {getBenchmarkSourceNote(activeBenchmarkSource, benchmarkCaps.isFallbackOnly)}
+            </span>
+          )}
+          {benchmarkHealth.status === 'partial' && getPartialCoverageNote(benchmarkCaps) && (
+            <span className="text-[10px] text-amber-500/60 w-full">
+              {getPartialCoverageNote(benchmarkCaps)}
             </span>
           )}
         </div>

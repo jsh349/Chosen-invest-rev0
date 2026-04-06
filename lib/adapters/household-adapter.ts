@@ -4,6 +4,8 @@ import { readJSON, writeJSON } from '@/lib/utils/local-storage'
 
 const LS_KEY = STORAGE_KEYS.household
 
+const VALID_ROLES = new Set<string>(['admin', 'partner', 'viewer'])
+
 /** Async adapter interface — matches the shape of a future API client. */
 export type HouseholdAdapter = {
   getAll(): Promise<HouseholdMember[]>
@@ -13,10 +15,17 @@ export type HouseholdAdapter = {
 /** Local implementation backed by localStorage. */
 export const householdAdapter: HouseholdAdapter = {
   async getAll() {
-    return readJSON<HouseholdMember[]>(LS_KEY, [])
+    const data = readJSON<HouseholdMember[]>(LS_KEY, [])
+    return data.filter((m) => {
+      if (!m.id || !m.name || !m.email || !VALID_ROLES.has(m.role)) {
+        console.warn('[householdAdapter] Skipping malformed member — missing id, name, email, or invalid role.', m)
+        return false
+      }
+      return true
+    })
   },
 
   async saveAll(members) {
-    writeJSON(LS_KEY, members)
+    if (!writeJSON(LS_KEY, members)) throw new Error('localStorage write failed (household)')
   },
 }

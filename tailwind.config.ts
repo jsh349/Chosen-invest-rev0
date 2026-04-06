@@ -10,6 +10,11 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // gray-500 override: #6b7280 (default) gives ~4.27:1 on surface.card — fails WCAG AA.
+        // #7c8698 gives ~4.93:1 on surface.card — passes WCAG AA for normal text.
+        gray: {
+          500: '#7c8698',
+        },
         brand: {
           50:  '#f0f4ff',
           100: '#dce6fd',

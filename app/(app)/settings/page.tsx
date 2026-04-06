@@ -73,7 +73,7 @@ function sanitizeImportedArray(key: string, items: unknown[]): unknown[] {
       if (typeof item !== 'object' || item === null) return false
       const o = item as Record<string, unknown>
       if (typeof o.id !== 'string' || typeof o.name !== 'string') return false
-      if (o.targetAmount !== undefined && (typeof o.targetAmount !== 'number' || !Number.isFinite(o.targetAmount))) return false
+      if (typeof o.targetAmount !== 'number' || !Number.isFinite(o.targetAmount as number)) return false
       return true
     })
   }
@@ -83,10 +83,30 @@ function sanitizeImportedArray(key: string, items: unknown[]): unknown[] {
       const o = item as Record<string, unknown>
       if (typeof o.id !== 'string' || typeof o.description !== 'string') return false
       if (o.amount !== undefined && (typeof o.amount !== 'number' || !Number.isFinite(o.amount))) return false
+      if (typeof o.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(o.date as string)) return false
       return true
     })
   }
-  return items
+  if (key === STORAGE_KEYS.household) {
+    return items.filter((item) => {
+      if (typeof item !== 'object' || item === null) return false
+      const o = item as Record<string, unknown>
+      return typeof o.id === 'string' && typeof o.name === 'string' && typeof o.email === 'string'
+    })
+  }
+  if (key === STORAGE_KEYS.rankSnapshots) {
+    return items.filter((item) => {
+      if (typeof item !== 'object' || item === null) return false
+      const o = item as Record<string, unknown>
+      return typeof o.id === 'string' && typeof o.savedAt === 'string' && typeof o.totalAssetValue === 'number'
+    })
+  }
+  // householdNotes, audit, benchmarkSourceHistory: require non-null object with string id
+  return items.filter((item) => {
+    if (typeof item !== 'object' || item === null) return false
+    const o = item as Record<string, unknown>
+    return typeof o.id === 'string'
+  })
 }
 
 const SELECT_CLASS = 'w-full rounded-lg border border-surface-border bg-surface-muted px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none'
@@ -164,13 +184,19 @@ function sanitizeSettingsForRestore(raw: unknown): Record<string, unknown> {
   const maxYear = new Date().getFullYear() - 10
   if (typeof obj.birthYear === 'number' && Number.isInteger(obj.birthYear) && obj.birthYear >= 1920 && obj.birthYear <= maxYear) {
     clean.birthYear = obj.birthYear
+  } else if ('birthYear' in obj && (obj.birthYear === null || obj.birthYear === undefined)) {
+    clean.birthYear = undefined
   }
   const VALID_GENDERS: string[] = ['male', 'female', 'other', 'undisclosed']
   if (typeof obj.gender === 'string' && VALID_GENDERS.includes(obj.gender)) {
     clean.gender = obj.gender
+  } else if ('gender' in obj && (obj.gender === null || obj.gender === undefined)) {
+    clean.gender = undefined
   }
   if (typeof obj.annualReturnPct === 'number' && Number.isFinite(obj.annualReturnPct) && obj.annualReturnPct >= -50 && obj.annualReturnPct <= 100) {
     clean.annualReturnPct = obj.annualReturnPct
+  } else if ('annualReturnPct' in obj && (obj.annualReturnPct === null || obj.annualReturnPct === undefined)) {
+    clean.annualReturnPct = undefined
   }
 
   return clean

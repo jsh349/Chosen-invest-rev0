@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
 import { readJSON, writeJSON } from '@/lib/utils/local-storage'
 import type { RankResult } from '@/lib/types/rank'
+import '@/lib/mock/guard'
 import { BENCHMARK_META } from '@/lib/mock/rank-benchmarks'
 import { getActiveBenchmarkSourceId } from '@/lib/adapters/rank-benchmarks-adapter'
 
@@ -56,12 +57,25 @@ function isDuplicate(latest: RankSnapshot | undefined, incoming: Omit<RankSnapsh
   )
 }
 
+function isValidSnapshot(item: unknown): item is RankSnapshot {
+  if (typeof item !== 'object' || item === null) return false
+  const s = item as Record<string, unknown>
+  return (
+    typeof s.id === 'string' &&
+    typeof s.savedAt === 'string' &&
+    typeof s.totalAssetValue === 'number' &&
+    (s.overallPercentile === null || typeof s.overallPercentile === 'number')
+  )
+}
+
 export function useRankSnapshots() {
   const [snapshots, setSnapshots] = useState<RankSnapshot[]>([])
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
-    setSnapshots(readJSON<RankSnapshot[]>(LS_KEY, []))
+    const raw = readJSON<unknown[]>(LS_KEY, [])
+    const valid = (Array.isArray(raw) ? raw : []).filter(isValidSnapshot)
+    setSnapshots(valid)
     setIsLoaded(true)
   }, [])
 

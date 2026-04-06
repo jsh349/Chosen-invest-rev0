@@ -48,12 +48,12 @@ describe('getRankNarrativeSummary — no data', () => {
 // ---------------------------------------------------------------------------
 
 describe('getRankNarrativeSummary — opening sentence', () => {
-  it('uses "compares favorably" for overall ≥ 75', () => {
-    expect(getRankNarrativeSummary([OVERALL(75)])).toMatch(/compares favorably/)
+  it('uses "rank well above the benchmark median" for overall ≥ 75', () => {
+    expect(getRankNarrativeSummary([OVERALL(75)])).toMatch(/rank well above the benchmark median/)
   })
 
-  it('uses "compares favorably" for overall = 90', () => {
-    expect(getRankNarrativeSummary([OVERALL(90)])).toMatch(/compares favorably/)
+  it('uses "rank well above the benchmark median" for overall = 90', () => {
+    expect(getRankNarrativeSummary([OVERALL(90)])).toMatch(/rank well above the benchmark median/)
   })
 
   it('uses "above the benchmark midpoint" for overall = 50', () => {
@@ -64,12 +64,12 @@ describe('getRankNarrativeSummary — opening sentence', () => {
     expect(getRankNarrativeSummary([OVERALL(74)])).toMatch(/above the benchmark midpoint/)
   })
 
-  it('uses "near the benchmark midpoint" for overall = 40', () => {
-    expect(getRankNarrativeSummary([OVERALL(40)])).toMatch(/near the benchmark midpoint/)
+  it('uses "just below the benchmark median" for overall = 40', () => {
+    expect(getRankNarrativeSummary([OVERALL(40)])).toMatch(/just below the benchmark median/)
   })
 
-  it('uses "near the benchmark midpoint" for overall = 49', () => {
-    expect(getRankNarrativeSummary([OVERALL(49)])).toMatch(/near the benchmark midpoint/)
+  it('uses "just below the benchmark median" for overall = 49', () => {
+    expect(getRankNarrativeSummary([OVERALL(49)])).toMatch(/just below the benchmark median/)
   })
 
   it('uses "below the benchmark midpoint" for overall = 39', () => {
@@ -82,18 +82,43 @@ describe('getRankNarrativeSummary — opening sentence', () => {
 })
 
 // ---------------------------------------------------------------------------
+// isLowConfidence — extreme bands are softened
+// ---------------------------------------------------------------------------
+
+describe('getRankNarrativeSummary — isLowConfidence', () => {
+  it('drops "well" from above at ≥ 75 in low-confidence mode', () => {
+    const text = getRankNarrativeSummary([OVERALL(80)], { isLowConfidence: true })
+    expect(text).toMatch(/rank above the benchmark median/)
+    expect(text).not.toMatch(/well above/)
+  })
+
+  it('drops "well" from below at < 25 in low-confidence mode', () => {
+    const text = getRankNarrativeSummary([OVERALL(10)], { isLowConfidence: true })
+    expect(text).toMatch(/rank below the benchmark median/)
+    expect(text).not.toMatch(/well below/)
+  })
+
+  it('middle bands are unchanged in low-confidence mode', () => {
+    const above = getRankNarrativeSummary([OVERALL(60)], { isLowConfidence: true })
+    expect(above).toMatch(/rank above the benchmark median/)
+    const justBelow = getRankNarrativeSummary([OVERALL(45)], { isLowConfidence: true })
+    expect(justBelow).toMatch(/just below the benchmark median/)
+  })
+})
+
+// ---------------------------------------------------------------------------
 // Second sentence — return gap
 // ---------------------------------------------------------------------------
 
 describe('getRankNarrativeSummary — return gap second sentence', () => {
-  it('notes lower return rank when overall − return ≥ 20', () => {
+  it('notes weaker return rank when overall − return ≥ 20', () => {
     const text = getRankNarrativeSummary([OVERALL(70), RETURN(45)])
-    expect(text).toMatch(/return rank is notably lower/)
+    expect(text).toMatch(/return rank is weaker/)
   })
 
   it('notes stronger return rank when return − overall ≥ 20', () => {
     const text = getRankNarrativeSummary([OVERALL(50), RETURN(75)])
-    expect(text).toMatch(/return rank is notably stronger/)
+    expect(text).toMatch(/return rank is stronger/)
   })
 
   it('does not add a return sentence when gap is exactly 19', () => {
@@ -207,7 +232,7 @@ describe('getRankNarrativeSummary — profile incomplete note', () => {
     const text = getRankNarrativeSummary([
       OVERALL(70), RETURN(45), AGE(null, 'age'),
     ])
-    expect(text).toMatch(/return rank is notably lower/)
+    expect(text).toMatch(/return rank is weaker/)
     // Should not also say "profile inputs"
     expect(text).not.toMatch(/profile inputs/)
   })

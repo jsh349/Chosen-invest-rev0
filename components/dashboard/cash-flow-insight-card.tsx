@@ -73,7 +73,7 @@ export function CashFlowInsightCard() {
   const ym = currentYearMonth()
   const monthly = transactions.filter((t) => t.date.startsWith(ym))
   const { income, expenses, net } = computeCashFlow(monthly)
-  const insight = deriveInsight(income, expenses, net, monthly.length, fmt)
+  const insight  = deriveInsight(income, expenses, net, monthly.length, fmt)
 
   return (
     <Card>
