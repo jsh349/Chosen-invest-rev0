@@ -431,7 +431,7 @@ export default function RankPage() {
           {reviewVisible && (
             <div className="flex items-center justify-between gap-3 rounded-xl border border-brand-500/20 bg-brand-500/5 px-5 py-3">
               <p className="text-xs text-brand-300 leading-relaxed">
-                Your rank inputs have changed — review your updated insights.
+                Your rank inputs have changed — updated results are shown below.
               </p>
               <button
                 onClick={() => setReviewVisible(false)}
@@ -744,16 +744,14 @@ export default function RankPage() {
           </span>
           <span className="text-[10px] text-gray-600">
             <span className="text-gray-500">Active source: </span>
-            {usingFallbackBenchmark
-              ? 'Built-in (default) — curated source could not be loaded'
-              : activeBenchmarkSource === 'curated' ? 'Curated dataset' : 'Built-in (default)'}
+            {activeBenchmarkSource === 'curated' && !usingFallbackBenchmark ? 'Curated dataset' : 'Built-in (default)'}
           </span>
           {BENCHMARK_META.notes && (
             <span className="text-[10px] text-gray-600 w-full">{BENCHMARK_META.notes}</span>
           )}
           {usingFallbackBenchmark && (
             <span className="text-[10px] text-amber-500/70 w-full">
-              Results are based on the built-in reference dataset. Check the benchmark source in Settings.
+              Curated source could not be loaded — check benchmark settings.
             </span>
           )}
         </div>

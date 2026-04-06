@@ -35,6 +35,25 @@ All other audit items were verified as false positives (code already handles the
 - **Problem:** Identical formatting logic in two components. Divergence risk when edge cases (zero amounts) need handling.
 - **Fix:** Extract to `lib/utils/format-amount.ts`. Update both call sites.
 
+## P415 — rank page: compact-merge stacked fallback caution messages
+
+When usingFallbackBenchmark is true, two messages repeat the same fact:
+  1. "Active source: Built-in (default) — curated source could not be loaded"
+  2. Amber warning: "Results are based on the built-in reference dataset. Check the benchmark source in Settings."
+Fix: Active source label stays "Built-in (default)"; amber warning becomes
+"Curated source could not be loaded — check benchmark settings."
+
+## P416 — rank page: review prompt CTA progression lock
+
+"Your rank inputs have changed — review your updated insights."
+"review your updated insights" implies navigating elsewhere; results are already below.
+Fix: "Your rank inputs have changed — updated results are shown below."
+
+## P417 — rank-narrative-summary: recognition freeze for ≥50 tier
+
+Narrative ≥50: "above the benchmark midpoint" / Review note: "At or above the benchmark midpoint."
+Fix: narrative → "at or above the benchmark midpoint." (no test changes needed).
+
 ## P414 — rank page: bridge-wording for report→detail and detail→review transitions
 
 Two section headers refined to create a coherent reading flow.

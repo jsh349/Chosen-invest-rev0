@@ -49,7 +49,7 @@ export function getRankNarrativeSummary(ranks: RankResult[]): string {
   if (overallPct >= 75) {
     opening = 'Your overall asset position compares favorably against the reference group.'
   } else if (overallPct >= 50) {
-    opening = 'Your overall asset position is above the benchmark midpoint.'
+    opening = 'Your overall asset position is at or above the benchmark midpoint.'
   } else if (overallPct >= 40) {
     opening = 'Your overall asset position is near the benchmark midpoint.'
   } else {
