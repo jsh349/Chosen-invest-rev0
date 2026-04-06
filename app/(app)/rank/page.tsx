@@ -162,7 +162,7 @@ function RankRow({ result, coverageNote, isLowConfidence = false }: { result: Ra
         </div>
         {hasPct && (
           <div className="shrink-0 text-right">
-            <span className="text-xs font-medium tabular-nums text-gray-500">
+            <span className="text-xs font-medium tabular-nums text-gray-600">
               {result.percentile}th pct.
             </span>
           </div>
@@ -197,10 +197,7 @@ function PrimaryRankHighlight({ ranks, mode, benchmarkLabel, isLowConfidence = f
       <p className={cn('text-4xl font-bold tracking-tight', percentileColor(primary.percentile!))}>
         {percentileBandLabel(primary.percentile!)}
       </p>
-      <p className="text-xs text-gray-400 leading-relaxed">
-        {getRankInterpretation(primary.percentile!, isLowConfidence)}
-      </p>
-      <p className="mt-1 text-[10px] capitalize text-gray-600">
+      <p className="text-[10px] capitalize text-gray-600">
         {isLowConfidence ? mode : `${mode} · ${benchmarkLabel}`}
       </p>
     </div>
