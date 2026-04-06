@@ -2,6 +2,7 @@ import type { Asset } from '@/lib/types/asset'
 import type { AllocationSlice, PortfolioSummary } from '@/lib/types/dashboard'
 import { CATEGORY_MAP } from '@/lib/constants/asset-categories'
 import { toPercentage } from '@/lib/utils/percentage'
+import { normalizeAssetCategory } from '@/lib/utils/normalize-category'
 
 export function buildPortfolioSummary(
   userId: string,
@@ -14,16 +15,14 @@ export function buildPortfolioSummary(
   const totalAssetValue = assets.reduce((sum, a) => sum + a.value, 0)
 
   const grouped = assets.reduce<Record<string, number>>((acc, asset) => {
-    acc[asset.category] = (acc[asset.category] ?? 0) + asset.value
+    const cat = normalizeAssetCategory(asset.category)
+    acc[cat] = (acc[cat] ?? 0) + asset.value
     return acc
   }, {})
 
   const categoryBreakdown: AllocationSlice[] = Object.entries(grouped)
     .map(([category, value]) => {
       const meta = CATEGORY_MAP[category]
-      if (!meta && process.env.NODE_ENV !== 'production') {
-        console.warn(`[buildPortfolioSummary] Unknown asset category: "${category}" — falling back to defaults.`)
-      }
       return {
         category: category as AllocationSlice['category'],
         label: meta?.label ?? category,

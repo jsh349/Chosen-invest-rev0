@@ -9,14 +9,12 @@ import type { TransactionCategory } from '@/lib/types/transaction'
 import { computeCashFlow } from '@/lib/utils/transaction-summary'
 import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
 import { currentYearMonth } from '@/lib/utils/current-month'
+import { formatSignedAmount } from '@/lib/utils/format-amount'
 
 export function TransactionSummaryCard() {
   const { transactions, isLoaded } = useTransactions()
   const { fmt, symbol } = useFormatCurrency()
-  const formatAmount = (amount: number) => {
-    const prefix = amount >= 0 ? '+' : '-'
-    return `${prefix}${fmt(Math.abs(amount))}`
-  }
+  const formatAmount = (amount: number) => formatSignedAmount(amount, fmt)
 
   if (!isLoaded) return null
 

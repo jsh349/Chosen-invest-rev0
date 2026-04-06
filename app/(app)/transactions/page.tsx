@@ -12,6 +12,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
 import type { TransactionCategory } from '@/lib/types/transaction'
 import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
+import { formatSignedAmount } from '@/lib/utils/format-amount'
 
 const CATEGORIES: TransactionCategory[] = [
   'Income', 'Housing', 'Groceries', 'Utilities', 'Subscriptions',
@@ -40,11 +41,7 @@ const SELECT_CLASS = 'rounded-lg border border-surface-border bg-surface-muted p
 export default function TransactionsPage() {
   const { transactions, isLoaded, addTransaction, removeTransaction } = useTransactions()
   const { fmt } = useFormatCurrency()
-  // Uses fmt() so showCents setting is respected (consistent with the rest of the app).
-  const formatAmount = (amount: number) => {
-    const formatted = fmt(Math.abs(amount))
-    return amount >= 0 ? `+${formatted}` : `-${formatted}`
-  }
+  const formatAmount = (amount: number) => formatSignedAmount(amount, fmt)
   const [form, setForm] = useState(EMPTY_FORM)
   const [error, setError] = useState('')
   const [filterCategory, setFilterCategory] = useState<TransactionCategory | 'All'>('All')
