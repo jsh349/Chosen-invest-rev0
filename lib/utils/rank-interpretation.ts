@@ -8,9 +8,9 @@
  * @param percentile  The user's percentile score (0–100).
  */
 export function getRankInterpretation(percentile: number): string {
-  if (percentile >= 75) return 'Compares favorably against the reference group.'
+  if (percentile >= 75) return 'In the upper portion of the reference distribution.'
   if (percentile >= 50) return 'Ahead of the majority in the reference group.'
-  if (percentile >= 40) return 'Comparable to the center of the reference range.'
+  if (percentile >= 40) return 'Near the midpoint of the reference group.'
   if (percentile >= 25) return 'Behind the majority in the reference group.'
   return 'In the lower range of the reference group.'
 }

@@ -104,10 +104,10 @@ function RankRow({ result }: { result: RankResult }) {
           {result.detail && (
             <div className="mt-2 rounded-md bg-surface-muted/40 px-3 py-2 space-y-0.5">
               <p className="text-[11px] text-gray-600">
-                <span className="text-gray-600">Basis: </span>{result.detail.comparisonBasis}
+                <span className="text-gray-600">Band matched: </span>{result.detail.bandLabel}
               </p>
               <p className="text-[11px] text-gray-600">
-                <span className="text-gray-600">Band matched: </span>{result.detail.bandLabel}
+                <span className="text-gray-600">Basis: </span>{result.detail.comparisonBasis}
               </p>
             </div>
           )}
@@ -423,7 +423,7 @@ export default function RankPage() {
           {/* Narrative summary — one or two sentences synthesising available rank signals */}
           {explanationSet.showNarrative && narrativeSummary && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3">
-              <p className="text-sm text-gray-300 leading-relaxed">{narrativeSummary}</p>
+              <p className="text-sm text-gray-400 leading-relaxed">{narrativeSummary}</p>
             </div>
           )}
 

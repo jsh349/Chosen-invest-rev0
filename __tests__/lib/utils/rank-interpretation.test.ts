@@ -1,12 +1,12 @@
 import { getRankInterpretation } from '@/lib/utils/rank-interpretation'
 
 describe('getRankInterpretation', () => {
-  it('returns favorable copy at 75th percentile', () => {
-    expect(getRankInterpretation(75)).toContain('favorably')
+  it('returns upper-distribution copy at 75th percentile', () => {
+    expect(getRankInterpretation(75)).toContain('upper')
   })
 
-  it('returns favorable copy at 90th percentile', () => {
-    expect(getRankInterpretation(90)).toContain('favorably')
+  it('returns upper-distribution copy at 90th percentile', () => {
+    expect(getRankInterpretation(90)).toContain('upper')
   })
 
   it('returns majority-ahead copy at 50th percentile', () => {
@@ -17,12 +17,12 @@ describe('getRankInterpretation', () => {
     expect(getRankInterpretation(74)).toContain('Ahead')
   })
 
-  it('returns center-range copy at 40th percentile', () => {
-    expect(getRankInterpretation(40)).toContain('center')
+  it('returns near-midpoint copy at 40th percentile', () => {
+    expect(getRankInterpretation(40)).toContain('midpoint')
   })
 
-  it('returns center-range copy at 49th percentile', () => {
-    expect(getRankInterpretation(49)).toContain('center')
+  it('returns near-midpoint copy at 49th percentile', () => {
+    expect(getRankInterpretation(49)).toContain('midpoint')
   })
 
   it('returns majority-behind copy at 25th percentile', () => {
