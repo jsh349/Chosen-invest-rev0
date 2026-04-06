@@ -525,13 +525,13 @@ export default function SettingsPage() {
             debugReady && debugHealth.status === 'partial'  ? 'ml-2 normal-case font-normal text-amber-400/60'  :
             debugReady && debugHealth.status === 'invalid'  ? 'ml-2 normal-case font-normal text-amber-500'     :
             debugReady                                      ? 'ml-2 normal-case font-normal text-amber-400/60'  :
-                                                              'ml-2 normal-case font-normal text-amber-500'
+                                                              'ml-2 normal-case font-normal text-amber-400/60'
           }>
             · {debugReady && debugHealth.status === 'healthy'  ? 'ready'         :
                debugReady && debugHealth.status === 'fallback' ? 'degraded'       :
                debugReady && debugHealth.status === 'partial'  ? 'limited'        :
                debugReady && debugHealth.status === 'invalid'  ? 'not connected'  :
-               debugReady                                      ? 'degraded'       :
+               debugReady                                      ? 'unknown'        :
                                                                  'not ready'}
           </span>
         </summary>
@@ -549,7 +549,7 @@ export default function SettingsPage() {
                debugHealth.status === 'invalid'  ? 'not connected'  :
                debugHealth.status === 'fallback' ? 'degraded'       :
                debugHealth.status === 'partial'  ? 'limited'        :
-               debugHealth.status}
+               'unknown'}
             </span>
             {debugHealth.note && <span className="ml-2 text-gray-600">{debugHealth.note}</span>}
           </p>

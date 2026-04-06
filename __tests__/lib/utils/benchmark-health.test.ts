@@ -72,9 +72,11 @@ describe('getBenchmarkHealthStatus', () => {
     }
   })
 
-  it('invalid status includes a non-empty note', () => {
+  it('invalid status includes a non-empty note stating what is active', () => {
+    // Note says what data source is active ('using built-in'), not just what is absent.
     const stubCaps: BenchmarkSourceCapabilities = { ...ALL_CAPS, isFallbackOnly: true }
     const result = getBenchmarkHealthStatus(stubCaps, false)
     expect(result.note.length).toBeGreaterThan(0)
+    expect(result.note).toContain('built-in')
   })
 })

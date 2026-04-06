@@ -29,8 +29,8 @@ export function getBenchmarkHealthStatus(
   }
 
   if (caps.isFallbackOnly) {
-    // "invalid" alone is not self-explanatory; keep a short clarifying note.
-    return { status: 'invalid', note: 'stub — no real data' }
+    // Note states what's active (built-in data), not just what's absent.
+    return { status: 'invalid', note: 'using built-in' }
   }
 
   const allSupported =
