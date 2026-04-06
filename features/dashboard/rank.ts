@@ -120,7 +120,7 @@ export function computeAgeBasedRank(totalAssetValue: number, age?: number): Rank
 
   let message: string
   if (percentile >= 75) message = `Top ${topPct}% among adults aged ${ageRange[0]}–${ageRange[1]} — above average for this age group.`
-  else if (percentile >= 50) message = `Top ${topPct}% among adults aged ${ageRange[0]}–${ageRange[1]} — near the benchmark midpoint for this age group.`
+  else if (percentile >= 50) message = `Top ${topPct}% among adults aged ${ageRange[0]}–${ageRange[1]} — above the benchmark midpoint for this age group.`
   else message = `Top ${topPct}% among adults aged ${ageRange[0]}–${ageRange[1]} — below the benchmark midpoint for this age group.`
 
   const detail: RankDetail = {
@@ -203,7 +203,7 @@ export function computeAgeGenderRank(
 
   let message: string
   if (percentile >= 75) message = `Top ${topPct}% among ${genderLabel} aged ${ageRange[0]}–${ageRange[1]} — above average for this group.`
-  else if (percentile >= 50) message = `Top ${topPct}% among ${genderLabel} aged ${ageRange[0]}–${ageRange[1]} — near the benchmark midpoint for this group.`
+  else if (percentile >= 50) message = `Top ${topPct}% among ${genderLabel} aged ${ageRange[0]}–${ageRange[1]} — above the benchmark midpoint for this group.`
   else message = `Top ${topPct}% among ${genderLabel} aged ${ageRange[0]}–${ageRange[1]} — below the benchmark midpoint for this group.`
 
   const detail: RankDetail = {
@@ -236,7 +236,7 @@ export function computeReturnRank(annualReturnPct?: number): RankResult {
 
   let message: string
   if (percentile >= 80) message = `${sign}${annualReturnPct.toFixed(1)}% annual return — top ${topPct}% of investors, above the benchmark average.`
-  else if (percentile >= 50) message = `${sign}${annualReturnPct.toFixed(1)}% annual return — top ${topPct}% of investors, near the benchmark midpoint.`
+  else if (percentile >= 50) message = `${sign}${annualReturnPct.toFixed(1)}% annual return — top ${topPct}% of investors, above the benchmark midpoint.`
   else message = `${sign}${annualReturnPct.toFixed(1)}% annual return — top ${topPct}% of investors, below the benchmark midpoint.`
 
   const detail: RankDetail = {

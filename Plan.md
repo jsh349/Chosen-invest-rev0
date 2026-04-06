@@ -35,7 +35,31 @@ All other audit items were verified as false positives (code already handles the
 - **Problem:** Identical formatting logic in two components. Divergence risk when edge cases (zero amounts) need handling.
 - **Fix:** Extract to `lib/utils/format-amount.ts`. Update both call sites.
 
-## P411 — getRankInterpretation compact-fit pass
+## P412 — rank.ts: fix "near" → "above" for ≥50 tier in age/gender/return messages
+
+computeOverallWealthRank ≥50 correctly says "above the benchmark midpoint."
+computeAgeBasedRank, computeAgeGenderRank, and computeReturnRank ≥50 say
+"near the benchmark midpoint" — factually wrong for percentile 50-74, and
+inconsistent with the overall wealth function.
+
+Fix: change "near" → "above" in three places within features/dashboard/rank.ts.
+No test files assert these message strings → no test changes needed.
+
+## P413 — rank-insight.ts: compact and unify insight message format
+
+Rules 1 and 2 use two sentences (observation + implication). Rules 3 and 4 use
+inconsistent punctuation (em dash vs. period). All four become single sentences
+using a consistent em dash pattern:
+  "factual state — implication or action"
+
+Rule 1: "Your wealth rank is ahead of your return rank — the gap may reflect a conservative return estimate."
+Rule 2: "Your return rank is ahead of your wealth rank — sustained performance could lift your overall position."
+Rule 3: "Age-based comparison is unavailable — add birth year in Settings to enable peer group rank."
+Rule 4: "Age + gender comparison is unavailable — add gender in Settings for a more specific peer group."
+
+Test changes: Rule 1/2 assertions updated from 'Wealth/Return rank is higher' to
+'wealth/return rank is ahead'.
+
 
 ### Problem
 Three interpretation tiers echo their headline band label in different words:

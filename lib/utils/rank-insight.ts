@@ -18,22 +18,22 @@ export function getRankInsight(ranks: RankResult[]): string | null {
 
   // Rule 1: wealth rank significantly stronger than return rank
   if (overallPct !== null && retPct !== null && overallPct - retPct >= RANK_GAP_THRESHOLD) {
-    return 'Wealth rank is higher than investment return rank. Your return estimate may be conservative relative to your accumulated position.'
+    return 'Your wealth rank is ahead of your return rank — the gap may reflect a conservative return estimate.'
   }
 
   // Rule 2: return rank significantly stronger than wealth rank
   if (overallPct !== null && retPct !== null && retPct - overallPct >= RANK_GAP_THRESHOLD) {
-    return 'Return rank is higher than overall wealth rank. Sustained returns at this rate could improve wealth position over time.'
+    return 'Your return rank is ahead of your wealth rank — sustained performance could lift your overall position.'
   }
 
   // Rule 3: wealth rank available but age comparison missing (birth year not set)
   if (overallPct !== null && ageBased?.missingField === 'birth year') {
-    return 'Peer group comparison is unavailable — add birth year in Settings to see how your wealth compares within your age group.'
+    return 'Age-based comparison is unavailable — add birth year in Settings to enable peer group rank.'
   }
 
   // Rule 4: age rank available but gender comparison missing
   if (overallPct !== null && ageBased?.percentile != null && ageGender?.missingField) {
-    return 'Age and gender comparison is unavailable. Add gender in Settings for a more specific peer group ranking.'
+    return 'Age + gender comparison is unavailable — add gender in Settings for a more specific peer group.'
   }
 
   return null
