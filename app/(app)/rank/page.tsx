@@ -611,7 +611,7 @@ export default function RankPage() {
                   href={ROUTES.settings}
                   className="text-xs text-brand-400 hover:text-brand-300 transition-colors"
                 >
-                  Review inputs →
+                  {benchmarkHealth.status !== 'healthy' ? 'Check inputs →' : 'Review inputs →'}
                 </Link>
                 <button
                   onClick={() => {

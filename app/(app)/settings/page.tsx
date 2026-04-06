@@ -529,7 +529,7 @@ export default function SettingsPage() {
           }>
             · {debugReady && debugHealth.status === 'healthy'  ? 'ready'         :
                debugReady && debugHealth.status === 'fallback' ? 'degraded'       :
-               debugReady && debugHealth.status === 'partial'  ? 'limited'        :
+               debugReady && debugHealth.status === 'partial'  ? 'partial'        :
                debugReady && debugHealth.status === 'invalid'  ? 'not connected'  :
                debugReady                                      ? 'unknown'        :
                                                                  'not ready'}
@@ -548,7 +548,7 @@ export default function SettingsPage() {
               {debugHealth.status === 'healthy'  ? 'ready'         :
                debugHealth.status === 'invalid'  ? 'not connected'  :
                debugHealth.status === 'fallback' ? 'degraded'       :
-               debugHealth.status === 'partial'  ? 'limited'        :
+               debugHealth.status === 'partial'  ? 'partial'        :
                'unknown'}
             </span>
             {debugHealth.note && <span className="ml-2 text-gray-600">{debugHealth.note}</span>}

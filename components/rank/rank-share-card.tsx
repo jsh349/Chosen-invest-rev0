@@ -96,7 +96,7 @@ export const RankShareCard = forwardRef<HTMLDivElement, Props>(
                     </p>
                   </>
                 ) : (
-                  <span className="text-sm text-gray-600">—</span>
+                  <span className="text-xs text-gray-600">—</span>
                 )}
               </div>
             )}
