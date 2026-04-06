@@ -13,7 +13,7 @@ export function formEntryToAsset(
     userId,
     name: entry.name.trim(),
     category: entry.category,
-    value: parseFloat(entry.value),
+    value: parseFloat(entry.value) || 0,
     currency: entry.currency || 'USD',
     createdAt: createdAt ?? now,
     updatedAt: now,

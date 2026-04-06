@@ -3,13 +3,11 @@ import { rankBenchmarksAdapter, getActiveBenchmarkSourceId } from '@/lib/adapter
 import { getBenchmarkCapabilities } from '@/lib/utils/benchmark-capabilities'
 import { capabilityGuardedResult } from '@/lib/utils/benchmark-capability-guard'
 
-// Resolved once at module load — same lifecycle as rankBenchmarksAdapter.
-// SSR-safe: getActiveBenchmarkSourceId() returns 'default' when window is undefined.
-// IMPORTANT: _caps is frozen for the lifetime of this module. The Settings page
-// forces window.location.reload() after changing the active source, which re-initialises
-// the module. If that forced reload is ever removed, _caps will be stale and rank
-// computations will silently use wrong capabilities.
-const _caps = getBenchmarkCapabilities(getActiveBenchmarkSourceId())
+// Resolved on each call so capabilities stay fresh if the active benchmark
+// source changes without a full page reload.
+function getCaps() {
+  return getBenchmarkCapabilities(getActiveBenchmarkSourceId())
+}
 
 /**
  * Returns the percentile for the bucket whose range contains `value`.
@@ -50,14 +48,14 @@ function filterByAge(buckets: BenchmarkBucket[], age: number): BenchmarkBucket[]
 }
 
 function fmtWealth(v: number): string {
-  if (v >= 1_000_000) return `$${+(v / 1_000_000).toFixed(1)}M`
-  if (v >= 1_000)     return `$${Math.round(v / 1_000)}K`
-  return `$${Math.round(v)}`
+  if (v >= 1_000_000) return `${+(v / 1_000_000).toFixed(1)}M`
+  if (v >= 1_000)     return `${Math.round(v / 1_000)}K`
+  return `${Math.round(v)}`
 }
 
 function wealthBand(b: BenchmarkBucket): string {
   if (b.maxValue === Infinity) return `${fmtWealth(b.minValue)}+`
-  return `${fmtWealth(b.minValue)} – ${fmtWealth(b.maxValue)}`
+  return `${fmtWealth(b.minValue)} \u2013 ${fmtWealth(b.maxValue)}`
 }
 
 function returnBand(b: BenchmarkBucket): string {
@@ -68,7 +66,7 @@ function returnBand(b: BenchmarkBucket): string {
 
 /** Compute only the Overall Wealth rank from total asset value. */
 export function computeOverallWealthRank(totalAssetValue: number): RankResult {
-  const guard = capabilityGuardedResult(_caps.supportsWealth, 'overall_wealth', 'Overall Wealth Rank')
+  const guard = capabilityGuardedResult(getCaps().supportsWealth, 'overall_wealth', 'Overall Wealth Rank')
   if (guard) return guard
   const buckets = rankBenchmarksAdapter.getOverallWealthBenchmarks()
   const percentile = findPercentile(buckets, totalAssetValue)
@@ -91,7 +89,7 @@ export function computeOverallWealthRank(totalAssetValue: number): RankResult {
 
 /** Compute Age-Based Wealth rank. Returns informational state if age is missing. */
 export function computeAgeBasedRank(totalAssetValue: number, age?: number): RankResult {
-  const guard = capabilityGuardedResult(_caps.supportsAge, 'age_based', 'Age-Based Rank')
+  const guard = capabilityGuardedResult(getCaps().supportsAge, 'age_based', 'Age-Based Rank')
   if (guard) return guard
   if (age == null) {
     return {
@@ -137,7 +135,7 @@ export function computeAgeGenderRank(
   age?: number,
   gender?: GenderOption,
 ): RankResult {
-  const guard = capabilityGuardedResult(_caps.supportsAgeGender, 'age_gender', 'Age + Gender Rank')
+  const guard = capabilityGuardedResult(getCaps().supportsAgeGender, 'age_gender', 'Age + Gender Rank')
   if (guard) return guard
   // Missing fields
   if (age == null && (gender == null || gender === 'undisclosed')) {
@@ -216,7 +214,7 @@ export function computeAgeGenderRank(
 
 /** Compute Investment Return rank from an estimated annual return %. */
 export function computeReturnRank(annualReturnPct?: number): RankResult {
-  const guard = capabilityGuardedResult(_caps.supportsReturn, 'investment_return', 'Investment Return Rank')
+  const guard = capabilityGuardedResult(getCaps().supportsReturn, 'investment_return', 'Investment Return Rank')
   if (guard) return guard
   if (annualReturnPct == null) {
     return {

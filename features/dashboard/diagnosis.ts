@@ -22,7 +22,7 @@ export function generateHealthCards(summary: PortfolioSummary): FinancialHealthC
       : `Only ${categoryCount} category. Portfolio needs more diversification.`
 
   // Concentration: largest single category %
-  const topSlice = categoryBreakdown[0]
+  const topSlice = [...categoryBreakdown].sort((a, b) => b.value - a.value)[0]
   const topPct = topSlice?.percentage ?? 0
   const concentrationScore = topPct > 60 ? 30 : topPct > 40 ? 55 : 80
   const concentrationMessage =

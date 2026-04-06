@@ -41,6 +41,7 @@ export default function PortfolioInputPage() {
   const { assets, hasCustomAssets, isLoaded, setAssets } = useAssets()
   const { fmt } = useFormatCurrency()
   const [entries, setEntries] = useState<FormEntry[] | null>(null)
+  const [validationError, setValidationError] = useState<string | null>(null)
 
   // isLoaded is the intentional one-shot trigger. Adding assets/hasCustomAssets
   // would reset the form and lose in-progress edits whenever the store updates.
@@ -59,6 +60,7 @@ export default function PortfolioInputPage() {
   const total = entries.reduce((sum, e) => sum + (parseFloat(e.value) || 0), 0)
 
   function handleChange(index: number, field: keyof AssetFormEntry, value: string) {
+    if (validationError) setValidationError(null)
     setEntries((prev) => {
       if (!prev) return prev
       const updated = [...prev]
@@ -81,8 +83,8 @@ export default function PortfolioInputPage() {
     const validEntries = entries.filter(
       (en) => en.name.trim() && parseFloat(en.value) > 0
     )
-    if (validEntries.length === 0) {
-      router.push(ROUTES.dashboard)
+    if (entries.length > 0 && validEntries.length === 0) {
+      setValidationError('Please enter at least one asset with a name and a value greater than 0.')
       return
     }
     const newAssets = validEntries.map((en) =>
@@ -130,6 +132,10 @@ export default function PortfolioInputPage() {
             <span className="text-sm text-gray-400">Total entered</span>
             <span className="text-base font-bold text-white">{fmt(total)}</span>
           </div>
+        )}
+
+        {validationError && (
+          <p className="text-sm text-red-400">{validationError}</p>
         )}
 
         <div className="flex justify-end gap-3 pt-2">

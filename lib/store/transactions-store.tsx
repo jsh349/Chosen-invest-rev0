@@ -36,7 +36,7 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
       if (cancelled) return
       if (stored.length > 0) setTransactions(stored)
       setIsLoaded(true)
-    })
+    }).catch(() => { if (!cancelled) setIsLoaded(true) })
     return () => { cancelled = true }
   }, [])
 
