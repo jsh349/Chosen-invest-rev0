@@ -76,7 +76,7 @@ export function computeOverallWealthRank(totalAssetValue: number): RankResult {
   let message: string
   if (percentile >= 90) message = `Top ${topPct}% nationally — in the highest benchmark range.`
   else if (percentile >= 70) message = `Top ${topPct}% nationally — above average across all households.`
-  else if (percentile >= 50) message = `Top ${topPct}% nationally — above the benchmark midpoint.`
+  else if (percentile >= 50) message = `Top ${topPct}% nationally — at or above the benchmark midpoint.`
   else message = `Top ${topPct}% nationally — below the benchmark midpoint.`
 
   const detail: RankDetail = {
@@ -96,7 +96,7 @@ export function computeAgeBasedRank(totalAssetValue: number, age?: number): Rank
       type: 'age_based',
       label: 'Age-Based Rank',
       percentile: null,
-      message: 'Add your birth year in Settings to enable age-based ranking.',
+      message: 'Add your birth year in Settings to enable age-based rank comparison.',
       missingField: 'birth year',
     }
   }
@@ -234,7 +234,7 @@ export function computeReturnRank(annualReturnPct?: number): RankResult {
 
   let message: string
   if (percentile >= 80) message = `${sign}${annualReturnPct.toFixed(1)}% annual return — top ${topPct}% of investors, above the benchmark average.`
-  else if (percentile >= 50) message = `${sign}${annualReturnPct.toFixed(1)}% annual return — top ${topPct}% of investors, above the benchmark midpoint.`
+  else if (percentile >= 50) message = `${sign}${annualReturnPct.toFixed(1)}% annual return — top ${topPct}% of investors, at or above the benchmark midpoint.`
   else message = `${sign}${annualReturnPct.toFixed(1)}% annual return — top ${topPct}% of investors, below the benchmark midpoint.`
 
   const detail: RankDetail = {

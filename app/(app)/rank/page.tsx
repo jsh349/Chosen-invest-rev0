@@ -731,20 +731,16 @@ export default function RankPage() {
         </p>
         <div className="mt-2 border-t border-surface-border pt-2 flex flex-wrap gap-x-4 gap-y-1">
           <span className="text-[10px] text-gray-600">
-            <span className="text-gray-500">Benchmark: </span>
-            {BENCHMARK_META.sourceLabel}
+            Benchmark: {BENCHMARK_META.sourceLabel}
           </span>
           <span className="text-[10px] text-gray-600">
-            <span className="text-gray-500">Version: </span>
-            {activeBenchmarkMeta.version}
+            Version: {activeBenchmarkMeta.version}
           </span>
           <span className="text-[10px] text-gray-600">
-            <span className="text-gray-500">Updated: </span>
-            {activeBenchmarkMeta.updatedAt}
+            Updated: {activeBenchmarkMeta.updatedAt}
           </span>
           <span className="text-[10px] text-gray-600">
-            <span className="text-gray-500">Active source: </span>
-            {activeBenchmarkSource === 'curated' && !usingFallbackBenchmark ? 'Curated dataset' : 'Built-in (default)'}
+            Active source: {activeBenchmarkSource === 'curated' && !usingFallbackBenchmark ? 'Curated dataset' : 'Built-in (default)'}
           </span>
           {BENCHMARK_META.notes && (
             <span className="text-[10px] text-gray-600 w-full">{BENCHMARK_META.notes}</span>
