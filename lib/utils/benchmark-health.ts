@@ -52,6 +52,6 @@ export function getBenchmarkHealthStatus(
 
   return {
     status: 'healthy',
-    note: 'All rank categories supported.',
+    note: 'All categories active.',
   }
 }

@@ -44,7 +44,7 @@ export function buildMonthlySummary(snapshots: RankSnapshot[]): MonthlySummary |
       currentReturn,
       delta: null,
       returnDelta: null,
-      note: 'First recorded visit — check back after your next session for a change indicator.',
+      note: 'First recorded visit — comparison will appear on the next visit.',
     }
   }
 
@@ -60,7 +60,7 @@ export function buildMonthlySummary(snapshots: RankSnapshot[]): MonthlySummary |
 
   let note: string
   if (delta === null) {
-    note = 'Rank comparison unavailable — overall rank data is incomplete.'
+    note = 'Rank comparison unavailable — overall rank not yet computed.'
   } else if (delta > 0) {
     note = `Overall rank improved by ${delta} percentile point${delta === 1 ? '' : 's'}.`
   } else if (delta < 0) {

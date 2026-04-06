@@ -53,7 +53,7 @@ export function getRankChecklist(
   if (items.length < MAX_ITEMS) {
     const { overall } = indexRanks(ranks)
     if (overall?.percentile !== null && overall?.percentile !== undefined && overall.percentile < 40) {
-      items.push({ text: 'Review portfolio allocation', href: ROUTES.portfolioList })
+      items.push({ text: 'Check portfolio allocation', href: ROUTES.portfolioList })
     }
   }
 

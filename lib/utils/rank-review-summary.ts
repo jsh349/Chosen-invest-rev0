@@ -66,7 +66,7 @@ export function getRankReviewSummary(
     return {
       topic: 'profile', label: 'Profile',
       status: 'ok',
-      note: 'All profile inputs are complete.',
+      note: 'Profile complete.',
     }
   })()
 
