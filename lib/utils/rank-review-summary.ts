@@ -93,7 +93,9 @@ export function getRankReviewSummary(
     return {
       topic: 'wealth', label: 'Wealth rank',
       status: 'ok',
-      note: 'Above the benchmark median.',
+      // Mirror getRankInterpretation tiers so report and review surfaces
+      // describe the same rank outcome with the same phrase.
+      note: overallPct >= 75 ? 'Well above the benchmark median.' : 'Above the benchmark median.',
     }
   })()
 
@@ -120,7 +122,7 @@ export function getRankReviewSummary(
     return {
       topic: 'return', label: 'Return rank',
       status: 'ok',
-      note: 'Above the benchmark median.',
+      note: returnPct >= 75 ? 'Well above the benchmark median.' : 'Above the benchmark median.',
     }
   })()
 

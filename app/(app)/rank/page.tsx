@@ -94,7 +94,7 @@ function rankCompleteness(availableCount: number, total: number): { label: strin
  */
 function sourceNoteColor(note: { level: string } | null): string {
   if (!note) return 'text-gray-600'
-  return note.level === 'low' ? 'text-amber-500/70' : 'text-gray-500'
+  return note.level === 'low' ? 'text-amber-500/70' : 'text-gray-600'
 }
 
 
@@ -677,7 +677,7 @@ export default function RankPage() {
             && (!rankReviewSummary || reviewDismissed) && !reviewVisible
             && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Improve Your Rank</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Next steps</p>
               <ul className="space-y-2">
                 {rankChecklist.map((item) => (
                   <li key={item.href + item.text}>

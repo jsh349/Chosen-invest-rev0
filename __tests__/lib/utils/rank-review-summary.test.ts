@@ -104,10 +104,19 @@ describe('wealth item', () => {
     expect(wealth.status).toBe('ok')
   })
 
-  it('overall >= 75 → wealth status is ok', () => {
+  it('overall >= 75 → wealth status is ok with well-above note', () => {
     const result = getRankReviewSummary([overall(80), ret(40)], fullProfile)!
     const wealth = result.find((i) => i.topic === 'wealth')!
     expect(wealth.status).toBe('ok')
+    expect(wealth.note).toMatch(/well above.*median/i)
+  })
+
+  it('overall 50–74 → wealth status is ok with above note (not well-above)', () => {
+    const result = getRankReviewSummary([overall(60), ret(40)], fullProfile)!
+    const wealth = result.find((i) => i.topic === 'wealth')!
+    expect(wealth.status).toBe('ok')
+    expect(wealth.note).toMatch(/above.*median/i)
+    expect(wealth.note).not.toMatch(/well above/i)
   })
 })
 
@@ -135,9 +144,20 @@ describe('return item', () => {
     expect(result).toBeNull()
   })
 
-  it('return >= 75 → return status is ok', () => {
-    const result = getRankReviewSummary([overall(60), ret(80)], fullProfile)
-    expect(result).toBeNull()
+  it('return >= 75 → return status is ok with well-above note', () => {
+    // overall(45) forces non-null result so the return item note can be inspected.
+    const result = getRankReviewSummary([overall(45), ret(80)], fullProfile)!
+    const retItem = result.find((i) => i.topic === 'return')!
+    expect(retItem.status).toBe('ok')
+    expect(retItem.note).toMatch(/well above.*median/i)
+  })
+
+  it('return 50–74 → return status is ok with above note (not well-above)', () => {
+    const result = getRankReviewSummary([overall(45), ret(60)], fullProfile)!
+    const retItem = result.find((i) => i.topic === 'return')!
+    expect(retItem.status).toBe('ok')
+    expect(retItem.note).toMatch(/above.*median/i)
+    expect(retItem.note).not.toMatch(/well above/i)
   })
 })
 
