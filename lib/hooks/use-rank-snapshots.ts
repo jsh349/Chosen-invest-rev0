@@ -57,12 +57,25 @@ function isDuplicate(latest: RankSnapshot | undefined, incoming: Omit<RankSnapsh
   )
 }
 
+function isValidSnapshot(item: unknown): item is RankSnapshot {
+  if (typeof item !== 'object' || item === null) return false
+  const s = item as Record<string, unknown>
+  return (
+    typeof s.id === 'string' &&
+    typeof s.savedAt === 'string' &&
+    typeof s.totalAssetValue === 'number' &&
+    (s.overallPercentile === null || typeof s.overallPercentile === 'number')
+  )
+}
+
 export function useRankSnapshots() {
   const [snapshots, setSnapshots] = useState<RankSnapshot[]>([])
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
-    setSnapshots(readJSON<RankSnapshot[]>(LS_KEY, []))
+    const raw = readJSON<unknown[]>(LS_KEY, [])
+    const valid = (Array.isArray(raw) ? raw : []).filter(isValidSnapshot)
+    setSnapshots(valid)
     setIsLoaded(true)
   }, [])
 

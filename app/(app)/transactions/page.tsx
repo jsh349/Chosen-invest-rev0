@@ -186,16 +186,16 @@ export default function TransactionsPage() {
         <div className="grid grid-cols-3 gap-3">
           <div className="rounded-xl border border-surface-border bg-surface-card px-4 py-3">
             <p className="text-xs text-gray-500">Income (all time)</p>
-            <p className="mt-0.5 text-sm font-semibold text-green-400">{formatAmount(totalIncome)}</p>
+            <p className="mt-0.5 text-sm font-semibold text-green-400">{fmt(totalIncome)}</p>
           </div>
           <div className="rounded-xl border border-surface-border bg-surface-card px-4 py-3">
             <p className="text-xs text-gray-500">Expenses (all time)</p>
-            <p className="mt-0.5 text-sm font-semibold text-red-400">{formatAmount(totalExpense)}</p>
+            <p className="mt-0.5 text-sm font-semibold text-red-400">{fmt(Math.abs(totalExpense))}</p>
           </div>
           <div className="rounded-xl border border-surface-border bg-surface-card px-4 py-3">
             <p className="text-xs text-gray-500">Net (all time)</p>
             <p className={cn('mt-0.5 text-sm font-semibold', net >= 0 ? 'text-green-400' : 'text-red-400')}>
-              {formatAmount(net)}
+              {net >= 0 ? fmt(net) : `-${fmt(Math.abs(net))}`}
             </p>
           </div>
         </div>
@@ -253,7 +253,7 @@ export default function TransactionsPage() {
                       {formatAmount(t.amount)}
                     </span>
                     <button
-                      onClick={() => removeTransaction(t.id)}
+                      onClick={() => { if (!window.confirm('Delete this transaction?')) return; removeTransaction(t.id) }}
                       className="shrink-0 rounded-lg p-1.5 text-gray-600 hover:bg-red-950 hover:text-red-400 transition-colors"
                       aria-label="Delete transaction"
                     >

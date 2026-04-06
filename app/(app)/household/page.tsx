@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { Users, Trash2, Target, StickyNote } from 'lucide-react'
 import { useHousehold } from '@/lib/store/household-store'
@@ -34,25 +34,18 @@ const ROLE_COLORS: Record<MemberRole, string> = {
 const EMPTY_FORM = { name: '', email: '', role: 'viewer' as MemberRole }
 
 export default function HouseholdPage() {
-  const { members, isLoaded: membersLoaded, isLoadError: membersError, addMember, removeMember } = useHousehold()
-  const { goals, isLoaded: goalsLoaded, isLoadError: goalsError } = useGoals()
-  const { notes, isLoaded: notesLoaded, isLoadError: notesError, addNote, removeNote } = useHouseholdNotes()
+  const { members, isLoaded: membersLoaded, addMember, removeMember } = useHousehold()
+  const { goals, isLoaded: goalsLoaded } = useGoals()
+  const { notes, isLoaded: notesLoaded, addNote, removeNote } = useHouseholdNotes()
   const { fmt } = useFormatCurrency()
   const [form, setForm] = useState(EMPTY_FORM)
   const [error, setError] = useState('')
-  const submittingRef = useRef(false)
   const [noteForm, setNoteForm] = useState({ title: '', message: '' })
   const [noteError, setNoteError] = useState('')
 
   if (!membersLoaded || !goalsLoaded || !notesLoaded) {
     return (
       <LoadingSpinner />
-    )
-  }
-
-  if (membersError || goalsError || notesError) {
-    return (
-      <p className="py-10 text-center text-sm text-gray-500">Failed to load household data — refresh to try again.</p>
     )
   }
 
@@ -79,28 +72,21 @@ export default function HouseholdPage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (submittingRef.current) return
     if (!isRequired(form.name)) { setError('Name is required.'); return }
     if (!isBasicEmail(form.email)) { setError('A valid email is required.'); return }
-    const normalizedEmail = form.email.trim().toLowerCase()
-    if (members.some((m) => m.email.toLowerCase() === normalizedEmail)) {
-      setError('This email address is already in the household.')
+    if (members.some(m => m.email.toLowerCase() === form.email.trim().toLowerCase())) {
+      setError('A member with this email is already added.')
       return
     }
-    submittingRef.current = true
-    try {
-      addMember({
-        id:        crypto.randomUUID(),
-        name:      form.name.trim(),
-        email:     normalizedEmail,
-        role:      form.role,
-        createdAt: new Date().toISOString(),
-      })
-      setForm(EMPTY_FORM)
-      setError('')
-    } finally {
-      submittingRef.current = false
-    }
+    addMember({
+      id:        crypto.randomUUID(),
+      name:      form.name.trim(),
+      email:     form.email.trim().toLowerCase(),
+      role:      form.role,
+      createdAt: new Date().toISOString(),
+    })
+    setForm(EMPTY_FORM)
+    setError('')
   }
 
   return (
@@ -188,11 +174,11 @@ export default function HouseholdPage() {
                     <p className="truncate text-sm font-medium text-white">{m.name}</p>
                     <p className="truncate text-xs text-gray-500">{m.email}</p>
                   </div>
-                  <span className={cn('shrink-0 rounded-full px-2 py-0.5 text-xs font-medium capitalize', ROLE_COLORS[m.role] ?? 'text-gray-400 bg-surface-muted')}>
+                  <span className={cn('shrink-0 rounded-full px-2 py-0.5 text-xs font-medium capitalize', ROLE_COLORS[m.role])}>
                     {m.role}
                   </span>
                   <button
-                    onClick={() => removeMember(m.id)}
+                    onClick={() => { if (!window.confirm('Remove this household member?')) return; removeMember(m.id) }}
                     className="shrink-0 rounded-lg p-1.5 text-gray-600 hover:bg-red-950 hover:text-red-400 transition-colors"
                     aria-label="Remove member"
                   >
@@ -258,7 +244,7 @@ export default function HouseholdPage() {
                     <p className="text-xs text-gray-600">{new Date(note.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
                   </div>
                   <button
-                    onClick={() => removeNote(note.id)}
+                    onClick={() => { if (!window.confirm('Delete this note?')) return; removeNote(note.id) }}
                     className="shrink-0 rounded-lg p-1.5 text-gray-600 hover:bg-red-950 hover:text-red-400 transition-colors"
                     aria-label="Delete note"
                   >
@@ -285,7 +271,7 @@ export default function HouseholdPage() {
             <div className="px-4 py-8 text-center space-y-2">
               <p className="text-sm text-gray-500">No shared goals yet.</p>
               <p className="text-xs text-gray-600">
-                Enable &quot;Share with household&quot; when adding or editing a goal.
+                Enable "Share with household" when adding or editing a goal.
               </p>
               <Link href={ROUTES.goals} className="inline-block text-xs text-brand-400 hover:text-brand-300 transition-colors">
                 Go to Goals →
@@ -312,7 +298,7 @@ export default function HouseholdPage() {
                     </div>
                     <div className="flex justify-between text-xs text-gray-500">
                       <span>{fmt(goal.currentAmount)} saved</span>
-                      <span>{Math.floor(pct)}% of {fmt(goal.targetAmount)}</span>
+                      <span>{pct.toFixed(0)}% of {fmt(goal.targetAmount)}</span>
                     </div>
                   </div>
                 )

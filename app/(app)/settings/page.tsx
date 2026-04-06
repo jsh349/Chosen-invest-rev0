@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import Link from 'next/link'
 import { Download, Upload, History } from 'lucide-react'
 import { useSettings, DEFAULT_SETTINGS, type CurrencyCode } from '@/lib/store/settings-store'
 import type { GenderOption } from '@/lib/types/rank'
@@ -13,16 +12,15 @@ import {
   getActiveBenchmarkSourceId,
   setActiveBenchmarkSourceId,
   isUsingFallbackBenchmark,
-  getActiveBenchmarkMeta,
   type BenchmarkSource,
 } from '@/lib/adapters/rank-benchmarks-adapter'
 import { getBenchmarkCapabilities } from '@/lib/utils/benchmark-capabilities'
 import { getBenchmarkHealthStatus } from '@/lib/utils/benchmark-health'
-import '@/lib/mock/guard'
 import { BENCHMARK_META } from '@/lib/mock/rank-benchmarks'
 import { readBenchmarkRefreshState } from '@/lib/utils/benchmark-refresh'
-import { readScalar } from '@/lib/utils/local-storage'
-import { ROUTES } from '@/lib/constants/routes'
+import { getBenchmarkSourceHistory } from '@/lib/utils/benchmark-source-history'
+import { readJSON } from '@/lib/utils/local-storage'
+import { normalizeAssetCategory } from '@/lib/utils/normalize-category'
 
 /** Keys whose stored value must be an array. Non-array values are skipped on import. */
 const ARRAY_KEYS: ReadonlySet<string> = new Set([
@@ -33,18 +31,7 @@ const ARRAY_KEYS: ReadonlySet<string> = new Set([
   STORAGE_KEYS.householdNotes,
   STORAGE_KEYS.audit,
   STORAGE_KEYS.rankSnapshots,
-])
-
-/**
- * Keys for data that is now persisted via the API (Turso), not localStorage.
- * Importing these from a backup would write to localStorage but the stores
- * would ignore it — the API adapter is the source of truth for these keys.
- * Skip them during import to avoid silent no-ops.
- */
-const API_BACKED_KEYS: ReadonlySet<string> = new Set([
-  STORAGE_KEYS.assets,
-  STORAGE_KEYS.goals,
-  STORAGE_KEYS.transactions,
+  STORAGE_KEYS.benchmarkSourceHistory,
 ])
 
 /** Keys whose stored value must be a plain string. */
@@ -52,13 +39,6 @@ const STRING_KEYS: ReadonlySet<string> = new Set([
   STORAGE_KEYS.benchmarkSource,
   STORAGE_KEYS.benchmarkSeen,
   STORAGE_KEYS.rankReviewSeen,
-  // These two store raw scalar strings. Without this, JSON.parse('household')
-  // throws a SyntaxError during export — the key is silently exported as null
-  // and lost on import. JSON.parse('1735000000000') succeeds numerically but
-  // round-tripping through JSON.stringify/parse changes the type; raw string
-  // preservation is semantically correct for both keys.
-  STORAGE_KEYS.rankReviewCooldown,
-  STORAGE_KEYS.rankComparisonMode,
 ])
 
 /** Keys whose stored value must be a plain object (not array, not null). */
@@ -69,9 +49,6 @@ const OBJECT_KEYS: ReadonlySet<string> = new Set([
   STORAGE_KEYS.benchmarkApplied,
 ])
 
-const VALID_CURRENCY_CODES = new Set<string>(['USD', 'EUR', 'GBP', 'JPY', 'KRW'])
-const VALID_GENDER_VALUES  = new Set<string>(['male', 'female', 'other', 'undisclosed'])
-
 function isSafeToRestore(key: string, value: unknown): boolean {
   if (ARRAY_KEYS.has(key) && !Array.isArray(value)) return false
   if (OBJECT_KEYS.has(key) && (typeof value !== 'object' || value === null || Array.isArray(value))) return false
@@ -79,32 +56,57 @@ function isSafeToRestore(key: string, value: unknown): boolean {
   return true
 }
 
-/**
- * Strips invalid fields from a settings object instead of rejecting the whole
- * object. Valid fields are preserved; invalid or unrecognised fields are dropped.
- * The result is merged onto DEFAULT_SETTINGS to ensure all required fields exist.
- */
-function sanitizeSettingsForRestore(raw: Record<string, unknown>): Record<string, unknown> {
-  const out: Record<string, unknown> = {}
-  if (typeof raw.currency === 'string' && VALID_CURRENCY_CODES.has(raw.currency)) out.currency = raw.currency
-  if (typeof raw.showCents === 'boolean') out.showCents = raw.showCents
-  if (typeof raw.birthYear === 'number' && raw.birthYear >= 1900 && raw.birthYear <= 2100) out.birthYear = raw.birthYear
-  if (typeof raw.gender === 'string' && VALID_GENDER_VALUES.has(raw.gender)) out.gender = raw.gender
-  if (typeof raw.annualReturnPct === 'number' && raw.annualReturnPct >= -100 && raw.annualReturnPct <= 100) out.annualReturnPct = raw.annualReturnPct
-  return out
-}
-
-const VALID_DASHBOARD_CARD_KEYS = new Set<string>([
-  'allocation', 'portfolioStatus', 'advisor', 'goals',
-  'transactions', 'taxOpportunity', 'cashFlowInsight', 'rank',
-])
-
-function sanitizeDashboardPrefsForRestore(raw: Record<string, unknown>): Record<string, unknown> {
-  const out: Record<string, unknown> = {}
-  for (const [key, value] of Object.entries(raw)) {
-    if (VALID_DASHBOARD_CARD_KEYS.has(key) && typeof value === 'boolean') out[key] = value
+function sanitizeImportedArray(key: string, items: unknown[]): unknown[] {
+  if (key === STORAGE_KEYS.assets) {
+    return items.filter((item) => {
+      if (typeof item !== 'object' || item === null) return false
+      const o = item as Record<string, unknown>
+      return typeof o.id === 'string' && typeof o.name === 'string' &&
+        typeof o.value === 'number' && Number.isFinite(o.value)
+    }).map((item) => {
+      const o = item as Record<string, unknown>
+      return { ...o, category: normalizeAssetCategory(String(o.category ?? 'other')) }
+    })
   }
-  return out
+  if (key === STORAGE_KEYS.goals) {
+    return items.filter((item) => {
+      if (typeof item !== 'object' || item === null) return false
+      const o = item as Record<string, unknown>
+      if (typeof o.id !== 'string' || typeof o.name !== 'string') return false
+      if (typeof o.targetAmount !== 'number' || !Number.isFinite(o.targetAmount as number)) return false
+      return true
+    })
+  }
+  if (key === STORAGE_KEYS.transactions) {
+    return items.filter((item) => {
+      if (typeof item !== 'object' || item === null) return false
+      const o = item as Record<string, unknown>
+      if (typeof o.id !== 'string' || typeof o.description !== 'string') return false
+      if (o.amount !== undefined && (typeof o.amount !== 'number' || !Number.isFinite(o.amount))) return false
+      if (typeof o.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(o.date as string)) return false
+      return true
+    })
+  }
+  if (key === STORAGE_KEYS.household) {
+    return items.filter((item) => {
+      if (typeof item !== 'object' || item === null) return false
+      const o = item as Record<string, unknown>
+      return typeof o.id === 'string' && typeof o.name === 'string' && typeof o.email === 'string'
+    })
+  }
+  if (key === STORAGE_KEYS.rankSnapshots) {
+    return items.filter((item) => {
+      if (typeof item !== 'object' || item === null) return false
+      const o = item as Record<string, unknown>
+      return typeof o.id === 'string' && typeof o.savedAt === 'string' && typeof o.totalAssetValue === 'number'
+    })
+  }
+  // householdNotes, audit, benchmarkSourceHistory: require non-null object with string id
+  return items.filter((item) => {
+    if (typeof item !== 'object' || item === null) return false
+    const o = item as Record<string, unknown>
+    return typeof o.id === 'string'
+  })
 }
 
 const SELECT_CLASS = 'w-full rounded-lg border border-surface-border bg-surface-muted px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none'
@@ -135,7 +137,7 @@ function handleExport() {
   for (const key of ALL_STORAGE_KEYS) {
     try {
       const raw = window.localStorage.getItem(key)
-      if (raw === null) continue
+      if (raw === null) { data[key] = null; continue }
       // Scalar string keys are stored as raw strings — no JSON layer
       data[key] = STRING_KEYS.has(key) ? raw : JSON.parse(raw)
     } catch {
@@ -162,6 +164,44 @@ function validateImport(data: unknown): string | null {
   return null
 }
 
+/**
+ * Validates and strips individual fields within an imported settings object.
+ * Returns only the fields that are present, correctly typed, and within valid ranges.
+ * Invalid fields are dropped rather than allowed through with wrong types.
+ */
+function sanitizeSettingsForRestore(raw: unknown): Record<string, unknown> {
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return {}
+  const obj = raw as Record<string, unknown>
+  const clean: Record<string, unknown> = {}
+
+  const VALID_CURRENCIES: string[] = ['USD', 'EUR', 'GBP', 'JPY', 'KRW']
+  if (typeof obj.currency === 'string' && VALID_CURRENCIES.includes(obj.currency)) {
+    clean.currency = obj.currency
+  }
+  if (typeof obj.showCents === 'boolean') {
+    clean.showCents = obj.showCents
+  }
+  const maxYear = new Date().getFullYear() - 10
+  if (typeof obj.birthYear === 'number' && Number.isInteger(obj.birthYear) && obj.birthYear >= 1920 && obj.birthYear <= maxYear) {
+    clean.birthYear = obj.birthYear
+  } else if ('birthYear' in obj && (obj.birthYear === null || obj.birthYear === undefined)) {
+    clean.birthYear = undefined
+  }
+  const VALID_GENDERS: string[] = ['male', 'female', 'other', 'undisclosed']
+  if (typeof obj.gender === 'string' && VALID_GENDERS.includes(obj.gender)) {
+    clean.gender = obj.gender
+  } else if ('gender' in obj && (obj.gender === null || obj.gender === undefined)) {
+    clean.gender = undefined
+  }
+  if (typeof obj.annualReturnPct === 'number' && Number.isFinite(obj.annualReturnPct) && obj.annualReturnPct >= -50 && obj.annualReturnPct <= 100) {
+    clean.annualReturnPct = obj.annualReturnPct
+  } else if ('annualReturnPct' in obj && (obj.annualReturnPct === null || obj.annualReturnPct === undefined)) {
+    clean.annualReturnPct = undefined
+  }
+
+  return clean
+}
+
 export default function SettingsPage() {
   const { settings, isLoaded, update } = useSettings()
   const { entries: auditEntries, isLoaded: auditLoaded, refresh: refreshAudit, clear: clearAudit } = useAudit()
@@ -170,20 +210,15 @@ export default function SettingsPage() {
 
   // Local raw strings so typing partial numbers (e.g. "199") doesn't reset the field.
   // Synced back from settings when settings change externally (e.g. Reset).
-  const [currentYear] = useState(() => new Date().getFullYear())
   const [birthYearRaw, setBirthYearRaw] = useState<string>(settings.birthYear?.toString() ?? '')
   const [returnRaw, setReturnRaw] = useState<string>(settings.annualReturnPct?.toString() ?? '')
   const [birthYearError, setBirthYearError] = useState('')
   const [returnError, setReturnError] = useState('')
 
   const benchmarkSources = getAvailableBenchmarkSources()
-  // Stable initial value avoids hydration mismatch — localStorage is not available
-  // during SSR. The real stored preference is read in the useEffect below.
-  const [selectedBenchmarkSource, setSelectedBenchmarkSource] = useState<BenchmarkSource['id']>('default')
-
-  // mounted gates any section whose content depends on localStorage so the
-  // server-rendered HTML and the initial client render always agree.
-  const [mounted, setMounted] = useState(false)
+  const [selectedBenchmarkSource, setSelectedBenchmarkSource] = useState<BenchmarkSource['id']>(
+    getActiveBenchmarkSourceId
+  )
 
   // recordAudit() writes directly to localStorage outside the React context,
   // so context state can be stale when navigating here. Refresh on mount so
@@ -194,15 +229,7 @@ export default function SettingsPage() {
   useEffect(() => { setBirthYearRaw(settings.birthYear?.toString() ?? ''); setBirthYearError('') }, [settings.birthYear])
   useEffect(() => { setReturnRaw(settings.annualReturnPct?.toString() ?? ''); setReturnError('') }, [settings.annualReturnPct])
 
-  // Read localStorage-dependent values only after mount to avoid hydration mismatch.
-  // getActiveBenchmarkSourceId(), readScalar(), isUsingFallbackBenchmark() all read
-  // localStorage and return SSR-safe fallbacks on the server — but they differ from
-  // client values, causing React hydration errors if used directly at render time.
-  useEffect(() => {
-    const id = getActiveBenchmarkSourceId()
-    setSelectedBenchmarkSource(id === 'curated' ? 'curated' : 'default')
-    setMounted(true)
-  }, [])
+  const currentYear = new Date().getFullYear()
 
   if (!isLoaded) {
     return (
@@ -217,42 +244,30 @@ export default function SettingsPage() {
     e.target.value = ''
 
     const reader = new FileReader()
-    reader.onerror = () => setImportStatus({ type: 'error', message: 'Could not read the file.' })
     reader.onload = (evt) => {
       try {
-        const result = evt.target?.result
-        if (typeof result !== 'string') { setImportStatus({ type: 'error', message: 'Could not read file.' }); return }
-        const data = JSON.parse(result)
+        const data = JSON.parse(evt.target?.result as string)
         const error = validateImport(data)
         if (error) { setImportStatus({ type: 'error', message: error }); return }
 
         let restored = 0
         for (const key of ALL_STORAGE_KEYS) {
           const value = (data as Record<string, unknown>)[key]
-          if (value === null || value === undefined) continue
-          // API-backed stores read from the server, not localStorage — skip these
-          // keys so an old backup cannot silently overwrite with stale local data.
-          if (API_BACKED_KEYS.has(key)) continue
-          if (!isSafeToRestore(key, value)) continue
-          // Settings: sanitize individual fields rather than accepting/rejecting all-or-nothing.
-          // Invalid fields are stripped; valid fields are preserved.
-          let toWrite: unknown = value
-          if (key === STORAGE_KEYS.settings) {
-            toWrite = sanitizeSettingsForRestore(value as Record<string, unknown>)
-            if (Object.keys(toWrite as object).length === 0) continue
+          if (value !== null && value !== undefined && isSafeToRestore(key, value)) {
+            // Scalar string keys are stored as raw strings — no JSON layer.
+            // FileReader.onload only runs in the browser, so no SSR guard needed.
+            // Settings fields are validated individually to prevent type-mismatched
+            // values from silently degrading rank calculations or display.
+            let toWrite: unknown = value
+            if (key === STORAGE_KEYS.settings) {
+              const existing = readJSON<Record<string, unknown>>(STORAGE_KEYS.settings, {})
+              toWrite = { ...existing, ...sanitizeSettingsForRestore(value as Record<string, unknown>) }
+            } else if (ARRAY_KEYS.has(key) && Array.isArray(value)) {
+              toWrite = sanitizeImportedArray(key, value)
+            }
+            window.localStorage.setItem(key, STRING_KEYS.has(key) ? (toWrite as string) : JSON.stringify(toWrite))
+            restored++
           }
-          if (key === STORAGE_KEYS.dashboardPrefs) {
-            toWrite = sanitizeDashboardPrefsForRestore(value as Record<string, unknown>)
-            if (Object.keys(toWrite as object).length === 0) continue
-          }
-          // Scalar string keys are stored as raw strings — no JSON layer.
-          // FileReader.onload only runs in the browser, so no SSR guard needed.
-          window.localStorage.setItem(key, STRING_KEYS.has(key) ? (toWrite as string) : JSON.stringify(toWrite))
-          restored++
-        }
-        if (restored === 0) {
-          setImportStatus({ type: 'error', message: 'No valid data sections found in this backup file.' })
-          return
         }
         setImportStatus({ type: 'success', message: `${restored} data section${restored !== 1 ? 's' : ''} restored. Reloading…` })
         setTimeout(() => window.location.reload(), 1200)
@@ -263,25 +278,12 @@ export default function SettingsPage() {
     reader.readAsText(file)
   }
 
-  // Debug variables read from localStorage — only valid after mount.
-  // Computed conditionally to avoid calling localStorage functions on the server.
-  const debugSrcId      = mounted ? getActiveBenchmarkSourceId()  : 'default'
+  const debugSrcId      = getActiveBenchmarkSourceId()
   const debugCaps       = getBenchmarkCapabilities(debugSrcId)
-  const debugFallback   = mounted ? isUsingFallbackBenchmark()    : false
-  const debugRefresh    = mounted ? readBenchmarkRefreshState()    : { hasPending: false, pendingSource: null, lastApplied: null }
+  const debugFallback   = isUsingFallbackBenchmark()
+  const debugRefresh    = readBenchmarkRefreshState()
   const debugHealth     = getBenchmarkHealthStatus(debugCaps, debugFallback)
-  const debugMode       = mounted ? (readScalar(STORAGE_KEYS.rankComparisonMode) ?? 'individual') : 'individual'
-  const debugActiveMeta = mounted ? getActiveBenchmarkMeta()      : { version: BENCHMARK_META.version, updatedAt: BENCHMARK_META.updatedAt, sourceLabel: BENCHMARK_META.sourceLabel }
-  // Full readiness: active source has valid metadata, is not a stub, all 4 rank
-  // categories supported, health is not invalid, and no benchmark update is pending.
-  // 'fallback' (preferred unavailable, built-in active) is intentionally allowed —
-  // rank output is still correct in that state; the badge shows 'fallback' not 'ready'.
-  const debugReady =
-    !!(debugActiveMeta.version && debugActiveMeta.updatedAt && debugActiveMeta.sourceLabel) &&
-    !debugCaps.isFallbackOnly &&
-    debugCaps.supportsWealth && debugCaps.supportsAge && debugCaps.supportsAgeGender && debugCaps.supportsReturn &&
-    debugHealth.status !== 'invalid' &&
-    !debugRefresh.hasPending
+  const lastSrcSwitch   = getBenchmarkSourceHistory()[0] ?? null
 
   return (
     <div className="space-y-6">
@@ -387,13 +389,6 @@ export default function SettingsPage() {
           />
           {returnError && <p className="mt-1 text-xs text-red-400">{returnError}</p>}
         </Row>
-        {/* These three fields directly control rank comparisons — link back to rank
-            so the user can review the effect of their changes without hunting for the page. */}
-        <div className="border-t border-surface-border py-2.5 text-right">
-          <Link href={ROUTES.rank} className="text-[10px] text-brand-400 hover:text-brand-300 transition-colors">
-            View rank comparisons →
-          </Link>
-        </div>
       </div>
 
       {/* Data export / import */}
@@ -405,7 +400,7 @@ export default function SettingsPage() {
         <div className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm font-medium text-white">Export data</p>
-            <p className="text-xs text-gray-500">Download local preferences, settings, and rank data as a JSON backup (assets, goals, and transactions are synced to your account)</p>
+            <p className="text-xs text-gray-500">Download all local app data as a JSON backup file</p>
           </div>
           <button
             onClick={handleExport}
@@ -430,10 +425,6 @@ export default function SettingsPage() {
           </button>
           <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={handleImport} />
         </div>
-
-        <p className="pb-3 text-xs text-gray-600">
-          Export covers local preferences (display settings, rank configuration, audit log). Financial records (assets, goals, transactions) are stored in your account and are not included.
-        </p>
 
         {importStatus && (
           <p className={`mb-4 rounded-lg px-3 py-2 text-xs ${importStatus.type === 'success' ? 'bg-green-950 text-green-400' : 'bg-red-950 text-red-400'}`}>
@@ -481,10 +472,8 @@ export default function SettingsPage() {
         )}
       </div>
 
-      {/* Benchmark source — shown only when 2+ sources are available (internal use).
-          Gated on mounted so selectedBenchmarkSource is read from localStorage before
-          the select renders, preventing a hydration mismatch on the value prop. */}
-      {mounted && benchmarkSources.length >= 2 && (
+      {/* Benchmark source — shown only when 2+ sources are available (internal use) */}
+      {benchmarkSources.length >= 2 && (
         <div className="rounded-xl border border-surface-border bg-surface-card px-4">
           <h2 className="border-b border-surface-border py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
             Benchmark Data <span className="normal-case font-normal text-gray-600">(internal)</span>
@@ -519,77 +508,49 @@ export default function SettingsPage() {
       <details className="rounded-xl border border-surface-border bg-surface-card px-4 py-3">
         <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wide text-gray-600 select-none">
           Benchmark Diagnostics <span className="normal-case font-normal text-gray-700">(internal)</span>
-          <span className={
-            debugReady && debugHealth.status === 'healthy'  ? 'ml-2 normal-case font-normal text-gray-500'     :
-            debugReady && debugHealth.status === 'fallback' ? 'ml-2 normal-case font-normal text-amber-400'     :
-            debugReady && debugHealth.status === 'partial'  ? 'ml-2 normal-case font-normal text-amber-400/60'  :
-            debugReady && debugHealth.status === 'invalid'  ? 'ml-2 normal-case font-normal text-amber-500'     :
-            debugReady                                      ? 'ml-2 normal-case font-normal text-amber-400/60'  :
-                                                              'ml-2 normal-case font-normal text-amber-400/60'
-          }>
-            · {debugReady && debugHealth.status === 'healthy'  ? 'ready'         :
-               debugReady && debugHealth.status === 'fallback' ? 'degraded'       :
-               debugReady && debugHealth.status === 'partial'  ? 'partial'        :
-               debugReady && debugHealth.status === 'invalid'  ? 'not connected'  :
-               debugReady                                      ? 'unknown'        :
-                                                                 'not ready'}
-          </span>
         </summary>
         <div className="mt-3 space-y-1.5 font-mono text-[11px] text-gray-500">
-          {/* Source group — health → capabilities → fallback → active source */}
+          <p><span className="inline-block w-32 text-gray-600">Active source</span>{debugSrcId}</p>
           <p>
-            <span className="inline-block w-36 text-gray-600">Health</span>
+            <span className="inline-block w-32 text-gray-600">Health</span>
             <span className={
-              debugHealth.status === 'healthy'  ? 'text-gray-500'      :
-              debugHealth.status === 'partial'  ? 'text-amber-400/60'  :
-              debugHealth.status === 'fallback' ? 'text-amber-400'     :
-                                                  'text-amber-500'
+              debugHealth.status === 'healthy'  ? 'text-gray-400' :
+              debugHealth.status === 'partial'  ? 'text-amber-400'   :
+              debugHealth.status === 'fallback' ? 'text-amber-400'   :
+                                                  'text-red-400'
             }>
-              {debugHealth.status === 'healthy'  ? 'ready'         :
-               debugHealth.status === 'invalid'  ? 'not connected'  :
-               debugHealth.status === 'fallback' ? 'degraded'       :
-               debugHealth.status === 'partial'  ? 'partial'        :
-               'unknown'}
+              {debugHealth.status}
             </span>
-            {debugHealth.note && <span className="ml-2 text-gray-600">{debugHealth.note}</span>}
+            <span className="ml-2 text-gray-600">{debugHealth.note}</span>
           </p>
-          <p>
-            <span className="inline-block w-36 text-gray-600">Capabilities</span>
-            <span className={debugCaps.supportsWealth    ? 'text-gray-400' : 'text-red-400'}>wealth {debugCaps.supportsWealth    ? '✓' : '✗'}</span>
-            {' · '}
-            <span className={debugCaps.supportsAge       ? 'text-gray-400' : 'text-red-400'}>age {debugCaps.supportsAge          ? '✓' : '✗'}</span>
-            {' · '}
-            <span className={debugCaps.supportsAgeGender ? 'text-gray-400' : 'text-red-400'}>age+gender {debugCaps.supportsAgeGender ? '✓' : '✗'}</span>
-            {' · '}
-            <span className={debugCaps.supportsReturn    ? 'text-gray-400' : 'text-red-400'}>return {debugCaps.supportsReturn    ? '✓' : '✗'}</span>
+          <p><span className="inline-block w-32 text-gray-600">Fallback active</span>{debugFallback ? 'yes' : 'no'}</p>
+          <p><span className="inline-block w-32 text-gray-600">Fallback-only</span>{debugCaps.isFallbackOnly ? 'yes' : 'no'}</p>
+          <p><span className="inline-block w-32 text-gray-600">Capabilities</span>
+            wealth {debugCaps.supportsWealth ? '✓' : '✗'} &nbsp;
+            age {debugCaps.supportsAge ? '✓' : '✗'} &nbsp;
+            age+gender {debugCaps.supportsAgeGender ? '✓' : '✗'} &nbsp;
+            return {debugCaps.supportsReturn ? '✓' : '✗'}
           </p>
-          <p>
-            <span className="inline-block w-36 text-gray-600">Fallback</span>
-            {debugFallback
-              ? <span className="text-amber-400">active</span>
-              : debugCaps.isFallbackOnly
-                ? <span className="text-amber-400/60">stub</span>
-                : 'none'}
-          </p>
-          <p><span className="inline-block w-36 text-gray-600">Active source</span>{debugSrcId}</p>
-          {/* Context group — user preference and metadata */}
-          <div className="border-t border-surface-border/50 my-1" />
-          <p><span className="inline-block w-36 text-gray-600">Comparison mode</span>{debugMode}</p>
-          {/* Metadata group — version · updated date on one line */}
-          <div className="border-t border-surface-border/50 my-1" />
-          <p><span className="inline-block w-36 text-gray-600">Version</span>{debugActiveMeta.version} · {debugActiveMeta.updatedAt}</p>
+          <p><span className="inline-block w-32 text-gray-600">Meta version</span>{BENCHMARK_META.version}</p>
+          <p><span className="inline-block w-32 text-gray-600">Meta updated</span>{BENCHMARK_META.updatedAt}</p>
           {debugRefresh.lastApplied ? (
             <p>
-              <span className="inline-block w-36 text-gray-600">Last applied</span>
+              <span className="inline-block w-32 text-gray-600">Last applied</span>
               {debugRefresh.lastApplied.source} ({debugRefresh.lastApplied.vintageYear})
               {' — '}{new Date(debugRefresh.lastApplied.appliedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
             </p>
           ) : (
-            <p><span className="inline-block w-36 text-gray-600">Last applied</span>—</p>
+            <p><span className="inline-block w-32 text-gray-600">Last applied</span>—</p>
           )}
           {debugRefresh.hasPending && (
-            <p><span className="inline-block w-36 text-gray-600">Pending</span>{debugRefresh.pendingSource ?? '—'}</p>
+            <p><span className="inline-block w-32 text-gray-600">Pending</span>{debugRefresh.pendingSource ?? '—'}</p>
           )}
+          <p>
+            <span className="inline-block w-32 text-gray-600">Last switch</span>
+            {lastSrcSwitch
+              ? `${lastSrcSwitch.from} → ${lastSrcSwitch.to} (${new Date(lastSrcSwitch.changedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })})`
+              : '—'}
+          </p>
         </div>
       </details>
 
@@ -608,7 +569,7 @@ export default function SettingsPage() {
       </div>
 
       <p className="text-xs text-gray-600 text-center">
-        Display preferences and rank settings are stored locally. Financial data (assets, goals, transactions) is synced to your account.
+        All data is stored locally in your browser and is not synced to any server.
       </p>
     </div>
   )

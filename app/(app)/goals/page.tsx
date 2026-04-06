@@ -339,7 +339,7 @@ export default function GoalsPage() {
                           <Pencil className="h-4 w-4" />
                         </button>
                         <button
-                          onClick={() => removeGoal(goal.id)}
+                          onClick={() => { if (!window.confirm('Delete this goal?')) return; removeGoal(goal.id) }}
                           className="rounded-lg p-1.5 text-gray-600 hover:bg-red-950 hover:text-red-400 transition-colors"
                           aria-label="Delete goal"
                         >
