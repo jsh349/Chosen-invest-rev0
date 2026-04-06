@@ -77,7 +77,6 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
   const removeMember = useCallback((id: string) => {
     const prev = membersRef.current
     const target = membersRef.current.find((m) => m.id === id)
-    const prev = membersRef.current
     const updated = prev.filter((m) => m.id !== id)
     membersRef.current = updated
     setMembers(updated)

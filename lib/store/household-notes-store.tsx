@@ -75,7 +75,6 @@ export function HouseholdNotesProvider({ children }: { children: ReactNode }) {
   const removeNote = useCallback((id: string) => {
     const prev = notesRef.current
     const target = notesRef.current.find((n) => n.id === id)
-    const prev = notesRef.current
     const updated = prev.filter((n) => n.id !== id)
     notesRef.current = updated
     setNotes(updated)
