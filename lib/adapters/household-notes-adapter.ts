@@ -13,6 +13,7 @@ export type HouseholdNotesAdapter = {
 /** Local implementation backed by localStorage. */
 export const householdNotesAdapter: HouseholdNotesAdapter = {
   async getAll() {
+    // TODO(multi-user): filter by currentUserId once multi-user API is available
     const data = readJSON<HouseholdNote[]>(LS_KEY, [])
     return data.filter((n) => {
       if (!n.id || !n.title || !n.message) {

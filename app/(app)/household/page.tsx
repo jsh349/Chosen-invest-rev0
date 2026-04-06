@@ -88,16 +88,19 @@ export default function HouseholdPage() {
       return
     }
     submittingRef.current = true
-    addMember({
-      id:        crypto.randomUUID(),
-      name:      form.name.trim(),
-      email:     normalizedEmail,
-      role:      form.role,
-      createdAt: new Date().toISOString(),
-    })
-    setForm(EMPTY_FORM)
-    setError('')
-    submittingRef.current = false
+    try {
+      addMember({
+        id:        crypto.randomUUID(),
+        name:      form.name.trim(),
+        email:     normalizedEmail,
+        role:      form.role,
+        createdAt: new Date().toISOString(),
+      })
+      setForm(EMPTY_FORM)
+      setError('')
+    } finally {
+      submittingRef.current = false
+    }
   }
 
   return (
@@ -309,7 +312,7 @@ export default function HouseholdPage() {
                     </div>
                     <div className="flex justify-between text-xs text-gray-500">
                       <span>{fmt(goal.currentAmount)} saved</span>
-                      <span>{pct.toFixed(0)}% of {fmt(goal.targetAmount)}</span>
+                      <span>{Math.floor(pct)}% of {fmt(goal.targetAmount)}</span>
                     </div>
                   </div>
                 )

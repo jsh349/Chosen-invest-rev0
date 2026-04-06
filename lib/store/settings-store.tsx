@@ -32,7 +32,7 @@ function sanitizeStoredSettings(raw: Record<string, unknown>): Partial<AppSettin
   if (typeof raw.showCents === 'boolean')                                                        out.showCents       = raw.showCents
   if (typeof raw.birthYear === 'number' && raw.birthYear >= 1900 && raw.birthYear <= 2100)      out.birthYear       = raw.birthYear
   if (typeof raw.gender === 'string' && VALID_GENDERS.has(raw.gender))                         out.gender          = raw.gender as GenderOption
-  if (typeof raw.annualReturnPct === 'number' && raw.annualReturnPct >= -100 && raw.annualReturnPct <= 1000) out.annualReturnPct = raw.annualReturnPct
+  if (typeof raw.annualReturnPct === 'number' && raw.annualReturnPct >= -100 && raw.annualReturnPct <= 100) out.annualReturnPct = raw.annualReturnPct
   return out
 }
 
@@ -67,7 +67,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   // Ref mirrors state so the update callback can merge without using the
   // setState updater form — updaters are double-invoked in React Strict Mode,
   // which would fire dispatchEvent twice per failed write in development.
-  const settingsRef = useRef<AppSettings>(DEFAULT_SETTINGS)
+  const settingsRef = useRef<AppSettings>({ ...DEFAULT_SETTINGS })
 
   useEffect(() => {
     const stored = readJSON<Record<string, unknown>>(LS_KEY, {})

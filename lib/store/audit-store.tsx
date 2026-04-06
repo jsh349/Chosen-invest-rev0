@@ -67,6 +67,7 @@ export function AuditProvider({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
+    if (typeof window === 'undefined') return
     load()
     setIsLoaded(true)
     // Keep in-memory state in sync with localStorage writes from recordAudit(),

@@ -310,7 +310,7 @@ export default function GoalsPage() {
                         <div className="space-y-1">
                           <div className="flex justify-between text-xs text-gray-500">
                             <span>{fmt(goal.currentAmount)} saved</span>
-                            <span>{pct.toFixed(0)}% of {fmt(goal.targetAmount)}</span>
+                            <span>{Math.floor(pct)}% of {fmt(goal.targetAmount)}</span>
                           </div>
                           <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-muted">
                             <div

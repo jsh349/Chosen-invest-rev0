@@ -23,13 +23,10 @@ export const goalsAdapter: GoalsAdapter = {
     const data = await res.json() as Goal[]
     return data
       .map((g) => (!Number.isFinite(g.currentAmount) ? { ...g, currentAmount: 0 } : g))
+      .map((g) => (!isValidGoalType(g.type) ? { ...g, type: 'other' as GoalType } : g))
       .filter((g) => {
         if (!g.id || !g.name || !Number.isFinite(g.targetAmount) || g.targetAmount <= 0 || !Number.isFinite(g.currentAmount)) {
           console.warn('[goalsAdapter] Skipping malformed goal — missing required fields.', g)
-          return false
-        }
-        if (!isValidGoalType(g.type)) {
-          console.warn(`[goalsAdapter] Unknown goal type "${g.type}" on goal "${g.id}" — skipped.`)
           return false
         }
         if (g.currentAmount < 0) {
