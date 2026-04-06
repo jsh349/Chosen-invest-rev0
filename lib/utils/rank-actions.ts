@@ -29,12 +29,12 @@ export function getRankActions(
 
   // Rule 1: profile incomplete (age / gender) → complete in Settings
   if (overallPct !== null && profileIncomplete) {
-    actions.push({ label: 'Complete profile for full ranking', href: ROUTES.settings })
+    actions.push({ label: 'Complete your profile for more comparisons', href: ROUTES.settings })
   }
 
   // Rule 2: wealth rank below the 75th percentile → review portfolio
   if (actions.length < 2 && overallPct !== null && overallPct < 75) {
-    actions.push({ label: 'Review portfolio composition', href: ROUTES.portfolioList })
+    actions.push({ label: 'Check portfolio composition', href: ROUTES.portfolioList })
   }
 
   // Rule 3: overall rank available but no goals set

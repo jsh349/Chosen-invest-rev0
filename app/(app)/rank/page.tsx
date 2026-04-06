@@ -751,7 +751,7 @@ export default function RankPage() {
           )}
           {usingFallbackBenchmark && (
             <span className="text-[10px] text-amber-500/70 w-full">
-              Curated source could not be loaded — check benchmark settings.
+              Curated source could not be loaded — built-in data is active.
             </span>
           )}
         </div>

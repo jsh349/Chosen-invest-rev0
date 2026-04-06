@@ -83,7 +83,7 @@ export function getRankReviewSummary(
       return {
         topic: 'wealth', label: 'Wealth rank',
         status: 'review',
-        note: 'Below the benchmark midpoint.',
+        note: 'Currently below the benchmark midpoint.',
       }
     }
     return {
@@ -106,7 +106,7 @@ export function getRankReviewSummary(
       return {
         topic: 'return', label: 'Return rank',
         status: 'review',
-        note: 'Below the benchmark midpoint.',
+        note: 'Currently below the benchmark midpoint.',
       }
     }
     return {
