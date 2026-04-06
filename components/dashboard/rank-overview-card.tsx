@@ -128,7 +128,7 @@ export function RankOverviewCard({ rank, ageRank, ageGenderRank, returnRank, tot
           href={ROUTES.rank}
           className="shrink-0 text-xs text-brand-400 hover:text-brand-300 transition-colors"
         >
-          {isPartial ? 'View full ranking →' : 'View ranking →'}
+          {isPartial ? 'Full ranking →' : 'Ranking detail →'}
         </Link>
       </div>
     </div>

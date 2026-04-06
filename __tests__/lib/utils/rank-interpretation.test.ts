@@ -52,23 +52,23 @@ describe('getRankInterpretation', () => {
     }
   })
 
-  // Low-confidence (fallback) — "benchmark median" is used consistently;
-  // confidence level is communicated by getRankConfidenceNote, not the interpretation band.
+  // Low-confidence (fallback) — extreme bands are softened; middle bands unchanged.
+  // Primary confidence caveat is still communicated by getRankConfidenceNote.
   describe('isLowConfidence = true', () => {
-    it('still uses benchmark median wording at 75th percentile', () => {
+    it('softens well-above to likely-above at 75th percentile', () => {
       const result = getRankInterpretation(75, true)
-      expect(result).toContain('Well above')
+      expect(result).toContain('Likely above')
       expect(result).toContain('benchmark median')
     })
 
-    it('still uses benchmark median wording at 50th percentile', () => {
+    it('still uses above copy at 50th percentile (middle band unchanged)', () => {
       const result = getRankInterpretation(50, true)
       expect(result).toContain('benchmark median')
     })
 
-    it('still uses benchmark median wording at 0th percentile', () => {
+    it('softens well-below to likely-below at 0th percentile', () => {
       const result = getRankInterpretation(0, true)
-      expect(result).toContain('Well below')
+      expect(result).toContain('Likely below')
       expect(result).toContain('benchmark median')
     })
 
