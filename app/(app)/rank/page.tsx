@@ -103,10 +103,10 @@ function RankRow({ result }: { result: RankResult }) {
           )}
           {result.detail && (
             <div className="mt-2 rounded-md bg-surface-muted/40 px-3 py-2 space-y-0.5">
-              <p className="text-[11px] text-gray-500">
+              <p className="text-[11px] text-gray-600">
                 <span className="text-gray-600">Basis: </span>{result.detail.comparisonBasis}
               </p>
-              <p className="text-[11px] text-gray-500">
+              <p className="text-[11px] text-gray-600">
                 <span className="text-gray-600">Band matched: </span>{result.detail.bandLabel}
               </p>
             </div>

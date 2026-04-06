@@ -63,7 +63,7 @@ export function PeriodicRankSummaryCard({ monthlySummary }: PeriodicRankSummaryC
           </div>
 
           {/* Interpretation + note */}
-          <p className="text-xs text-gray-500 leading-relaxed">
+          <p className="text-xs text-gray-600 leading-relaxed">
             {monthlySummary.currentOverall !== null
               ? getRankInterpretation(monthlySummary.currentOverall)
               : monthlySummary.note}
