@@ -35,7 +35,24 @@ All other audit items were verified as false positives (code already handles the
 - **Problem:** Identical formatting logic in two components. Divergence risk when edge cases (zero amounts) need handling.
 - **Fix:** Extract to `lib/utils/format-amount.ts`. Update both call sites.
 
-## P412 — rank.ts: fix "near" → "above" for ≥50 tier in age/gender/return messages
+## P414 — rank page: bridge-wording for report→detail and detail→review transitions
+
+Two section headers refined to create a coherent reading flow.
+
+### Change 1 — "Review Summary" → "Rank Review"
+Anchors the 3-item status section explicitly in rank context.
+Before: generic "Review Summary" could belong to any page.
+After: "Rank Review" — clearly connects to the rank journey.
+
+### Change 2 — Add "Rank Breakdown" header before rank rows
+Rank rows section currently has no header; the four detail rows appear
+after the Review Summary with no bridge label. Adding a small header
+signals the transition from compact/narrative surfaces into the
+per-dimension breakdown.
+
+### Affected Files
+- `app/(app)/rank/page.tsx` (2 label changes, no logic)
+
 
 computeOverallWealthRank ≥50 correctly says "above the benchmark midpoint."
 computeAgeBasedRank, computeAgeGenderRank, and computeReturnRank ≥50 say

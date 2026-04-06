@@ -514,7 +514,7 @@ export default function RankPage() {
           {/* Advisor review summary — structured 3-item status for profile / wealth / return */}
           {rankReviewSummary && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Review Summary</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Rank Review</p>
               <ul className="space-y-2.5">
                 {rankReviewSummary.map((item) => (
                   <li key={item.topic} className="flex items-start gap-2.5">
@@ -537,6 +537,9 @@ export default function RankPage() {
           {/* Rank rows */}
           {summary.assetCount > 0 && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5">
+              <p className="border-b border-surface-border py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                Rank Breakdown
+              </p>
               {ranks.map((r) => (
                 <RankRow key={r.type} result={r} />
               ))}
