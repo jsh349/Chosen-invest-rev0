@@ -12,6 +12,16 @@ export function buildPortfolioSummary(
   // Multi-currency conversion is not yet implemented — all values are assumed
   // to be in the user's display currency. A conversion layer will be needed
   // before API data with mixed currencies can be trusted.
+  if (process.env.NODE_ENV === 'development') {
+    const currencies = new Set(assets.map((a) => a.currency).filter(Boolean))
+    if (currencies.size > 1) {
+      console.warn(
+        '[buildPortfolioSummary] Multiple currencies detected:',
+        [...currencies].join(', '),
+        '— values are summed without conversion.',
+      )
+    }
+  }
   const totalAssetValue = assets.reduce((sum, a) => sum + a.value, 0)
 
   const grouped = assets.reduce<Record<string, number>>((acc, asset) => {
@@ -34,7 +44,7 @@ export function buildPortfolioSummary(
     .sort((a, b) => b.value - a.value)
 
   const largest = assets.reduce<Asset | null>(
-    (top, a) => (a.value > (top?.value ?? -1) ? a : top),
+    (top, a) => (a.value > (top?.value ?? -Infinity) && Number.isFinite(a.value) ? a : top),
     null
   )
 

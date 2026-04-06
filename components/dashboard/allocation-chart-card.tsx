@@ -24,8 +24,6 @@ export function AllocationChartCard({ slices }: AllocationChartCardProps) {
     )
   }
 
-  const total = slices.reduce((sum, s) => sum + s.value, 0)
-
   return (
     <Card>
       <CardHeader>
@@ -56,7 +54,7 @@ export function AllocationChartCard({ slices }: AllocationChartCardProps) {
               <div
                 className="h-full rounded-full transition-all duration-300"
                 style={{
-                  width: `${(slice.value / total) * 100}%`,
+                  width: `${slice.percentage}%`,
                   backgroundColor: slice.color,
                 }}
               />

@@ -24,6 +24,7 @@ export type AuditEntry = {
 
 /** Standalone helper — callable from any store without React context */
 export function recordAudit(action: string, detail: string) {
+  if (typeof window === 'undefined') return
   try {
     const existing = readJSON<AuditEntry[]>(LS_KEY, [])
     const entry: AuditEntry = {
