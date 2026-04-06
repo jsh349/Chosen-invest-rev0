@@ -149,7 +149,7 @@ function PrimaryRankHighlight({ ranks }: { ranks: RankResult[] }) {
       <p className={cn('text-4xl font-bold tracking-tight', percentileColor(primary.percentile!))}>
         {percentileBandLabel(primary.percentile!)}
       </p>
-      <p className="text-xs text-gray-500 leading-relaxed">
+      <p className="text-xs text-gray-400 leading-relaxed">
         {getRankInterpretation(primary.percentile!)}
       </p>
       {primary.detail && (
@@ -445,7 +445,7 @@ export default function RankPage() {
           {/* Next-step hint — one actionable sentence toward full rank completeness */}
           {explanationSet.showNextHint && nextHint && (
             <div className="flex items-center justify-between gap-3 rounded-xl border border-surface-border bg-surface-card px-5 py-3">
-              <p className="text-xs text-gray-400 leading-relaxed">{nextHint.text}</p>
+              <p className="text-xs text-gray-500 leading-relaxed">{nextHint.text}</p>
               <Link
                 href={nextHint.href}
                 className="shrink-0 text-xs text-brand-400 hover:text-brand-300 transition-colors"
@@ -462,15 +462,15 @@ export default function RankPage() {
             </div>
           )}
 
-          {/* Rank–goal bridge insight */}
-          {explanationSet.showGoalInsight && rankGoalInsight && (
+          {/* Rank–goal bridge insight — suppressed when primary rank insight already shown */}
+          {explanationSet.showGoalInsight && rankGoalInsight && !rankInsight && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3">
               <p className="text-xs text-gray-400 leading-relaxed">{rankGoalInsight}</p>
             </div>
           )}
 
-          {/* Rank–allocation bridge insight */}
-          {explanationSet.showAllocationInsight && rankAllocationInsight && (
+          {/* Rank–allocation bridge insight — suppressed when primary rank insight already shown */}
+          {explanationSet.showAllocationInsight && rankAllocationInsight && !rankInsight && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3">
               <p className="text-xs text-gray-400 leading-relaxed">{rankAllocationInsight}</p>
             </div>
