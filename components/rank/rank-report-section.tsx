@@ -74,8 +74,9 @@ export function RankReportSection({ ranks, nextHint, sourceNote = null, isLowCon
           </p>
         </div>
 
-        {/* Slot 2 — short explanation */}
-        <p className="text-xs text-gray-400 leading-relaxed">{explanation}</p>
+        {/* Slot 2 — short explanation: primary meaning sentence, one step lighter
+            than the gray-500/600 supporting text below so it reads as the takeaway. */}
+        <p className="text-xs text-gray-300 leading-relaxed">{explanation}</p>
       </div>
 
       {/* Slot 3 — comparison note (omitted when null) */}

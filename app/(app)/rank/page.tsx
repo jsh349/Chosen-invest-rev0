@@ -346,7 +346,12 @@ export default function RankPage() {
     ? getRankInputExplanation(profileInputs)
     : null
 
+  // Suppressed when rankGoalInsight is active: both signals can open with the same
+  // rank tier (e.g. both fire when returnPct >= 75), producing near-duplicate adjacent
+  // slots. Goal insight has higher priority in the candidates list; allocation insight
+  // adds no new information when goal insight already covers the same rank dimension.
   const rankAllocationInsight = isFullyLoaded && summary.assetCount > 0
+    && rankGoalInsight === null
     ? getRankAllocationInsight(ranks, summary.categoryBreakdown)
     : null
 
@@ -496,11 +501,52 @@ export default function RankPage() {
           {/* 1. Primary rank highlight — most relevant rank, shown first */}
           {summary.assetCount > 0 && <PrimaryRankHighlight ranks={ranks} mode={mode} benchmarkLabel={(activeBenchmarkSource === 'default' || usingFallbackBenchmark) ? 'Built-in reference' : 'Curated data'} isLowConfidence={benchmarkHealth.status !== 'healthy'} />}
 
-          {/* 2. Summary strip — comparison context after the user sees the number */}
+          {/* 2–3. Insight cluster — meaning before support context.
+               Explanation and narrative follow the highlight directly so the user
+               reads what the rank means before encountering the context chip strip.
+               The chip strip (input values, source label) is reference material;
+               placing it after the meaning cluster keeps first-read flow clean. */}
+          <div className="space-y-3">
+
+          {/* 2. Explanation + next-step hint — immediately follows highlight.
+               nextHint is suppressed while the review banner is visible: the banner
+               already covers the same action-oriented message and showing a second
+               Settings hint below it creates redundant duplication. */}
+          <RankDetailExplanationBlock
+            nextHint={reviewVisible ? null : nextHint}
+            rankInsight={rankInsight}
+            rankGoalInsight={rankGoalInsight}
+            rankAllocationInsight={rankAllocationInsight}
+            isLowConfidence={benchmarkHealth.status !== 'healthy'}
+          />
+
+          {/* 3. Narrative summary — synthesis after the core numbers and hints.
+               Suppressed in low-data mode (availableCount <= 1): the primary rank
+               highlight already communicates the same signal, and the explanation
+               block covers next steps — adding narrative here implies more
+               confidence than the limited data warrants.
+               Also suppressed when the review summary card is active: the review
+               card already provides a structured breakdown of wealth and return
+               standing, making the narrative's synthesis sentence redundant.
+               Also suppressed when rankInsight is active: the explanation block
+               already shows the cross-rank gap as a direct signal, and the
+               narrative would duplicate both that and the interpretation line
+               in PrimaryRankHighlight. */}
+          {narrativeSummary && availableCount > 1 && !rankReviewSummary && !rankInsight && (
+            <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3">
+              <p className="text-sm text-gray-300 leading-relaxed">{narrativeSummary}</p>
+            </div>
+          )}
+
+          </div>{/* end insight cluster */}
+
+          {/* 4. Summary strip — comparison context and source reference.
+               Follows the insight cluster so the user reads the rank meaning first,
+               then the supporting inputs (total assets, age, benchmark, profile).
+               In low-data mode the Comparison and Benchmark chips are hidden —
+               the primary concern there is completing the profile, not the source. */}
           {summary.assetCount > 0 && (
             <div className="flex flex-wrap gap-4 rounded-xl border border-surface-border bg-surface-card px-5 py-4">
-              {/* Comparison and Benchmark are secondary context — hidden in low-data mode
-                  where the primary concern is completing the profile, not the source. */}
               {availableCount > 1 && (
                 <div>
                   <p className="text-xs text-gray-500">Comparison</p>
@@ -553,43 +599,6 @@ export default function RankPage() {
               ) : null}
             </div>
           )}
-
-          {/* 3–4. Insight cluster — explanation and narrative share the same "what
-               does this rank mean" intent and read more clearly with tighter
-               internal spacing than the default page gap. */}
-          <div className="space-y-3">
-
-          {/* 3. Explanation + next-step hint — immediately follows highlight and context.
-               nextHint is suppressed while the review banner is visible: the banner
-               already covers the same action-oriented message and showing a second
-               Settings hint below it creates redundant duplication. */}
-          <RankDetailExplanationBlock
-            nextHint={reviewVisible ? null : nextHint}
-            rankInsight={rankInsight}
-            rankGoalInsight={rankGoalInsight}
-            rankAllocationInsight={rankAllocationInsight}
-            isLowConfidence={benchmarkHealth.status !== 'healthy'}
-          />
-
-          {/* 4. Narrative summary — synthesis after the core numbers and hints.
-               Suppressed in low-data mode (availableCount <= 1): the primary rank
-               highlight already communicates the same signal, and the explanation
-               block covers next steps — adding narrative here implies more
-               confidence than the limited data warrants.
-               Also suppressed when the review summary card is active: the review
-               card already provides a structured breakdown of wealth and return
-               standing, making the narrative's synthesis sentence redundant.
-               Also suppressed when rankInsight is active: the explanation block
-               already shows the cross-rank gap as a direct signal, and the
-               narrative would duplicate both that and the interpretation line
-               in PrimaryRankHighlight. */}
-          {narrativeSummary && availableCount > 1 && !rankReviewSummary && !rankInsight && (
-            <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3">
-              <p className="text-sm text-gray-300 leading-relaxed">{narrativeSummary}</p>
-            </div>
-          )}
-
-          </div>{/* end insight cluster */}
 
           {/* Rank review prompt — shown when rank-relevant inputs have changed since last dismissal */}
           {reviewVisible && (
