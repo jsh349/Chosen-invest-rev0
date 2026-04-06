@@ -90,7 +90,7 @@ function sanitizeSettingsForRestore(raw: Record<string, unknown>): Record<string
   if (typeof raw.showCents === 'boolean') out.showCents = raw.showCents
   if (typeof raw.birthYear === 'number' && raw.birthYear >= 1900 && raw.birthYear <= 2100) out.birthYear = raw.birthYear
   if (typeof raw.gender === 'string' && VALID_GENDER_VALUES.has(raw.gender)) out.gender = raw.gender
-  if (typeof raw.annualReturnPct === 'number' && raw.annualReturnPct >= -100 && raw.annualReturnPct <= 1000) out.annualReturnPct = raw.annualReturnPct
+  if (typeof raw.annualReturnPct === 'number' && raw.annualReturnPct >= -100 && raw.annualReturnPct <= 100) out.annualReturnPct = raw.annualReturnPct
   return out
 }
 
