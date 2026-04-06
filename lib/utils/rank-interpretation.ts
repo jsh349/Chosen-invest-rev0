@@ -3,7 +3,7 @@
  *
  * Distinct from percentileBandLabel (which gives a factual tier label) —
  * this provides a one-line contextual reading of what the score means
- * relative to the benchmark median.
+ * relative to the benchmark midpoint.
  *
  * @param percentile  The user's percentile score (0–100).
  */

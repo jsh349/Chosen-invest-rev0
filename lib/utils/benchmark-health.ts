@@ -46,7 +46,7 @@ export function getBenchmarkHealthStatus(
   if (!allSupported) {
     return {
       status: 'partial',
-      note: 'Source does not support all rank categories.',
+      note: 'Not all categories supported.',
     }
   }
 

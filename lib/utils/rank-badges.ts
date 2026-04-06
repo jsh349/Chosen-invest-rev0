@@ -28,7 +28,7 @@ export function getRankBadges(ranks: RankResult[]): RankBadge[] {
     } else if (overall >= 75) {
       earned.push({ id: 'top_25_overall', label: 'Top 25% Overall', description: 'Overall wealth above the 75th percentile benchmark.' })
     } else if (overall >= 50) {
-      earned.push({ id: 'top_50_overall', label: 'Top 50% Overall', description: 'Overall wealth above the median benchmark.' })
+      earned.push({ id: 'top_50_overall', label: 'Top 50% Overall', description: 'Overall wealth above the benchmark midpoint.' })
     }
   }
 

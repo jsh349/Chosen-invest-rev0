@@ -9,9 +9,9 @@ import { RANK_GAP_THRESHOLD } from '@/lib/utils/rank-insight'
  * Rules (first matching condition wins for the opening sentence):
  *   - No data at all        → neutral prompt to complete profile
  *   - Overall ≥ 75          → "compares favorably"
- *   - Overall 50–74         → "above the benchmark median"
- *   - Overall 40–49         → "near the benchmark median"
- *   - Overall < 40          → "below the benchmark median"
+ *   - Overall 50–74         → "above the benchmark midpoint"
+ *   - Overall 40–49         → "near the benchmark midpoint"
+ *   - Overall < 40          → "below the benchmark midpoint"
  *
  * A second sentence is appended (at most one, evaluated in priority order):
  *   1. Return ≥ 20 pts below overall    → return rank lower than wealth rank

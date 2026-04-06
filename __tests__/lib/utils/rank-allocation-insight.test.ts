@@ -78,7 +78,7 @@ describe('Rule 2: weak return rank + single category', () => {
   it('fires when return < 40 and only one category', () => {
     const insight = getRankAllocationInsight([overall(60), ret(30)], [slice('cash', 100, 'Cash & Savings')])
     expect(insight).not.toBeNull()
-    expect(insight).toContain('Return rank is below the benchmark median')
+    expect(insight).toContain('Return rank is below the benchmark midpoint')
     expect(insight).toContain('single category')
   })
 

@@ -41,7 +41,7 @@ export function getRankAllocationInsight(
 
   // Rule 2: weak return rank with single category
   if (retPct !== null && retPct < 40 && categoryBreakdown.length === 1) {
-    return `Return rank is below the benchmark median with holdings in a single category. Broader allocation may improve future return prospects.`
+    return `Return rank is below the benchmark midpoint with holdings in a single category. Broader allocation may improve future return prospects.`
   }
 
   // Rule 3: strong return rank concentrated in a volatile category

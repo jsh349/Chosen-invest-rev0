@@ -722,7 +722,7 @@ export default function RankPage() {
       {/* Methodology note */}
       <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-4 space-y-1.5">
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">How this works</p>
-        <p className="text-xs text-gray-400 leading-relaxed">
+        <p className="text-xs text-gray-500 leading-relaxed">
           Rank estimates are based on local reference benchmark ranges, not real-time government or market data.
           Results depend on your total asset value and any profile inputs you have set (birth year, gender, estimated return).
         </p>
