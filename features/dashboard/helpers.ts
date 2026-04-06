@@ -7,6 +7,10 @@ export function buildPortfolioSummary(
   userId: string,
   assets: Asset[]
 ): PortfolioSummary {
+  // NOTE: Sums all asset values as a single-currency total.
+  // Multi-currency conversion is not yet implemented — all values are assumed
+  // to be in the user's display currency. A conversion layer will be needed
+  // before API data with mixed currencies can be trusted.
   const totalAssetValue = assets.reduce((sum, a) => sum + a.value, 0)
 
   const grouped = assets.reduce<Record<string, number>>((acc, asset) => {

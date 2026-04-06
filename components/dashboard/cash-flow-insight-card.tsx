@@ -8,6 +8,7 @@ import { ROUTES } from '@/lib/constants/routes'
 import { cn } from '@/lib/utils/cn'
 import { computeCashFlow } from '@/lib/utils/transaction-summary'
 import { useFormatCurrency } from '@/lib/hooks/use-format-currency'
+import { currentYearMonth } from '@/lib/utils/current-month'
 
 type Insight = {
   icon: React.ReactNode
@@ -69,8 +70,10 @@ export function CashFlowInsightCard() {
 
   if (!isLoaded) return null
 
-  const { income, expenses, net } = computeCashFlow(transactions)
-  const insight  = deriveInsight(income, expenses, net, transactions.length, fmt)
+  const ym = currentYearMonth()
+  const monthly = transactions.filter((t) => t.date.startsWith(ym))
+  const { income, expenses, net } = computeCashFlow(monthly)
+  const insight = deriveInsight(income, expenses, net, monthly.length, fmt)
 
   return (
     <Card>
@@ -83,7 +86,7 @@ export function CashFlowInsightCard() {
           <span className="text-sm font-medium">{insight.headline}</span>
         </div>
         <p className="text-xs text-gray-500">{insight.supporting}</p>
-        {transactions.length === 0 && (
+        {monthly.length === 0 && (
           <Link href={ROUTES.transactions} className="inline-block text-xs text-brand-400 hover:text-brand-300 transition-colors">
             Record a transaction →
           </Link>

@@ -4,8 +4,10 @@ import type { AssetFormEntry } from './types'
 export function formEntryToAsset(
   entry: AssetFormEntry,
   userId: string,
-  id: string
+  id: string,
+  createdAt?: string,
 ): Asset {
+  const now = new Date().toISOString()
   return {
     id,
     userId,
@@ -13,8 +15,8 @@ export function formEntryToAsset(
     category: entry.category,
     value: parseFloat(entry.value),
     currency: entry.currency || 'USD',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: createdAt ?? now,
+    updatedAt: now,
   }
 }
 

@@ -108,6 +108,38 @@ function validateImport(data: unknown): string | null {
   return null
 }
 
+/**
+ * Validates and strips individual fields within an imported settings object.
+ * Returns only the fields that are present, correctly typed, and within valid ranges.
+ * Invalid fields are dropped rather than allowed through with wrong types.
+ */
+function sanitizeSettingsForRestore(raw: unknown): Record<string, unknown> {
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return {}
+  const obj = raw as Record<string, unknown>
+  const clean: Record<string, unknown> = {}
+
+  const VALID_CURRENCIES: string[] = ['USD', 'EUR', 'GBP', 'JPY', 'KRW']
+  if (typeof obj.currency === 'string' && VALID_CURRENCIES.includes(obj.currency)) {
+    clean.currency = obj.currency
+  }
+  if (typeof obj.showCents === 'boolean') {
+    clean.showCents = obj.showCents
+  }
+  const maxYear = new Date().getFullYear() - 10
+  if (typeof obj.birthYear === 'number' && Number.isInteger(obj.birthYear) && obj.birthYear >= 1920 && obj.birthYear <= maxYear) {
+    clean.birthYear = obj.birthYear
+  }
+  const VALID_GENDERS: string[] = ['male', 'female', 'other', 'undisclosed']
+  if (typeof obj.gender === 'string' && VALID_GENDERS.includes(obj.gender)) {
+    clean.gender = obj.gender
+  }
+  if (typeof obj.annualReturnPct === 'number' && Number.isFinite(obj.annualReturnPct) && obj.annualReturnPct >= -50 && obj.annualReturnPct <= 100) {
+    clean.annualReturnPct = obj.annualReturnPct
+  }
+
+  return clean
+}
+
 export default function SettingsPage() {
   const { settings, isLoaded, update } = useSettings()
   const { entries: auditEntries, isLoaded: auditLoaded, refresh: refreshAudit, clear: clearAudit } = useAudit()
@@ -160,7 +192,12 @@ export default function SettingsPage() {
           if (value !== null && value !== undefined && isSafeToRestore(key, value)) {
             // Scalar string keys are stored as raw strings — no JSON layer.
             // FileReader.onload only runs in the browser, so no SSR guard needed.
-            window.localStorage.setItem(key, STRING_KEYS.has(key) ? (value as string) : JSON.stringify(value))
+            // Settings fields are validated individually to prevent type-mismatched
+            // values from silently degrading rank calculations or display.
+            const toWrite = key === STORAGE_KEYS.settings
+              ? sanitizeSettingsForRestore(value)
+              : value
+            window.localStorage.setItem(key, STRING_KEYS.has(key) ? (toWrite as string) : JSON.stringify(toWrite))
             restored++
           }
         }

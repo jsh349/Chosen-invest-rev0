@@ -85,11 +85,9 @@ export default function PortfolioInputPage() {
       router.push(ROUTES.dashboard)
       return
     }
-    const now = new Date().toISOString()
-    const newAssets = validEntries.map((en) => ({
-      ...formEntryToAsset(en, LOCAL_USER_ID, en._id ?? crypto.randomUUID()),
-      createdAt: en._createdAt ?? now,
-    }))
+    const newAssets = validEntries.map((en) =>
+      formEntryToAsset(en, LOCAL_USER_ID, en._id ?? crypto.randomUUID(), en._createdAt)
+    )
     setAssets(newAssets)
     router.push(ROUTES.dashboard)
   }
