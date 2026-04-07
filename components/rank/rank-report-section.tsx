@@ -144,7 +144,7 @@ export function RankReportSection({ ranks, nextHint, sourceNote = null, isLowCon
                   : `${availableCount}/${ranks.length} ranks available — ${sourceNote.replace(/\.$/, '').toLowerCase()}.`)
               : sourceNote
                 ? sourceNote
-                : `${availableCount}/${ranks.length} ranks — some inputs missing.`
+                : `${availableCount}/${ranks.length} ranks available.`
             }
           </p>
         )}
@@ -157,7 +157,7 @@ export function RankReportSection({ ranks, nextHint, sourceNote = null, isLowCon
               href={ROUTES.rank}
               className="shrink-0 text-[10px] text-brand-400 hover:text-brand-300 transition-colors"
             >
-              {isPartial ? 'Full ranking →' : 'Ranking detail →'}
+              {isPartial ? 'All ranks →' : 'Rank detail →'}
             </Link>
           )}
         </div>

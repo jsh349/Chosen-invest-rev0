@@ -131,7 +131,7 @@ export const RankShareCard = forwardRef<HTMLDivElement, Props>(
                   ? `${availableCount}/${totalCount} ranks available — ${sourceNote.replace(/\.$/, '').toLowerCase()}.`
                   : sourceNote
                     ? sourceNote
-                    : `${availableCount}/${totalCount} ranks — some inputs missing.`
+                    : `${availableCount}/${totalCount} ranks available.`
                 }
               </p>
             )}
@@ -151,7 +151,7 @@ export const RankShareCard = forwardRef<HTMLDivElement, Props>(
               href={ROUTES.rank}
               className="shrink-0 text-[10px] text-brand-400 hover:text-brand-300 transition-colors"
             >
-              {isPartial ? 'Full ranking →' : 'Ranking detail →'}
+              {isPartial ? 'All ranks →' : 'Rank detail →'}
             </Link>
           )}
         </div>
