@@ -15,7 +15,8 @@ export type HouseholdAdapter = {
 /** Local implementation backed by localStorage. */
 export const householdAdapter: HouseholdAdapter = {
   async getAll() {
-    const data = readJSON<HouseholdMember[]>(LS_KEY, [])
+    const raw = readJSON<unknown>(LS_KEY, [])
+    const data = Array.isArray(raw) ? (raw as HouseholdMember[]) : []
     return data.filter((m) => {
       if (!m.id || !m.name || !m.email || !VALID_ROLES.has(m.role)) {
         console.warn('[householdAdapter] Skipping malformed member — missing id, name, email, or invalid role.', m)

@@ -20,6 +20,7 @@ export const transactionsAdapter: TransactionsAdapter = {
     const res = await fetch('/api/transactions', { credentials: 'include' })
     if (!res.ok) throw new Error(`[transactionsAdapter] getAll failed: ${res.status}`)
     const data = await res.json() as Transaction[]
+    if (!Array.isArray(data)) throw new Error('[transactionsAdapter] getAll: expected array response')
     return data
       .filter((t) => {
         if (!t.id || !Number.isFinite(t.amount) || !t.date || !/^\d{4}-\d{2}-\d{2}$/.test(t.date) || !t.description) {

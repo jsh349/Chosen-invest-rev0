@@ -34,7 +34,7 @@ const ROLE_COLORS: Record<MemberRole, string> = {
 const EMPTY_FORM = { name: '', email: '', role: 'viewer' as MemberRole }
 
 export default function HouseholdPage() {
-  const { members, isLoaded: membersLoaded, addMember, removeMember } = useHousehold()
+  const { members, isLoaded: membersLoaded, isLoadError: membersLoadError, addMember, removeMember } = useHousehold()
   const { goals, isLoaded: goalsLoaded } = useGoals()
   const { notes, isLoaded: notesLoaded, addNote, removeNote } = useHouseholdNotes()
   const { fmt } = useFormatCurrency()
@@ -46,6 +46,12 @@ export default function HouseholdPage() {
   if (!membersLoaded || !goalsLoaded || !notesLoaded) {
     return (
       <LoadingSpinner />
+    )
+  }
+
+  if (membersLoadError) {
+    return (
+      <p className="py-10 text-center text-sm text-gray-500">Failed to load household data — refresh to try again.</p>
     )
   }
 

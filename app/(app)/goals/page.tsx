@@ -213,23 +213,27 @@ export default function GoalsPage() {
     setEditError('')
   }
 
-  function handleEditSave(id: string) {
+  async function handleEditSave(id: string) {
     if (!isRequired(editForm.name)) { setEditError('Goal name is required.'); return }
     if (editForm.targetDate && !isDateFormat(editForm.targetDate)) { setEditError('Use YYYY-MM-DD date format.'); return }
     const amounts = parseForm(editForm)
     if (!amounts) { setEditError('Target amount must be a positive number and saved amount must be 0 or more.'); return }
     if (amounts.currentAmount > amounts.targetAmount) { setEditError('Saved amount cannot exceed the target amount.'); return }
-    updateGoal(id, {
-      name:          editForm.name.trim(),
-      type:          editForm.type,
-      targetAmount:  amounts.targetAmount,
-      currentAmount: amounts.currentAmount,
-      targetDate:    editForm.targetDate || undefined,
-      shared:        editForm.shared,
-    })
-    setEditingId(null)
-    setEditForm(EMPTY_FORM)
-    setEditError('')
+    try {
+      await updateGoal(id, {
+        name:          editForm.name.trim(),
+        type:          editForm.type,
+        targetAmount:  amounts.targetAmount,
+        currentAmount: amounts.currentAmount,
+        targetDate:    editForm.targetDate || undefined,
+        shared:        editForm.shared,
+      })
+      setEditingId(null)
+      setEditForm(EMPTY_FORM)
+      setEditError('')
+    } catch {
+      setEditError('Failed to save changes. Please try again.')
+    }
   }
 
   return (

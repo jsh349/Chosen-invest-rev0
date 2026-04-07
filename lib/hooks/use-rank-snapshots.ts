@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { STORAGE_KEYS } from '@/lib/constants/storage-keys'
 import { readJSON, writeJSON } from '@/lib/utils/local-storage'
 import type { RankResult } from '@/lib/types/rank'
@@ -71,26 +71,29 @@ function isValidSnapshot(item: unknown): item is RankSnapshot {
 export function useRankSnapshots() {
   const [snapshots, setSnapshots] = useState<RankSnapshot[]>([])
   const [isLoaded, setIsLoaded] = useState(false)
+  // Ref mirrors state so saveSnapshot can read the latest value without
+  // putting writeJSON (a side effect) inside the setState updater.
+  const snapshotsRef = useRef<RankSnapshot[]>([])
 
   useEffect(() => {
     const raw = readJSON<unknown[]>(LS_KEY, [])
     const valid = (Array.isArray(raw) ? raw : []).filter(isValidSnapshot)
+    snapshotsRef.current = valid
     setSnapshots(valid)
     setIsLoaded(true)
   }, [])
 
   const saveSnapshot = useCallback((ranks: RankResult[], totalAssetValue: number) => {
     const incoming = extractSnapshot(ranks, totalAssetValue)
-    setSnapshots((prev) => {
-      if (isDuplicate(prev[0], incoming)) return prev
-      const meta = getBenchmarkSnapshotMeta()
-      const updated = [
-        { ...incoming, id: crypto.randomUUID(), savedAt: new Date().toISOString(), ...meta },
-        ...prev,
-      ].slice(0, MAX_SNAPSHOTS)
-      writeJSON(LS_KEY, updated)
-      return updated
-    })
+    if (isDuplicate(snapshotsRef.current[0], incoming)) return
+    const meta = getBenchmarkSnapshotMeta()
+    const updated = [
+      { ...incoming, id: crypto.randomUUID(), savedAt: new Date().toISOString(), ...meta },
+      ...snapshotsRef.current,
+    ].slice(0, MAX_SNAPSHOTS)
+    snapshotsRef.current = updated
+    setSnapshots(updated)
+    writeJSON(LS_KEY, updated)
   }, [])
 
   return { snapshots, isLoaded, saveSnapshot }

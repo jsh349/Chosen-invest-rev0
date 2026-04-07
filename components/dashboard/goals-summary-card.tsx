@@ -58,7 +58,7 @@ export function GoalsSummaryCard() {
     <Card>
       <CardHeader>
         <CardTitle>Goals</CardTitle>
-        <span className="text-xs text-gray-500">{goals.length} active</span>
+        <span className="text-xs text-gray-500">{goals.filter(g => g.currentAmount < g.targetAmount).length} active</span>
       </CardHeader>
       <CardContent className="space-y-4">
 

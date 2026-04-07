@@ -23,6 +23,8 @@ export const STORAGE_KEYS = {
   rankReviewCooldown: 'chosen_rank_review_cooldown_v1',
   /** Last-selected rank comparison mode ('individual' | 'household'). Scalar string. */
   rankComparisonMode: 'chosen_rank_mode_v1',
+  /** Benchmark source switch history. Array of BenchmarkSourceSwitch objects. */
+  benchmarkSourceHistory: 'chosen_benchmark_source_history_v1',
 } as const
 
 export type StorageKey = typeof STORAGE_KEYS[keyof typeof STORAGE_KEYS]

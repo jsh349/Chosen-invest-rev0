@@ -21,6 +21,7 @@ export const goalsAdapter: GoalsAdapter = {
     const res = await fetch('/api/goals', { credentials: 'include' })
     if (!res.ok) throw new Error(`[goalsAdapter] getAll failed: ${res.status}`)
     const data = await res.json() as Goal[]
+    if (!Array.isArray(data)) throw new Error('[goalsAdapter] getAll: expected array response')
     return data
       .map((g) => (!Number.isFinite(g.currentAmount) ? { ...g, currentAmount: 0 } : g))
       .map((g) => (!isValidGoalType(g.type) ? { ...g, type: 'other' as GoalType } : g))

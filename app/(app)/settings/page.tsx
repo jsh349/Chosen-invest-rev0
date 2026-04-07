@@ -217,7 +217,7 @@ export default function SettingsPage() {
 
   const benchmarkSources = getAvailableBenchmarkSources()
   const [selectedBenchmarkSource, setSelectedBenchmarkSource] = useState<BenchmarkSource['id']>(
-    getActiveBenchmarkSourceId
+    getActiveBenchmarkSourceId()
   )
 
   // recordAudit() writes directly to localStorage outside the React context,

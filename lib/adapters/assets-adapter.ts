@@ -20,6 +20,7 @@ export const assetsAdapter: AssetsAdapter = {
     const res = await fetch('/api/assets', { credentials: 'include' })
     if (!res.ok) throw new Error(`[assetsAdapter] getAll failed: ${res.status}`)
     const data = await res.json() as Asset[]
+    if (!Array.isArray(data)) throw new Error('[assetsAdapter] getAll: expected array response')
     return data
       .filter((a) => {
         if (!a.id || !Number.isFinite(a.value) || !a.name || !a.createdAt || !a.currency) {

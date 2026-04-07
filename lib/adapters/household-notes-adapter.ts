@@ -14,7 +14,8 @@ export type HouseholdNotesAdapter = {
 export const householdNotesAdapter: HouseholdNotesAdapter = {
   async getAll() {
     // TODO(multi-user): filter by currentUserId once multi-user API is available
-    const data = readJSON<HouseholdNote[]>(LS_KEY, [])
+    const raw = readJSON<unknown>(LS_KEY, [])
+    const data = Array.isArray(raw) ? (raw as HouseholdNote[]) : []
     return data.filter((n) => {
       if (!n.id || !n.title || !n.message) {
         console.warn('[householdNotesAdapter] Skipping malformed note — missing id, title, or message.', n)
