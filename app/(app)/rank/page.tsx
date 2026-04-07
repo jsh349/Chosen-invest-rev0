@@ -594,13 +594,13 @@ export default function RankPage() {
                   active; input/source explanation fills the slot otherwise. */}
               {confidenceNote ? (
                 <p className={cn(
-                  'w-full border-t border-surface-border pt-3 text-xs',
+                  'w-full border-t border-surface-border pt-3 text-[11px]',
                   sourceNoteColor(confidenceNote),
                 )}>
                   {confidenceNote.text}
                 </p>
               ) : (inputExplanation ?? sourceExplanation) ? (
-                <p className="w-full border-t border-surface-border pt-3 text-xs text-gray-600">
+                <p className="w-full border-t border-surface-border pt-3 text-[11px] text-gray-600">
                   {inputExplanation ?? sourceExplanation}
                 </p>
               ) : null}

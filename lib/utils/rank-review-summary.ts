@@ -39,28 +39,28 @@ export function getRankReviewSummary(
       return {
         topic: 'profile', label: 'Profile',
         status: 'missing',
-        note: 'Birth year needed for age-based comparison.',
+        note: 'Birth year not set.',
       }
     }
     if (!profile.hasGender && !profile.hasReturn) {
       return {
         topic: 'profile', label: 'Profile',
         status: 'review',
-        note: 'Gender and return estimate both needed.',
+        note: 'Gender and return estimate not set.',
       }
     }
     if (!profile.hasGender) {
       return {
         topic: 'profile', label: 'Profile',
         status: 'review',
-        note: 'Gender needed for age and gender comparison.',
+        note: 'Gender not set.',
       }
     }
     if (!profile.hasReturn) {
       return {
         topic: 'profile', label: 'Profile',
         status: 'review',
-        note: 'Return estimate needed for return rank.',
+        note: 'Return estimate not set.',
       }
     }
     return {
@@ -87,7 +87,7 @@ export function getRankReviewSummary(
           ? 'Around the benchmark midpoint.'
           : overallPct >= 25
             ? 'Tracking below the benchmark midpoint.'
-            : 'Well below the benchmark midpoint.',
+            : 'Well below the benchmark median.',
       }
     }
     return {
@@ -105,7 +105,7 @@ export function getRankReviewSummary(
       return {
         topic: 'return', label: 'Return rank',
         status: 'missing',
-        note: 'Return estimate needed for return rank.',
+        note: 'Return rank not yet available.',
       }
     }
     if (returnPct < 50) {
@@ -116,7 +116,7 @@ export function getRankReviewSummary(
           ? 'Around the benchmark midpoint.'
           : returnPct >= 25
             ? 'Tracking below the benchmark midpoint.'
-            : 'Well below the benchmark midpoint.',
+            : 'Well below the benchmark median.',
       }
     }
     return {
