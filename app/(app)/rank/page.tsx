@@ -1005,7 +1005,7 @@ export default function RankPage() {
             {activeBenchmarkSource}
             {' · '}
             <span className={usingFallbackBenchmark ? 'text-amber-500/60' : undefined}>
-              {usingFallbackBenchmark ? 'fallback active' : 'no fallback'}
+              {usingFallbackBenchmark ? 'fallback active' : '—'}
             </span>
             {' · '}
             {benchmarkHealth.status}
