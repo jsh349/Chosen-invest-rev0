@@ -17,7 +17,8 @@ type GoalsContextType = {
   hasGoals: boolean
   isLoaded: boolean
   setGoals: (goals: Goal[]) => void
-  addGoal: (goal: Goal) => void
+  /** Returns a Promise so callers can await and catch save failures. */
+  addGoal: (goal: Goal) => Promise<void>
   updateGoal: (id: string, patch: Partial<Omit<Goal, 'id' | 'createdAt'>>) => void
   removeGoal: (id: string) => void
 }
@@ -27,7 +28,7 @@ const GoalsContext = createContext<GoalsContextType>({
   hasGoals: false,
   isLoaded: false,
   setGoals: () => {},
-  addGoal: () => {},
+  addGoal: () => Promise.resolve(),
   updateGoal: () => {},
   removeGoal: () => {},
 })
@@ -54,15 +55,20 @@ export function GoalsProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
-  const addGoal = useCallback((goal: Goal) => {
+  const addGoal = useCallback((goal: Goal): Promise<void> => {
+    let savePromise: Promise<void> = Promise.resolve()
     setGoalsState((prev) => {
       const updated = [...prev, goal]
-      goalsAdapter.saveAll(updated)
-        .then(() => { /* state already set */ })
-        .catch((err) => { console.error(err); setGoalsState(prev) })
+      savePromise = goalsAdapter.saveAll(updated)
+        .catch((err) => {
+          console.error(err)
+          setGoalsState(prev)
+          throw err  // re-throw so the caller's catch block fires
+        })
       return updated
     })
     recordAudit('Goal added', goal.name)
+    return savePromise
   }, [])
 
   const updateGoal = useCallback((id: string, patch: Partial<Omit<Goal, 'id' | 'createdAt'>>) => {
