@@ -9,6 +9,7 @@ export function formEntryToAsset(
 ): Asset {
   const value = parseFloat(entry.value)
   if (!Number.isFinite(value)) throw new Error(`[formEntryToAsset] Invalid value: "${entry.value}"`)
+  const now = new Date().toISOString()
   return {
     id,
     userId,

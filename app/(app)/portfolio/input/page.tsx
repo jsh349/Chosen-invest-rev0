@@ -43,6 +43,7 @@ export default function PortfolioInputPage() {
   const [entries, setEntries] = useState<FormEntry[] | null>(null)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
+  const [validationError, setValidationError] = useState<string | null>(null)
   const currentUserId = useCurrentUserId()
 
   // isLoaded is the intentional one-shot trigger. Adding assets/hasCustomAssets

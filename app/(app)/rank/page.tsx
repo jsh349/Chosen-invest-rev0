@@ -43,7 +43,7 @@ import { getRankSourceExplanation } from '@/lib/utils/rank-source-explanation'
 import { percentileColor } from '@/lib/utils/rank-format'
 import { getPrimaryRank } from '@/lib/utils/rank-priority'
 import { getRankReviewSummary } from '@/lib/utils/rank-review-summary'
-import { getRankReviewFingerprint, checkRankReviewDue, dismissRankReview } from '@/lib/utils/rank-review'
+import { getRankReviewFingerprint, checkRankReviewDue, dismissRankReview, markRankReviewSeen } from '@/lib/utils/rank-review'
 import type { RankResult, RankType } from '@/lib/types/rank'
 import type { BenchmarkSourceCapabilities } from '@/lib/utils/benchmark-capabilities'
 
