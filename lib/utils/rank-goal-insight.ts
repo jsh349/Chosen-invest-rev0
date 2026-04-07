@@ -14,7 +14,7 @@ export function getRankGoalInsight(ranks: RankResult[], goals: Goal[]): string |
 
   // Rule 1: strong wealth rank but no goals set
   if (overallPct !== null && overallPct >= 75 && goals.length === 0) {
-    return 'Your overall wealth rank is strong, but no financial goals are set.'
+    return 'Overall wealth rank is strong, but no financial goals are set.'
   }
 
   // Rule 2: moderate+ wealth rank, goals exist but none have a target date
@@ -33,7 +33,7 @@ export function getRankGoalInsight(ranks: RankResult[], goals: Goal[]): string |
     returnPct >= 75 &&
     !goals.some((g) => g.type === 'investment' || g.type === 'retirement')
   ) {
-    return 'Your estimated return rank is strong — no investment or retirement goal is set.'
+    return 'Your return rank is strong — no investment or retirement goal is set.'
   }
 
   return null

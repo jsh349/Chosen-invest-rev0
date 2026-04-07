@@ -51,7 +51,7 @@ export function getRankAllocationInsight(
     VOLATILE_CATEGORIES.has(top.category) &&
     top.percentage >= CONCENTRATION_THRESHOLD
   ) {
-    return `Return rank is strong, though heavy concentration in ${top.label} introduces elevated volatility exposure.`
+    return `Return rank is strong, though heavy concentration in ${top.label} carries concentration risk.`
   }
 
   return null
