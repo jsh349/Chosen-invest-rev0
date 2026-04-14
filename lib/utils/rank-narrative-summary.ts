@@ -18,8 +18,10 @@ import { RANK_GAP_THRESHOLD } from '@/lib/utils/rank-insight'
  * recognisably related language for the same rank state.
  *
  * When isLowConfidence is true (fallback / invalid benchmark source), the two
- * extreme bands drop "well" — matching the same restraint applied in
- * getRankInterpretation so both surfaces stay in sync.
+ * extreme bands drop "well" and gain a "likely" hedge — mirroring the
+ * "Likely above / Likely below" pattern in getRankInterpretation so the
+ * summary's main meaning line doesn't collapse into the neutral mid-band
+ * wording when the source cannot support assertive precision at the extremes.
  *
  * A second sentence is appended (at most one) when:
  *   - Return rank is ≥ 20 pts below overall  → note about return standing
@@ -55,7 +57,7 @@ export function getRankNarrativeSummary(
   let opening: string
   if (overallPct >= 75) {
     opening = isLowConfidence
-      ? 'Your overall assets rank above the benchmark median.'
+      ? 'Your overall assets likely rank above the benchmark median.'
       : 'Your overall assets rank well above the benchmark median.'
   } else if (overallPct >= 50) {
     opening = 'Your overall assets rank above the benchmark median.'
@@ -65,7 +67,7 @@ export function getRankNarrativeSummary(
     opening = 'Your overall assets rank below the benchmark median.'
   } else {
     opening = isLowConfidence
-      ? 'Your overall assets rank below the benchmark median.'
+      ? 'Your overall assets likely rank below the benchmark median.'
       : 'Your overall assets rank well below the benchmark median.'
   }
 

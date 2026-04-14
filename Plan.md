@@ -1133,3 +1133,52 @@ diagnostics differentiation, and final QA continuity freeze.
 6. Overall percentile 39: review note shows "Tracking below the benchmark midpoint."
 7. Settings diagnostics partial source: chip shows "· partial" in amber-400/60
 8. Settings diagnostics invalid source: chip shows "· not connected" in amber-500
+
+---
+
+# Addendum: P361 — Final quiet-lock pass for narrative summary main meaning line
+
+## Task Summary
+Small wording-lock on the opening (main meaning) line of `getRankNarrativeSummary`.
+In low-confidence mode at the two extreme tiers (≥75 and <25), the opening
+currently drops "well" but then reads identically to a neutral mid-band
+sentence (e.g. "Your overall assets rank above the benchmark median." — same
+string a normal-confidence 50–74 user sees). Prefix these two cases with
+"likely" so the hedge matches the active confidence level and mirrors the
+existing "Likely above / Likely below" pattern in `getRankInterpretation`.
+
+## Goal
+Main meaning line stays concise, benchmark-based, and calm, and does not
+state more than the current confidence level supports. Supporting sentence
+and visual hierarchy unchanged.
+
+## Non-Goals
+- No changes to percentile thresholds, tier selection, or rank selection logic
+- No changes to normal-confidence wording
+- No changes to middle bands (50–74, 40–49, 25–39) in either confidence mode
+- No changes to the supporting second sentence (return gap / profile note)
+- No changes to `getRankInterpretation`, `getRankReviewSummary`, or any other surface
+- No redesign, no new summary system, no AI API
+
+## Affected Files
+- `lib/utils/rank-narrative-summary.ts` — prefix "likely" on the two
+  `isLowConfidence` branches (≥75 and <25); JSDoc updated to match
+- `__tests__/lib/utils/rank-narrative-summary.test.ts` — add 5 small
+  assertions that lock the new wording (present at extremes low-conf;
+  absent in middle bands and in normal confidence)
+
+## Risks
+- None — wording-only change in two low-confidence branches. All existing
+  regex assertions (`/rank above|below the benchmark median/`, `!/well above|below/`)
+  still match because "likely" is a prefix word, not a substring overlap.
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. `npx jest rank-narrative-summary` → all tests pass (existing + 5 new)
+3. Rank page with fallback benchmark + overall ≥ 75: narrative reads
+   "Your overall assets likely rank above the benchmark median."
+4. Rank page with fallback benchmark + overall < 25: narrative reads
+   "Your overall assets likely rank below the benchmark median."
+5. Rank page with fallback benchmark + overall 50–74: narrative unchanged
+   ("Your overall assets rank above the benchmark median.")
+6. Rank page with healthy benchmark: all five tiers unchanged (no "likely")

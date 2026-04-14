@@ -92,10 +92,31 @@ describe('getRankNarrativeSummary — isLowConfidence', () => {
     expect(text).not.toMatch(/well above/)
   })
 
+  it('adds "likely" hedge at ≥ 75 in low-confidence mode (mirrors getRankInterpretation)', () => {
+    const text = getRankNarrativeSummary([OVERALL(80)], { isLowConfidence: true })
+    expect(text).toMatch(/likely rank above the benchmark median/)
+  })
+
   it('drops "well" from below at < 25 in low-confidence mode', () => {
     const text = getRankNarrativeSummary([OVERALL(10)], { isLowConfidence: true })
     expect(text).toMatch(/rank below the benchmark median/)
     expect(text).not.toMatch(/well below/)
+  })
+
+  it('adds "likely" hedge at < 25 in low-confidence mode (mirrors getRankInterpretation)', () => {
+    const text = getRankNarrativeSummary([OVERALL(10)], { isLowConfidence: true })
+    expect(text).toMatch(/likely rank below the benchmark median/)
+  })
+
+  it('does not add "likely" hedge to middle bands in low-confidence mode', () => {
+    expect(getRankNarrativeSummary([OVERALL(60)], { isLowConfidence: true })).not.toMatch(/likely/)
+    expect(getRankNarrativeSummary([OVERALL(45)], { isLowConfidence: true })).not.toMatch(/likely/)
+    expect(getRankNarrativeSummary([OVERALL(30)], { isLowConfidence: true })).not.toMatch(/likely/)
+  })
+
+  it('does not add "likely" hedge in normal-confidence mode', () => {
+    expect(getRankNarrativeSummary([OVERALL(80)])).not.toMatch(/likely/)
+    expect(getRankNarrativeSummary([OVERALL(10)])).not.toMatch(/likely/)
   })
 
   it('middle bands are unchanged in low-confidence mode', () => {
