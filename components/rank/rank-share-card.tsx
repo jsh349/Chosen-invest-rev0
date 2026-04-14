@@ -119,20 +119,17 @@ export const RankShareCard = forwardRef<HTMLDivElement, Props>(
               </div>
             )}
 
-            {/* Combined source + coverage note — merged into one compact line when
-                both are present to avoid two competing messages.
-                When both coexist, the coverage count follows the source note as a
-                single sentence; "some inputs are missing" is dropped because the
-                source caveat already frames the reliability context.
+            {/* Single-purpose support line. When sourceNote is present it is
+                the more fundamental caveat (benchmark reliability) and stands
+                alone even if coverage is also partial — the coverage count is
+                already legible from the secondary rank rows above (missing
+                ranks render as "—"), so stacking a count clause on the same
+                line would repeat that signal in weaker, generic form.
+                When sourceNote is absent, the coverage fallback takes the slot.
                 border-t separates trust context from the rank data above. */}
             {(isPartial || sourceNote) && (
               <p className="border-t border-surface-border pt-2 text-[10px] text-gray-600">
-                {sourceNote && isPartial
-                  ? `${availableCount}/${totalCount} ranks available — ${sourceNote.replace(/\.$/, '').toLowerCase()}.`
-                  : sourceNote
-                    ? sourceNote
-                    : `${availableCount}/${totalCount} ranks — some inputs missing.`
-                }
+                {sourceNote ?? `${availableCount}/${totalCount} ranks — some inputs missing.`}
               </p>
             )}
           </>

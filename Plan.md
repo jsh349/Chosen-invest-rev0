@@ -1182,3 +1182,59 @@ and visual hierarchy unchanged.
 5. Rank page with fallback benchmark + overall 50–74: narrative unchanged
    ("Your overall assets rank above the benchmark median.")
 6. Rank page with healthy benchmark: all five tiers unchanged (no "likely")
+
+---
+
+# Addendum: P362 — Single-purpose lock for compact support lines
+
+## Task Summary
+In RankReportSection and RankShareCard, when both `sourceNote` and `isPartial`
+are active the trust footer renders a merged sentence that stacks two distinct
+caveats into one line (two em-dashes, three clauses):
+
+  "3/4 ranks available — selected source not yet available — using built-in ranges."
+
+This violates "one clear purpose per compact support line" and doubles a signal
+that is already visible elsewhere (share card secondary rows render "—";
+report section exposes the full view via "View full ranking →"). Collapse the
+merged case to `sourceNote` only, so each compact support line carries a
+single purpose: reliability (source) OR coverage (count fallback) — never
+both stacked in one sentence.
+
+## Goal
+Compact surfaces show one caveat per line. The coverage count remains
+reachable via the secondary rows (share card) or the full-ranking link
+(report section). Richer nuance (both caveats side-by-side) stays in the
+full rank page, not the compact cards.
+
+## Non-Goals
+- No changes to visibility gates (`!nextAction || isLowConfidence`,
+  `isPartial || sourceNote`) — preserved exactly
+- No changes to sourceNote content, coverage-only fallback string, nextAction,
+  comparisonNote, interpretation, or any other slot
+- No redesign, no new props, no new signal types
+- No changes to RankShareCard / RankReportSection footer links or disclaimer
+
+## Affected Files
+- `components/rank/rank-report-section.tsx` — merged-case ternary collapses
+  to `sourceNote ?? coverageFallback`; comment updated
+- `components/rank/rank-share-card.tsx` — same simplification; comment updated
+
+## Risks
+- State D (sourceNote + isPartial) on RankReportSection loses the "X/Y" count.
+  Mitigation: "View full ranking →" is already shown when `isPartial`, so the
+  detailed view is one click away (exactly "richer nuance in deeper surfaces").
+- No existing tests assert these merged strings; no test updates required.
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. Compact card, fallback benchmark + incomplete profile: trust line reads
+   only the sourceNote (no "X/Y ranks available —" prefix, no trailing
+   "— using built-in ranges" stacking)
+3. Compact card, fallback benchmark + full profile: trust line shows
+   sourceNote only (unchanged)
+4. Compact card, healthy benchmark + incomplete profile: trust line shows
+   "X/Y ranks — some inputs missing." (unchanged)
+5. Compact card, healthy benchmark + full profile: trust line hidden (unchanged)
+6. RankReportSection with nextAction + healthy source: trust line still
+   suppressed under the outer gate; action slot prefix behavior unchanged

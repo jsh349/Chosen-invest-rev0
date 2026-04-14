@@ -126,26 +126,18 @@ export function RankReportSection({ ranks, nextHint, sourceNote = null, isLowCon
           benchmark is low-confidence (action slot is already dimmed; the
           source note moves to the footer rather than stacking above the action). */}
       <div className="border-t border-surface-border pt-2 space-y-1.5">
-        {/* Coverage note is suppressed when nextAction is active and the source is
-            healthy — the action slot's specific message is more actionable than the
-            generic coverage count, and the healthy-source prefix in the action block
-            already provides trust context.
-            When both sourceNote and isPartial coexist, the coverage count follows the
-            source note as a single sentence; "some inputs are missing" is dropped because
-            the source caveat already frames the reliability context. */}
+        {/* Single-purpose support line: when sourceNote is present it is the
+            more fundamental caveat (benchmark reliability), so it stands alone
+            here even if coverage is also partial. The coverage count is
+            reachable via "View full ranking →" below when richer nuance is
+            needed — keeping the compact surface to one clear purpose per line.
+            When sourceNote is absent, the coverage fallback takes the slot.
+            Outer gate also suppresses this line while the action slot is
+            active in a healthy state (the action slot's prefix already frames
+            the source there). */}
         {(!nextAction || isLowConfidence) && (isPartial || sourceNote) && (
           <p className="text-[10px] text-gray-600">
-            {sourceNote && isPartial
-              // When the action slot is active in a low-confidence state, it already
-              // signals that data is missing — showing a coverage count here too stacks
-              // the same caution twice. In that state, show only the source note.
-              ? (nextAction && isLowConfidence
-                  ? sourceNote
-                  : `${availableCount}/${ranks.length} ranks available — ${sourceNote.replace(/\.$/, '').toLowerCase()}.`)
-              : sourceNote
-                ? sourceNote
-                : `${availableCount}/${ranks.length} ranks — some inputs missing.`
-            }
+            {sourceNote ?? `${availableCount}/${ranks.length} ranks — some inputs missing.`}
           </p>
         )}
         <div className="flex items-center justify-between gap-3">
