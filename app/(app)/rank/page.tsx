@@ -581,13 +581,22 @@ export default function RankPage() {
               {/* Trust/supplemental line — follows chips so the user reads the numbers
                   first, then the caveat that qualifies them. border-t separates trust
                   context from the data above. Confidence note takes precedence when
-                  active; input/source explanation fills the slot otherwise. */}
+                  active; input/source explanation fills the slot otherwise.
+                  In mixed states (degraded source + partial profile inputs) the
+                  input explanation is appended as a second short sentence inside
+                  the same line, wrapped in a neutral-gray span so the severity
+                  tone of the source clause is not carried onto the factual input
+                  clause. Keeps source-vs-input distinction visible while reading
+                  as one calm trust sentence. */}
               {confidenceNote ? (
                 <p className={cn(
                   'w-full border-t border-surface-border pt-3 text-xs',
                   sourceNoteColor(confidenceNote),
                 )}>
                   {confidenceNote.text}
+                  {inputExplanation && (
+                    <span className="text-gray-600"> {inputExplanation}</span>
+                  )}
                 </p>
               ) : (inputExplanation ?? sourceExplanation) ? (
                 <p className="w-full border-t border-surface-border pt-3 text-xs text-gray-600">

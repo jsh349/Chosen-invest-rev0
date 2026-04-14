@@ -1348,3 +1348,67 @@ rows, so removing the `'Full ranking'` label variant does not lose info).
    fallback → `Check inputs →` (unchanged)
 6. Journey check: from dashboard → rank card → `Review ranking →` →
    detail page → `Review inputs →` reads as one verbal ladder
+
+---
+
+# Addendum: P365 — Calm-read merge for mixed low-data + fallback states
+
+## Task Summary
+In the rank detail page's summary-strip trust line, the current ternary
+prioritises `confidenceNote` over `inputExplanation`. In the mixed state
+(degraded benchmark source + partial profile inputs) the input caveat is
+silently suppressed, forcing the user to piece together the full picture
+from the Profile chip + Explanation block + missing-value markers in rank
+rows. Keep the prioritisation but, in the mixed state, append
+`inputExplanation` as a second short sentence inside the same trust line,
+wrapped in a neutral-gray span so the source clause's severity tone is
+not carried onto the factual input clause.
+
+## Goal
+Mixed states read as one calm trust sentence that keeps source and input
+limitations visibly distinct, so the user doesn't have to reconcile three
+scattered caveats.
+
+## Non-Goals
+- No changes to `getRankConfidenceNote`, `getRankInputExplanation`,
+  `sourceNoteColor`, or any signal logic
+- No changes to the other two trust-line branches (fallback + null)
+- No changes to compact surfaces — the P362 single-purpose lock on
+  `RankReportSection` / `RankShareCard` stays
+- No changes to Profile chip, Explanation block, rank rows, or
+  PrimaryRankHighlight
+- No new note system, no methodology change, no AI API
+- No route or structural changes
+
+## Affected Files
+- `app/(app)/rank/page.tsx` — `confidenceNote` branch of the trust-line
+  ternary now appends `{inputExplanation && <span className="text-gray-600">}`
+  when present; comment updated
+
+## Risks
+- Mixed-state line is one short sentence longer. At `text-xs w-full` this
+  may wrap on narrow viewports (acceptable — one extra wrapped line).
+- For level 'moderate' (the most common degraded state), `sourceNoteColor`
+  already returns `text-gray-600`, so the new span introduces no visible
+  color shift — the appended clause just flows in.
+- For level 'low' (source invalid, rarer), the first clause renders in
+  amber and the appended clause in gray — the color transition correctly
+  marks the source-vs-input distinction.
+- No tests assert the rendered line's structure.
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. Healthy benchmark + full profile: trust line hidden — unchanged
+3. Healthy benchmark + partial profile: trust line reads the
+   `inputExplanation` only (e.g. "Based on your asset total and age.") —
+   unchanged
+4. Degraded benchmark (fallback/invalid/partial) + full profile: trust
+   line reads the `confidenceNote` only (e.g. "Source unavailable — using
+   built-in benchmarks.") — unchanged
+5. Mixed state (degraded benchmark + partial profile): trust line now
+   reads confidenceNote followed by the inputExplanation in one line
+   (e.g. "Source unavailable — using built-in benchmarks. Based on your
+   asset total and age."). First clause in severity tone; second clause
+   in `text-gray-600`.
+6. Visual check: on a wide viewport the line fits on one row; on narrow
+   viewports it wraps to two rows — acceptable
