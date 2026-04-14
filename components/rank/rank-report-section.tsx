@@ -149,7 +149,7 @@ export function RankReportSection({ ranks, nextHint, sourceNote = null, isLowCon
               href={ROUTES.rank}
               className="shrink-0 text-[10px] text-brand-400 hover:text-brand-300 transition-colors"
             >
-              {isPartial ? 'Full ranking →' : 'Ranking detail →'}
+              Review ranking →
             </Link>
           )}
         </div>

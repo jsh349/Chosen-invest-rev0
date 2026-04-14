@@ -1292,3 +1292,59 @@ tier family (gray-400 interpretation, gray-500 action prose).
    match the narrative color (all at `text-gray-400`)
 5. Action prose in explanation block still reads dimmer than interpretation
    (`text-gray-500`) — unchanged
+
+---
+
+# Addendum: P364 — Continuity lock across `report → detail → review`
+
+## Task Summary
+The compact surfaces (RankReportSection, RankShareCard, RankOverviewCard)
+link to the rank detail page with noun-phrase labels — `'Full ranking →'`
+when partial, `'Ranking detail →'` otherwise. The rank detail page's review
+banner uses verb+noun labels — `'Review inputs →'` healthy, `'Check inputs →'`
+fallback. The two rungs are grammatically mismatched, so the journey
+report → detail → review doesn't read as one ladder. Unify the compact
+labels to the verb-led `'Review ranking →'` so the healthy path shares the
+verb `Review` across both rungs.
+
+## Goal
+Two healthy-path transitions, one verb family: `Review ranking →` →
+`Review inputs →`. Partial/fallback states keep their existing softer
+variants (partial coverage is already signaled by the trust line and rank
+rows, so removing the `'Full ranking'` label variant does not lose info).
+
+## Non-Goals
+- No changes to routes (`ROUTES.rank`, `ROUTES.settings`) — preserved
+- No changes to link visibility gates (`isPartial || percentile < 50` etc.)
+- No changes to the detail→review banner wording (already in the
+  Review/Check family)
+- No changes to other in-page links, nav elements, or surface roles
+- No redesign, no workflow redesign, no new labels elsewhere
+
+## Affected Files
+- `components/rank/rank-share-card.tsx` — footer link label → `'Review ranking →'`
+- `components/rank/rank-report-section.tsx` — footer link label → `'Review ranking →'`
+- `components/dashboard/rank-overview-card.tsx` — footer link label →
+  `'Review ranking →'`; drop the now-unused `isPartial` local (was only
+  referenced by the ternary label being replaced)
+
+## Risks
+- Very low. `'Review ranking →'` is the same character-count class as the
+  labels it replaces, so compact surfaces don't grow heavier.
+- `isPartial` stays used in RankShareCard and RankReportSection (gates the
+  link visibility and the trust-line condition) — only removed in
+  RankOverviewCard where it was no longer referenced after the change.
+- No tests reference `'Full ranking'` / `'Ranking detail'` / `'Review ranking'`
+  (verified via grep).
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors (and no unused-local warning from lint)
+2. Dashboard: rank overview card footer reads `Review ranking →` in all
+   states (partial and complete)
+3. RankReportSection (compact report): footer reads `Review ranking →`
+   whenever the link is shown (isPartial || primary percentile < 50)
+4. RankShareCard: footer reads `Review ranking →` whenever the link is shown
+5. Rank detail page review banner: healthy → `Review inputs →` (unchanged);
+   fallback → `Check inputs →` (unchanged)
+6. Journey check: from dashboard → rank card → `Review ranking →` →
+   detail page → `Review inputs →` reads as one verbal ladder

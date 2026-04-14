@@ -72,7 +72,6 @@ export function RankOverviewCard({ rank, ageRank, ageGenderRank, returnRank, tot
   const allRanks = [rank, ageRank, ageGenderRank, returnRank]
   const primary = getPrimaryRank(allRanks)
   const heroTop = primary?.percentile != null ? 100 - primary.percentile : null
-  const isPartial = allRanks.some((r) => r.percentile == null)
   const { compact } = useFormatCurrency()
 
   return (
@@ -128,7 +127,7 @@ export function RankOverviewCard({ rank, ageRank, ageGenderRank, returnRank, tot
           href={ROUTES.rank}
           className="shrink-0 text-xs text-brand-400 hover:text-brand-300 transition-colors"
         >
-          {isPartial ? 'Full ranking →' : 'Ranking detail →'}
+          Review ranking →
         </Link>
       </div>
     </div>
