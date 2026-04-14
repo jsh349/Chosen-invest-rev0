@@ -1238,3 +1238,57 @@ full rank page, not the compact cards.
 5. Compact card, healthy benchmark + full profile: trust line hidden (unchanged)
 6. RankReportSection with nextAction + healthy source: trust line still
    suppressed under the outer gate; action slot prefix behavior unchanged
+
+---
+
+# Addendum: P363 — Presentation-freeze so primary interpretation stays the strongest anchor
+
+## Task Summary
+On the rank detail page, every support element below `PrimaryRankHighlight`
+sits at `text-gray-400` or dimmer — except the narrative summary paragraph,
+which is at `text-gray-300`. That makes the narrative the single-brightest
+gray text on the page, directly under the primary anchor, verbally restating
+the same tier meaning. Step the narrative one shade back to `text-gray-400`
+so the primary is the undisputed visual anchor and all support text shares
+one consistent brightness family.
+
+## Goal
+Primary interpretation remains the strongest anchor. No support element
+(verbal or visual) competes with it. Support-text colors align into a single
+tier family (gray-400 interpretation, gray-500 action prose).
+
+## Non-Goals
+- No changes to text content, `getRankNarrativeSummary`, suppression rules,
+  routes, layout, card border, spacing, or structure
+- No changes to `PrimaryRankHighlight`, `RankDetailExplanationBlock`, or
+  per-row `RankRow`
+- No new sections, no new layout patterns
+- No changes to text size — narrative stays `text-sm` (one step larger than
+  the explanation block's `text-xs`) to preserve its synthesis tier above
+  the specific interpretation tier
+- No AI API, no new UI system
+
+## Affected Files
+- `app/(app)/rank/page.tsx` — one class token on the narrative summary `<p>`:
+  `text-gray-300` → `text-gray-400`
+
+## Risks
+- Cosmetic only. `text-gray-400` is the same color already used by per-row
+  interpretation and the explanation block's interpretation line, so the
+  narrative blends into the existing support-text family. No behavior, logic,
+  or accessibility regression.
+- No tests reference the narrative summary's styling (verified via grep), so
+  no test updates required.
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. Rank detail page with overall + at least one other rank available,
+   healthy benchmark, no rankReviewSummary, no rankInsight: narrative
+   summary visibly one shade dimmer than before; primary highlight remains
+   clearly the brightest/largest element
+3. Narrative summary suppression rules (low-data mode, rankReviewSummary
+   active, rankInsight active) behave unchanged
+4. Explanation block interpretation line and per-row interpretation line
+   match the narrative color (all at `text-gray-400`)
+5. Action prose in explanation block still reads dimmer than interpretation
+   (`text-gray-500`) — unchanged

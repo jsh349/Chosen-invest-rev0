@@ -531,7 +531,7 @@ export default function RankPage() {
                in PrimaryRankHighlight. */}
           {narrativeSummary && availableCount > 1 && !rankReviewSummary && !rankInsight && (
             <div className="rounded-xl border border-surface-border bg-surface-card px-5 py-3">
-              <p className="text-sm text-gray-300 leading-relaxed">{narrativeSummary}</p>
+              <p className="text-sm text-gray-400 leading-relaxed">{narrativeSummary}</p>
             </div>
           )}
 
