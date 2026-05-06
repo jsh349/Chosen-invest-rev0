@@ -46,6 +46,12 @@ import { getRankReviewSummary } from '@/lib/utils/rank-review-summary'
 import { getRankReviewFingerprint, checkRankReviewDue, dismissRankReview } from '@/lib/utils/rank-review'
 import type { RankResult, RankType } from '@/lib/types/rank'
 import type { BenchmarkSourceCapabilities } from '@/lib/utils/benchmark-capabilities'
+import dynamic from 'next/dynamic'
+
+const RankTrendChart = dynamic(
+  () => import('@/components/rank/rank-trend-chart').then((m) => ({ default: m.RankTrendChart })),
+  { ssr: false },
+)
 
 type RankMode = 'individual' | 'household'
 
@@ -868,6 +874,9 @@ export default function RankPage() {
           )}
         </div>
       )}
+
+      {/* Rank trend chart — visual graph of percentile over time */}
+      {snapshots.length >= 2 && <RankTrendChart snapshots={snapshots} />}
 
       {/* Snapshot history — only shown when 2+ snapshots exist */}
       {snapshots.length >= 2 && (

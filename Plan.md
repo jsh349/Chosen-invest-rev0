@@ -1351,6 +1351,49 @@ rows, so removing the `'Full ranking'` label variant does not lose info).
 
 ---
 
+# Addendum: P366 — Rank trend chart (visual percentile graph over time)
+
+## Task Summary
+Add a visual line chart showing rank percentile changes over time.
+The data infrastructure already exists (useRankSnapshots stores up to 10
+historical snapshots with overallPercentile and returnPercentile). But no
+chart component existed — changes were only visible as text deltas and a
+table. This adds a recharts LineChart rendered on the rank detail page.
+
+## Goal
+Users can see at a glance how their wealth rank and return rank have
+changed over time via a simple line graph.
+
+## Non-Goals
+- No new data storage (existing snapshots are sufficient)
+- No real-time data fetching (local snapshots only)
+- No complex interactions (no zoom, pan, filter)
+- No changes to computation logic
+- No new benchmark data
+
+## Affected Files
+- `components/rank/rank-trend-chart.tsx` — NEW: recharts LineChart
+  component showing two lines (wealth rank, return rank) over time
+- `app/(app)/rank/page.tsx` — import + render RankTrendChart when 2+
+  snapshots exist (dynamic import, SSR-disabled for recharts)
+
+## Risks
+- recharts is already in package.json (^2.15.0); no new dependency
+- Dynamic import avoids SSR issues with recharts
+- Chart only renders when 2+ snapshots exist (same gate as table)
+- Percentile data is user's own stored data (no fabricated values)
+
+## Validation Steps
+1. `npx tsc --noEmit` → 0 errors
+2. Rank page with 0-1 snapshots: no chart visible
+3. Rank page with 2+ snapshots: line chart visible showing wealth (blue)
+   and return (green) percentile lines
+4. Hover tooltip shows "Top X%" per data point
+5. Chart uses reversed Y-axis (lower number = better rank = higher on chart)
+6. Legend shows color-coded labels for both lines
+
+---
+
 # Addendum: P365 — Calm-read merge for mixed low-data + fallback states
 
 ## Task Summary
