@@ -129,7 +129,7 @@ export function RankReportSection({ ranks, nextHint, sourceNote = null, isLowCon
         {/* Single-purpose support line: when sourceNote is present it is the
             more fundamental caveat (benchmark reliability), so it stands alone
             here even if coverage is also partial. The coverage count is
-            reachable via "View full ranking →" below when richer nuance is
+            reachable via "Review ranking →" below when richer nuance is
             needed — keeping the compact surface to one clear purpose per line.
             When sourceNote is absent, the coverage fallback takes the slot.
             Outer gate also suppresses this line while the action slot is
