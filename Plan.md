@@ -1,5 +1,54 @@
 # Plan.md — Phase 2: Turso Persistence
 
+---
+
+# Addendum: P367 — Four remaining rank system improvements
+
+## Task Summary
+Implement four items that complete the ranking system:
+1. SCF-realistic benchmark data (replace illustrative placeholders)
+2. Country selector (US only for now; infrastructure for future expansion)
+3. Auto return calculation from asset cost basis
+4. Rank snapshots persisted to database (unlimited history)
+
+## 1. SCF-Realistic Benchmark Data
+- File: `lib/mock/rank-benchmarks.ts`
+- Replace current illustrative buckets with values based on
+  2022 Survey of Consumer Finances published percentiles
+- Same BenchmarkBucket structure, same adapter interface
+- Update BENCHMARK_META sourceLabel to reflect SCF basis
+
+## 2. Country Selector
+- Add `country` field to `AppSettings` type (`lib/store/settings-store.tsx`)
+- Add sanitization for country field
+- Add country dropdown to Settings page (US only for now)
+- Pass country through to benchmark label in rank page
+
+## 3. Auto Return Calculation
+- Add `costBasis` (optional number) to `Asset` type
+- Add `cost_basis_cents` column to assets table (nullable)
+- Write migration: `lib/db/migrations/0001_add_cost_basis_and_snapshots.sql`
+- Update schema.ts, asset adapter, API route, and validator
+- In rank page, compute weighted-average return from assets with cost basis
+- Prefer computed return over manual `annualReturnPct`; fall back when unavailable
+
+## 4. Rank Snapshots to DB
+- Add `rank_snapshots` table to schema.ts (same migration file)
+- Create API route: `app/api/rank-snapshots/route.ts`
+- Modify `useRankSnapshots` hook to use API (localStorage fallback for unauthenticated)
+- Remove MAX_SNAPSHOTS limit for DB-backed storage
+
+## Non-Goals
+- No external API for benchmark data (still local data)
+- No multiple country benchmark datasets yet
+- No complex portfolio return methodologies (simple cost-basis return)
+- No real-time market data integration
+
+## Risks
+- DB migration adds two changes (cost_basis column + new table) in one migration
+- Auto return is a simple `(current - costBasis) / costBasis` — not time-weighted
+- Country field is US-only for now; other countries return same US benchmarks
+
 ## Task Summary
 Wire Turso (libSQL + Drizzle) as the primary data store for assets, goals, and
 transactions. Replace localStorage adapters with API-backed adapters.

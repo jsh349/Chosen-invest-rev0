@@ -9,17 +9,30 @@ export const users = sqliteTable('users', {
 })
 
 export const assets = sqliteTable('assets', {
-  id:         text('id').primaryKey(),
-  userId:     text('user_id').notNull().references(() => users.id),
-  name:       text('name').notNull(),
-  category:   text('category').notNull(),
+  id:             text('id').primaryKey(),
+  userId:         text('user_id').notNull().references(() => users.id),
+  name:           text('name').notNull(),
+  category:       text('category').notNull(),
   // Stored as INTEGER minor units (e.g. USD cents) to avoid IEEE 754 float
   // rounding. Application layer converts: value_cents / 100 ↔ display number.
   // e.g. $1 234.56 is stored as 123456.
-  valueCents: integer('value_cents').notNull(),
-  currency:   text('currency').notNull().default('USD'),
-  createdAt:  text('created_at').notNull(),
-  updatedAt:  text('updated_at').notNull(),
+  valueCents:     integer('value_cents').notNull(),
+  currency:       text('currency').notNull().default('USD'),
+  costBasisCents: integer('cost_basis_cents'),
+  createdAt:      text('created_at').notNull(),
+  updatedAt:      text('updated_at').notNull(),
+})
+
+export const rankSnapshots = sqliteTable('rank_snapshots', {
+  id:                text('id').primaryKey(),
+  userId:            text('user_id').notNull().references(() => users.id),
+  totalAssetValue:   integer('total_asset_value').notNull(),
+  overallPercentile: integer('overall_percentile'),
+  agePercentile:     integer('age_percentile'),
+  returnPercentile:  integer('return_percentile'),
+  benchmarkVersion:  text('benchmark_version'),
+  benchmarkSource:   text('benchmark_source'),
+  savedAt:           text('saved_at').notNull(),
 })
 
 export const goals = sqliteTable('goals', {

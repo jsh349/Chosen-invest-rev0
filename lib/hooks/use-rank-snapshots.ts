@@ -9,7 +9,7 @@ import { BENCHMARK_META } from '@/lib/mock/rank-benchmarks'
 import { getActiveBenchmarkSourceId } from '@/lib/adapters/rank-benchmarks-adapter'
 
 const LS_KEY = STORAGE_KEYS.rankSnapshots
-const MAX_SNAPSHOTS = 10
+const MAX_LOCAL_SNAPSHOTS = 10
 
 export type RankSnapshot = {
   id: string
@@ -18,16 +18,10 @@ export type RankSnapshot = {
   overallPercentile: number | null
   agePercentile: number | null
   returnPercentile: number | null
-  /** Benchmark version active when this snapshot was saved, e.g. "1.1.0". Optional for backward compatibility. */
   benchmarkVersion?: string
-  /** Active benchmark source ID when this snapshot was saved, e.g. "default" | "curated". Optional for backward compatibility. */
   benchmarkSource?: string
 }
 
-/**
- * Returns the benchmark metadata to stamp into a new snapshot.
- * Exported for testing; not intended for direct use outside this module.
- */
 export function getBenchmarkSnapshotMeta(): { benchmarkVersion: string; benchmarkSource: string } {
   return {
     benchmarkVersion: BENCHMARK_META.version,
@@ -68,32 +62,88 @@ function isValidSnapshot(item: unknown): item is RankSnapshot {
   )
 }
 
+async function fetchFromApi(): Promise<RankSnapshot[] | null> {
+  try {
+    const res = await fetch('/api/rank-snapshots')
+    if (!res.ok) return null
+    const data = await res.json()
+    return Array.isArray(data) ? data.filter(isValidSnapshot) : null
+  } catch {
+    return null
+  }
+}
+
+async function postToApi(snapshot: RankSnapshot): Promise<boolean> {
+  try {
+    const res = await fetch('/api/rank-snapshots', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(snapshot),
+    })
+    return res.ok
+  } catch {
+    return false
+  }
+}
+
 export function useRankSnapshots() {
   const [snapshots, setSnapshots] = useState<RankSnapshot[]>([])
   const [isLoaded, setIsLoaded] = useState(false)
-  // Ref mirrors state so saveSnapshot can read the latest value without
-  // putting writeJSON (a side effect) inside the setState updater.
   const snapshotsRef = useRef<RankSnapshot[]>([])
+  const useDbRef = useRef(false)
 
   useEffect(() => {
-    const raw = readJSON<unknown[]>(LS_KEY, [])
-    const valid = (Array.isArray(raw) ? raw : []).filter(isValidSnapshot)
-    snapshotsRef.current = valid
-    setSnapshots(valid)
-    setIsLoaded(true)
+    let cancelled = false
+
+    async function load() {
+      // Try API first (authenticated users get DB-backed unlimited history)
+      const apiData = await fetchFromApi()
+      if (!cancelled && apiData !== null) {
+        useDbRef.current = true
+        snapshotsRef.current = apiData
+        setSnapshots(apiData)
+        setIsLoaded(true)
+        return
+      }
+
+      // Fallback to localStorage (unauthenticated or API unavailable)
+      const raw = readJSON<unknown[]>(LS_KEY, [])
+      const valid = (Array.isArray(raw) ? raw : []).filter(isValidSnapshot)
+      if (!cancelled) {
+        snapshotsRef.current = valid
+        setSnapshots(valid)
+        setIsLoaded(true)
+      }
+    }
+
+    load()
+    return () => { cancelled = true }
   }, [])
 
   const saveSnapshot = useCallback((ranks: RankResult[], totalAssetValue: number) => {
     const incoming = extractSnapshot(ranks, totalAssetValue)
     if (isDuplicate(snapshotsRef.current[0], incoming)) return
+
     const meta = getBenchmarkSnapshotMeta()
-    const updated = [
-      { ...incoming, id: crypto.randomUUID(), savedAt: new Date().toISOString(), ...meta },
-      ...snapshotsRef.current,
-    ].slice(0, MAX_SNAPSHOTS)
+    const newSnap: RankSnapshot = {
+      ...incoming,
+      id: crypto.randomUUID(),
+      savedAt: new Date().toISOString(),
+      ...meta,
+    }
+
+    // Optimistically update local state
+    const updated = [newSnap, ...snapshotsRef.current]
     snapshotsRef.current = updated
     setSnapshots(updated)
-    writeJSON(LS_KEY, updated)
+
+    if (useDbRef.current) {
+      // Persist to DB (fire-and-forget); localStorage is kept as offline backup
+      postToApi(newSnap)
+      writeJSON(LS_KEY, updated.slice(0, MAX_LOCAL_SNAPSHOTS))
+    } else {
+      writeJSON(LS_KEY, updated.slice(0, MAX_LOCAL_SNAPSHOTS))
+    }
   }, [])
 
   return { snapshots, isLoaded, saveSnapshot }

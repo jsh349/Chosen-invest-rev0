@@ -33,8 +33,13 @@ function sanitizeStoredSettings(raw: Record<string, unknown>): Partial<AppSettin
   if (typeof raw.birthYear === 'number' && raw.birthYear >= 1900 && raw.birthYear <= 2100)      out.birthYear       = raw.birthYear
   if (typeof raw.gender === 'string' && VALID_GENDERS.has(raw.gender))                         out.gender          = raw.gender as GenderOption
   if (typeof raw.annualReturnPct === 'number' && raw.annualReturnPct >= -100 && raw.annualReturnPct <= 100) out.annualReturnPct = raw.annualReturnPct
+  if (typeof raw.country === 'string' && VALID_COUNTRIES.has(raw.country))                           out.country         = raw.country as CountryCode
   return out
 }
+
+export type CountryCode = 'US'
+
+const VALID_COUNTRIES = new Set<string>(['US'])
 
 export type AppSettings = {
   currency:         CurrencyCode
@@ -42,11 +47,13 @@ export type AppSettings = {
   birthYear?:       number
   gender?:          GenderOption
   annualReturnPct?: number
+  country:          CountryCode
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
   currency:  'USD',
   showCents: true,
+  country:   'US',
 }
 
 type SettingsContextType = {

@@ -326,6 +326,15 @@ export default function SettingsPage() {
         <h2 className="border-b border-surface-border py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
           Profile
         </h2>
+        <Row label="Country" hint="Benchmark data region for wealth ranking">
+          <select
+            value={settings.country ?? 'US'}
+            onChange={(e) => update({ country: e.target.value as 'US' })}
+            className={SELECT_CLASS}
+          >
+            <option value="US">United States</option>
+          </select>
+        </Row>
         <Row label="Birth year" hint="Used for age-based wealth ranking">
           <input
             type="number"

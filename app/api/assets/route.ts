@@ -33,6 +33,7 @@ export async function GET() {
     category:  toAssetCategory(row.category, row.id),
     value:     row.valueCents / 100,
     currency:  row.currency,
+    costBasis: row.costBasisCents != null ? row.costBasisCents / 100 : undefined,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   }))
@@ -75,14 +76,15 @@ export async function POST(request: Request) {
       if (parsed.data.length > 0) {
         await tx.insert(assets).values(
           parsed.data.map((a) => ({
-            id:         a.id,
+            id:             a.id,
             userId,
-            name:       a.name,
-            category:   a.category,
-            valueCents: Math.round(a.value * 100),
-            currency:   a.currency,
-            createdAt:  a.createdAt,
-            updatedAt:  a.updatedAt ?? now,
+            name:           a.name,
+            category:       a.category,
+            valueCents:     Math.round(a.value * 100),
+            currency:       a.currency,
+            costBasisCents: a.costBasis != null ? Math.round(a.costBasis * 100) : null,
+            createdAt:      a.createdAt,
+            updatedAt:      a.updatedAt ?? now,
           })),
         )
       }

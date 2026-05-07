@@ -14,6 +14,7 @@ export type Asset = {
   category: AssetCategory
   value: number
   currency: string
+  costBasis?: number
   createdAt: string
   updatedAt: string
 }

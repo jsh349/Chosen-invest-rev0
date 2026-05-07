@@ -278,16 +278,28 @@ export default function RankPage() {
     [currentYear, settings.birthYear]
   )
 
+  // Auto-compute weighted-average return from assets that have cost basis.
+  // Prefer computed return over manual annualReturnPct; fall back when unavailable.
+  const computedReturnPct = useMemo(() => {
+    const withBasis = assets.filter((a) => a.costBasis != null && a.costBasis > 0 && a.value > 0)
+    if (withBasis.length === 0) return undefined
+    const totalCost  = withBasis.reduce((s, a) => s + a.costBasis!, 0)
+    const totalValue = withBasis.reduce((s, a) => s + a.value, 0)
+    return ((totalValue - totalCost) / totalCost) * 100
+  }, [assets])
+
+  const effectiveReturnPct = computedReturnPct ?? settings.annualReturnPct
+
   const ranks = useMemo<RankResult[]>(() => {
     if (!isFullyLoaded) return []
     return [
       computeOverallWealthRank(summary.totalAssetValue),
       computeAgeBasedRank(summary.totalAssetValue, userAge),
       computeAgeGenderRank(summary.totalAssetValue, userAge, settings.gender),
-      computeReturnRank(settings.annualReturnPct),
+      computeReturnRank(effectiveReturnPct),
     ]
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isFullyLoaded, summary.totalAssetValue, userAge, settings.gender, settings.annualReturnPct])
+  }, [isFullyLoaded, summary.totalAssetValue, userAge, settings.gender, effectiveReturnPct])
 
   const rankInsight = isFullyLoaded && summary.assetCount > 0
     ? getRankInsight(ranks)
@@ -309,7 +321,7 @@ export default function RankPage() {
   const profileInputs = {
     hasAge:    !!settings.birthYear,
     hasGender: !!settings.gender,
-    hasReturn: settings.annualReturnPct !== undefined,
+    hasReturn: effectiveReturnPct !== undefined,
     hasGoals:  goals.length > 0,
   }
 
